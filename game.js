@@ -409,38 +409,60 @@
     function drawWheel(canvasId, items) {
         var canvas = $(canvasId); if (!canvas) return;
         var ctx = canvas.getContext('2d');
-        var w = canvas.width, h = canvas.height, cx = w / 2, cy = h / 2, r = Math.min(cx, cy) - 10;
+        var w = canvas.width, h = canvas.height, cx = w / 2, cy = h / 2;
+        var outerR = Math.min(cx, cy);
+        var rimW = outerR * 0.08;
+        var r = outerR - rimW - 4;
         var n = items.length; if (n === 0) return; var arc = (2 * Math.PI) / n;
-        ctx.clearRect(0, 0, w, h); ctx.save(); ctx.translate(cx, cy); ctx.rotate(wheelAngle);
-        var colors = ['#c0392b', '#2980b9', '#27ae60', '#8e44ad', '#d35400', '#16a085', '#2c3e50', '#f39c12', '#1abc9c', '#e74c3c', '#3498db', '#9b59b6', '#1abc9c', '#e67e22', '#2ecc71'];
+        ctx.clearRect(0, 0, w, h);
+
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(wheelAngle);
+
+        var segColorsA = '#fff5e6', segColorsB = '#ffe4cc';
         for (var i = 0; i < n; i++) {
             var sa = i * arc - Math.PI / 2, ea = sa + arc;
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, r, sa, ea); ctx.closePath();
-            ctx.fillStyle = colors[i % colors.length]; ctx.fill();
-            ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = i % 2 === 0 ? segColorsA : segColorsB; ctx.fill();
+            ctx.strokeStyle = 'rgba(210,150,80,0.25)'; ctx.lineWidth = 1.5; ctx.stroke();
             ctx.save(); ctx.rotate(sa + arc / 2);
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
-            var hasIcon = items[i].icon;
-            var nameFontSize = n > 12 ? 16 : n > 8 ? 20 : 26;
-            var iconFontSize = n > 12 ? 18 : n > 8 ? 22 : 30;
-            if (hasIcon) {
-                ctx.font = iconFontSize + 'px sans-serif'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 4;
-                ctx.fillText(hasIcon, r * 0.45, 0);
-                ctx.font = 'bold ' + nameFontSize + 'px "Noto Sans SC", sans-serif'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 4;
-                var label = items[i].name || items[i]; if (label.length > 4) label = label.substring(0, 4);
-                ctx.fillText(label, r * 0.72, 0);
-            } else {
-                ctx.font = 'bold ' + nameFontSize + 'px "Noto Sans SC", sans-serif'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 4;
-                var label = items[i].name || items[i]; if (label.length > 4) label = label.substring(0, 4);
-                ctx.fillText(label, r * 0.58, 0);
-            }
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#4a2c17'; ctx.shadowColor = 'rgba(74,44,23,0.5)'; ctx.shadowBlur = 3;
+            var nameFontSize = n > 12 ? 22 : n > 8 ? 28 : 36;
+            ctx.font = 'bold ' + nameFontSize + 'px "Noto Sans SC", sans-serif';
+            var label = items[i].name || items[i]; if (label.length > 5) label = label.substring(0, 5);
+            ctx.fillText(label, r * 0.82, 0);
             ctx.restore();
         }
-        var centerR = w > 400 ? 30 : 22;
-        ctx.beginPath(); ctx.arc(0, 0, centerR, 0, 2 * Math.PI); ctx.fillStyle = '#d4a843'; ctx.fill();
-        ctx.strokeStyle = '#8b6914'; ctx.lineWidth = 3; ctx.stroke();
-        ctx.fillStyle = '#1a1a2e'; ctx.font = 'bold ' + (w > 400 ? 16 : 12) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowBlur = 0;
-        ctx.fillText('GO', 0, 0); ctx.restore();
+
+        var centerR = w > 400 ? outerR * 0.16 : outerR * 0.14;
+        ctx.beginPath(); ctx.arc(0, 0, centerR + 3, 0, 2 * Math.PI); ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
+        ctx.beginPath(); ctx.arc(0, 0, centerR, 0, 2 * Math.PI);
+        var cGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, centerR);
+        cGrad.addColorStop(0, '#ff6b5b'); cGrad.addColorStop(1, '#e74c3c');
+        ctx.fillStyle = cGrad; ctx.fill();
+        ctx.strokeStyle = 'rgba(255,220,200,0.7)'; ctx.lineWidth = 3; ctx.stroke();
+        ctx.fillStyle = '#fff'; ctx.font = 'bold ' + (w > 400 ? 20 : 15) + 'px "Noto Sans SC", sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowBlur = 0;
+        ctx.fillText('GO', 0, 0);
+        ctx.restore();
+
+        ctx.save(); ctx.translate(cx, cy);
+        ctx.beginPath(); ctx.arc(0, 0, outerR, 0, 2 * Math.PI);
+        ctx.arc(0, 0, outerR - rimW, 0, 2 * Math.PI, true);
+        var rimGrad = ctx.createLinearGradient(-outerR, -outerR, outerR, outerR);
+        rimGrad.addColorStop(0, '#f5a623'); rimGrad.addColorStop(0.35, '#ffd27a'); rimGrad.addColorStop(0.65, '#f5a623'); rimGrad.addColorStop(1, '#d4881a');
+        ctx.fillStyle = rimGrad; ctx.fill();
+
+        var dotCount = n > 12 ? 24 : n > 8 ? 20 : 16;
+        var dotColors = ['#fff9e6', '#a8e6cf', '#fff9e6', '#a8e6cf'];
+        for (var d = 0; d < dotCount; d++) {
+            var da = (d / dotCount) * Math.PI * 2 - Math.PI / 2;
+            var dr = outerR - rimW / 2;
+            var dotR = rimW * 0.32;
+            ctx.beginPath(); ctx.arc(Math.cos(da) * dr, Math.sin(da) * dr, dotR, 0, 2 * Math.PI);
+            ctx.fillStyle = dotColors[d % dotColors.length]; ctx.globalAlpha = 0.85; ctx.fill(); ctx.globalAlpha = 1;
+        }
+        ctx.restore();
     }
 
     function spinWheel(canvasId, items, targetIndex, callback) {
@@ -498,7 +520,7 @@
         $('btn-spin-char').addEventListener('click', function () {
             if (wheelSpinning) return; $('btn-spin-char').disabled = true;
             var ac = CHARACTERS.filter(function (c) { return game.usedCharIds.indexOf(c.id) === -1; });
-            var ci = ac.map(function (c) { return { name: c.name, id: c.id }; });
+            var ci = ac.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
             var targetIdx = randomInt(0, ac.length - 1);
             spinWheel('character-wheel', ci, targetIdx, function (sel) {
                 var ch = CHARACTERS.find(function (c) { return c.id === sel.id; });
@@ -604,7 +626,7 @@
         if (wheelSpinning) return;
         var btn = opBtn(game.weaponDrawPlayer, 'spin-weapon');
         if (btn) btn.disabled = true;
-        var wi = WEAPONS.map(function (w) { return { name: w.name, id: w.id }; });
+        var wi = WEAPONS.map(function (w) { return { name: w.name, id: w.id, icon: w.icon }; });
         var selectedWp = weightedRandomWeapon();
         var targetIdx = WEAPONS.findIndex(function (w) { return w.id === selectedWp.id; });
         spinWheel('weapon-wheel', wi, targetIdx, function (sel) {
