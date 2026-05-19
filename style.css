@@ -116,15 +116,16 @@ body {
     justify-content: center; min-width: 180px;
 }
 .wheel-container.char-wheel canvas { width: 480px; height: 480px; }
-.wheel-container.char-wheel .wheel-pointer { top: -12px; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 36px solid var(--gold); }
+.wheel-container.char-wheel .wheel-pointer { top: -10px; border-left: 16px solid transparent; border-right: 16px solid transparent; border-top: 34px solid #e74c3c; }
 
 .wheel-container { position: relative; display: flex; flex-direction: column; align-items: center; margin: 8px 0; }
 .wheel-container.small canvas { width: 280px; height: 280px; }
-.wheel-container canvas { width: 520px; height: 520px; border-radius: 50%; box-shadow: 0 0 40px rgba(212, 168, 67, 0.4), inset 0 0 25px rgba(0, 0, 0, 0.4); }
+.wheel-container canvas { width: 520px; height: 520px; border-radius: 50%; box-shadow: 0 0 30px rgba(245,166,35,0.3), 0 4px 20px rgba(0,0,0,0.3); }
 .wheel-pointer {
-    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-    width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent;
-    border-top: 36px solid var(--gold); z-index: 10; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.6));
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0; border-left: 16px solid transparent; border-right: 16px solid transparent;
+    border-top: 34px solid #e74c3c; z-index: 10;
+    filter: drop-shadow(0 2px 6px rgba(231,76,60,0.5));
 }
 .wheel-pointer.small { top: -6px; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 22px solid var(--gold); }
 .btn-wheel { margin-top: 8px; font-size: 18px; padding: 10px 32px; }
