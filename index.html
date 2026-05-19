@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>卡牌对战</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="screen-start" class="screen active">
+            <div class="start-bg"></div>
+            <div class="start-content">
+                <h1 class="game-title">卡牌对战</h1>
+                <p class="game-subtitle">双人依次对抗 · 角色卡牌武器</p>
+                <div class="mode-select">
+                    <button class="btn btn-primary btn-large" id="btn-dual">开始游戏</button>
+                </div>
+                <div class="sound-toggle">
+                    <button class="btn btn-small" id="btn-sound">🔊 音效：开</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-character" class="screen">
+            <div class="screen-header">
+                <h2 id="char-select-title">角色抽取</h2>
+                <p id="char-select-hint" class="hint-text">请玩家A点击转盘抽取角色</p>
+            </div>
+            <div class="char-select-layout">
+                <div class="char-select-left">
+                    <div class="wheel-container char-wheel">
+                        <canvas id="character-wheel" width="280" height="280"></canvas>
+                        <div class="wheel-pointer"></div>
+                        <button class="btn btn-primary btn-wheel" id="btn-spin-char">转动转盘</button>
+                    </div>
+                </div>
+                <div class="char-select-right">
+                    <div id="char-result" class="result-panel hidden">
+                        <div class="char-info-card" id="char-info-display"></div>
+                        <button class="btn btn-primary" id="btn-char-confirm">确认角色</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-vs" class="screen">
+            <div class="vs-container" id="vs-container"></div>
+        </div>
+
+        <div id="screen-battle" class="screen">
+            <div class="battle-layout">
+                <div class="player-panel panel-a" id="panel-a">
+                    <div class="panel-info" id="player-a-info">
+                        <div class="player-avatar" id="player-a-avatar"></div>
+                        <div class="player-details">
+                            <div class="player-name" id="player-a-name">玩家A</div>
+                            <div class="player-char-name" id="player-a-char"></div>
+                            <div class="hp-bar-container">
+                                <div class="hp-bar" id="player-a-hp-bar"></div>
+                                <span class="hp-text" id="player-a-hp-text"></span>
+                            </div>
+                            <div class="ability-badge" id="player-a-ability"></div>
+                        </div>
+                    </div>
+                    <div class="panel-library">
+                        <div class="panel-library-title">⚔️ 卡牌库</div>
+                        <div class="panel-select-area hidden" id="player-a-select-area">
+                            <div class="panel-select-title" id="player-a-select-title">选择卡牌</div>
+                            <div class="panel-select-cards" id="player-a-select-cards"></div>
+                        </div>
+                        <div class="panel-library-section">
+                            <div class="panel-library-subtitle">攻击</div>
+                            <div class="panel-library-cards" id="player-a-attack-library"></div>
+                        </div>
+                        <div class="panel-library-section">
+                            <div class="panel-library-subtitle">防御</div>
+                            <div class="panel-library-cards" id="player-a-defend-library"></div>
+                        </div>
+                    </div>
+                    <div class="panel-ops" id="ops-a">
+                        <div class="ops-status" id="ops-a-status"></div>
+                        <div class="player-gold">💰 金币: <span id="player-a-gold">0</span></div>
+                        <button class="btn btn-primary btn-op" id="btn-a-spin-weapon">🎰 转动转盘</button>
+                        <button class="btn btn-primary btn-op" id="btn-a-confirm-card" disabled>✅ 确认选择</button>
+                        <button class="btn btn-secondary btn-op" id="btn-a-skip-defend">⏭️ 跳过防御</button>
+                        <button class="btn btn-primary btn-op btn-atk" id="btn-a-continue-attack">⚔️ 继续攻击</button>
+                        <button class="btn btn-secondary btn-op" id="btn-a-end-attack">🛑 结束攻击</button>
+                        <button class="btn btn-primary btn-op" id="btn-a-continue">▶ 继续</button>
+                        <div class="ops-trade-btns">
+                            <button class="btn btn-secondary btn-op btn-trade" id="btn-a-sell">🔄 出售</button>
+                            <button class="btn btn-primary btn-op btn-trade" id="btn-a-buy">🛒 购买</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-center">
+                    <div class="center-top">
+                        <span id="round-number">第1轮</span>
+                        <div class="attack-progress" id="attack-progress" style="display:none">
+                            <span class="attack-progress-label">攻击进度</span>
+                            <div class="attack-progress-bar-container">
+                                <div class="attack-progress-bar" id="attack-progress-bar"></div>
+                            </div>
+                            <span class="attack-progress-text" id="attack-progress-text">0/3</span>
+                        </div>
+                        <div class="action-hint" id="action-hint">准备开始</div>
+                    </div>
+                    <div class="center-body">
+                        <div id="battle-log" class="battle-log hidden">
+                            <div class="battle-log-title">📜 本轮战况</div>
+                            <div class="battle-log-list" id="battle-log-list"></div>
+                        </div>
+
+                        <div id="table-cards-area" class="table-cards-area">
+                            <div class="table-cards-empty">牌桌</div>
+                        </div>
+
+                        <div id="weapon-draw-area" class="battle-section hidden">
+                            <div class="section-title">武器抽取</div>
+                            <p class="hint-text" id="weapon-draw-hint"></p>
+                            <div class="wheel-container small">
+                                <canvas id="weapon-wheel" width="280" height="280"></canvas>
+                                <div class="wheel-pointer small"></div>
+                            </div>
+                            <div class="drawn-cards" id="drawn-cards"></div>
+                        </div>
+
+                        <div id="dice-area" class="battle-section hidden">
+                            <div class="section-title">投掷骰子</div>
+                            <p class="hint-text" id="dice-hint">点击投掷骰子，决定攻击顺序</p>
+                            <div class="dice-container">
+                                <div class="dice" id="dice">
+                                    <div class="dice-face" id="dice-face">?</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" id="btn-roll-dice">投掷骰子</button>
+                            <div id="dice-result" class="result-text hidden"></div>
+                        </div>
+
+                        <div id="card-select-area" class="battle-section hidden">
+                            <div class="section-title" id="card-select-title">选择卡牌</div>
+                            <p class="hint-text" id="card-select-hint"></p>
+                            <div class="card-hand" id="card-hand"></div>
+                        </div>
+
+                        <div id="damage-area" class="battle-section hidden">
+                            <div class="pk-overlay" id="pk-overlay"></div>
+                            <div class="damage-display" id="damage-display"></div>
+                            <div class="center-actions" id="center-actions"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="player-panel panel-b" id="panel-b">
+                    <div class="panel-info" id="player-b-info">
+                        <div class="player-avatar" id="player-b-avatar"></div>
+                        <div class="player-details">
+                            <div class="player-name" id="player-b-name">玩家B</div>
+                            <div class="player-char-name" id="player-b-char"></div>
+                            <div class="hp-bar-container">
+                                <div class="hp-bar" id="player-b-hp-bar"></div>
+                                <span class="hp-text" id="player-b-hp-text"></span>
+                            </div>
+                            <div class="ability-badge" id="player-b-ability"></div>
+                        </div>
+                    </div>
+                    <div class="panel-library">
+                        <div class="panel-library-title">⚔️ 卡牌库</div>
+                        <div class="panel-select-area hidden" id="player-b-select-area">
+                            <div class="panel-select-title" id="player-b-select-title">选择卡牌</div>
+                            <div class="panel-select-cards" id="player-b-select-cards"></div>
+                        </div>
+                        <div class="panel-library-section">
+                            <div class="panel-library-subtitle">攻击</div>
+                            <div class="panel-library-cards" id="player-b-attack-library"></div>
+                        </div>
+                        <div class="panel-library-section">
+                            <div class="panel-library-subtitle">防御</div>
+                            <div class="panel-library-cards" id="player-b-defend-library"></div>
+                        </div>
+                    </div>
+                    <div class="panel-ops" id="ops-b">
+                        <div class="ops-status" id="ops-b-status"></div>
+                        <div class="player-gold">💰 金币: <span id="player-b-gold">0</span></div>
+                        <button class="btn btn-primary btn-op" id="btn-b-spin-weapon">🎰 转动转盘</button>
+                        <button class="btn btn-primary btn-op" id="btn-b-confirm-card" disabled>✅ 确认选择</button>
+                        <button class="btn btn-secondary btn-op" id="btn-b-skip-defend">⏭️ 跳过防御</button>
+                        <button class="btn btn-primary btn-op btn-atk" id="btn-b-continue-attack">⚔️ 继续攻击</button>
+                        <button class="btn btn-secondary btn-op" id="btn-b-end-attack">🛑 结束攻击</button>
+                        <button class="btn btn-primary btn-op" id="btn-b-continue">▶ 继续</button>
+                        <div class="ops-trade-btns">
+                            <button class="btn btn-secondary btn-op btn-trade" id="btn-b-sell">🔄 出售</button>
+                            <button class="btn btn-primary btn-op btn-trade" id="btn-b-buy">🛒 购买</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-small switch-btn" id="btn-switch-player" style="display:none">切换角色</button>
+        </div>
+
+        <div id="screen-gameover" class="screen">
+            <div class="gameover-content">
+                <h2 class="gameover-title" id="gameover-title">游戏结束</h2>
+                <div class="winner-display" id="winner-display"></div>
+                <div class="game-stats" id="game-stats"></div>
+                <div class="gameover-actions">
+                    <button class="btn btn-primary btn-large" id="btn-restart">再来一局</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content" id="modal-content"></div>
+    </div>
+
+    <div id="card-preview-overlay" class="card-preview-overlay hidden">
+        <div class="card-preview" id="card-preview"></div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
