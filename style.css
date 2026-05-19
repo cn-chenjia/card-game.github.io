@@ -1,0 +1,1095 @@
+@import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+:root {
+    --gold: #d4a843;
+    --gold-light: #f0d68a;
+    --gold-dark: #8b6914;
+    --red: #c0392b;
+    --red-light: #e74c3c;
+    --red-dark: #922b21;
+    --blue: #2980b9;
+    --blue-light: #3498db;
+    --blue-dark: #1a5276;
+    --green: #27ae60;
+    --green-light: #2ecc71;
+    --bg-dark: #1a1a2e;
+    --bg-medium: #16213e;
+    --bg-light: #0f3460;
+    --text-light: #ecf0f1;
+    --text-dim: #95a5a6;
+    --border-gold: #d4a843;
+    --rarity-common: #9e9e9e;
+    --rarity-elite: #4caf50;
+    --rarity-rare: #2196f3;
+    --rarity-epic: #9c27b0;
+    --rarity-legend: #ff9800;
+    --card-attack: #c0392b;
+    --card-defend: #2980b9;
+    --panel-width: 220px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#game-container { width: 100%; height: 100%; position: relative; }
+
+.screen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: none; flex-direction: column; align-items: center; overflow-y: auto; overflow-x: hidden;
+}
+.screen.active { display: flex; }
+.hidden { display: none !important; }
+
+.btn {
+    border: none; border-radius: 8px; padding: 10px 24px; font-size: 16px;
+    font-family: 'Noto Sans SC', sans-serif; font-weight: 500; cursor: pointer;
+    transition: all 0.2s ease; outline: none; position: relative; overflow: hidden;
+}
+.btn:active { transform: scale(0.95); }
+.btn-primary {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: #1a1a2e; box-shadow: 0 2px 8px rgba(212, 168, 67, 0.3);
+}
+.btn-primary:hover { box-shadow: 0 4px 16px rgba(212, 168, 67, 0.5); }
+.btn-secondary {
+    background: linear-gradient(135deg, #555, #333);
+    color: var(--text-light); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.btn-large { padding: 14px 40px; font-size: 20px; border-radius: 12px; }
+.btn-small { padding: 6px 16px; font-size: 13px; border-radius: 6px; }
+.btn:disabled, .btn.disabled-btn { opacity: 0.5; cursor: not-allowed; }
+
+.hint-text { color: var(--gold-light); font-size: 14px; margin: 8px 0; text-align: center; }
+.result-text { font-size: 18px; font-weight: 700; text-align: center; margin: 12px 0; }
+
+#screen-start {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    justify-content: center;
+}
+.start-bg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(212, 168, 67, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 50%, rgba(192, 57, 43, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(41, 128, 185, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+}
+.start-content { position: relative; z-index: 1; text-align: center; padding: 20px; }
+.game-title {
+    font-family: 'Ma Shan Zheng', cursive; font-size: clamp(36px, 8vw, 72px);
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 8px; letter-spacing: 4px;
+}
+.game-subtitle { font-size: clamp(14px, 3vw, 18px); color: var(--text-dim); margin-bottom: 40px; letter-spacing: 2px; }
+.mode-select { display: flex; flex-direction: column; gap: 16px; align-items: center; }
+.sound-toggle { margin-top: 30px; }
+
+#screen-character { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 10px; }
+.screen-header { text-align: center; padding: 10px 0 6px; }
+.screen-header h2 { font-family: 'Ma Shan Zheng', cursive; font-size: 24px; color: var(--gold-light); }
+
+.char-select-layout {
+    display: flex; flex: 1; width: 100%; gap: 16px;
+    align-items: flex-start; justify-content: center;
+    padding: 8px 10px;
+    min-height: 0;
+    overflow-y: auto;
+    flex-wrap: wrap;
+}
+.char-select-left {
+    display: flex; flex-direction: column; align-items: center;
+    flex-shrink: 0;
+}
+.char-select-right {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-width: 180px;
+}
+.wheel-container.char-wheel canvas { width: 220px; height: 220px; }
+.wheel-container.char-wheel .wheel-pointer { top: -6px; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 22px solid var(--gold); }
+
+.wheel-container { position: relative; display: flex; flex-direction: column; align-items: center; margin: 8px 0; }
+.wheel-container.small canvas { width: 220px; height: 220px; }
+.wheel-container canvas { border-radius: 50%; box-shadow: 0 0 30px rgba(212, 168, 67, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.3); }
+.wheel-pointer {
+    position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent;
+    border-top: 28px solid var(--gold); z-index: 10; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+.wheel-pointer.small { top: -6px; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 22px solid var(--gold); }
+.btn-wheel { margin-top: 8px; font-size: 18px; padding: 10px 32px; }
+
+.result-panel { text-align: center; animation: fadeInUp 0.5s ease; }
+.char-info-card {
+    background: linear-gradient(135deg, rgba(212, 168, 67, 0.15), rgba(15, 52, 96, 0.8));
+    border: 2px solid var(--gold); border-radius: 16px; padding: 16px; max-width: 260px; margin: 0 auto 12px;
+}
+.char-info-card .char-emoji { font-size: 40px; margin-bottom: 4px; }
+.char-info-card .char-name { font-family: 'Ma Shan Zheng', cursive; font-size: 24px; color: var(--gold-light); margin-bottom: 4px; }
+.char-info-card .char-stat { font-size: 13px; color: var(--text-dim); margin: 3px 0; }
+.char-info-card .char-ability {
+    background: rgba(212, 168, 67, 0.15); border: 1px solid var(--gold-dark);
+    border-radius: 8px; padding: 6px 10px; margin-top: 6px; font-size: 12px; color: var(--gold-light);
+}
+
+#screen-battle { background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); flex-direction: column; }
+
+.battle-layout {
+    display: flex; width: 100%; min-height: 100%; height: auto;
+    flex-direction: row;
+    min-height: 0;
+    flex-shrink: 0;
+}
+
+.player-panel {
+    width: var(--panel-width); flex-shrink: 0;
+    display: flex; flex-direction: column;
+    background: rgba(0, 0, 0, 0.3);
+    transition: background 0.4s ease, box-shadow 0.4s ease;
+    min-height: 0;
+    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.panel-a { border-right: 2px solid rgba(212, 168, 67, 0.2); }
+.panel-b { border-left: 2px solid rgba(212, 168, 67, 0.2); }
+
+.player-panel.active-panel {
+    background: rgba(0, 0, 0, 0.4);
+}
+.panel-a.active-panel {
+    border-right-color: rgba(231, 76, 60, 0.6);
+    box-shadow: inset -4px 0 20px rgba(231, 76, 60, 0.1);
+    background: linear-gradient(90deg, rgba(231, 76, 60, 0.06), rgba(0, 0, 0, 0.3));
+}
+.panel-b.active-panel {
+    border-left-color: rgba(52, 152, 219, 0.6);
+    box-shadow: inset 4px 0 20px rgba(52, 152, 219, 0.1);
+    background: linear-gradient(270deg, rgba(52, 152, 219, 0.06), rgba(0, 0, 0, 0.3));
+}
+
+.player-panel.inactive-panel {
+    opacity: 0.5; pointer-events: none;
+}
+
+.panel-info {
+    padding: 10px 8px; display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid rgba(212, 168, 67, 0.15);
+}
+.player-info { display: flex; align-items: center; gap: 8px; width: 100%; }
+.panel-b .player-info { flex-direction: row-reverse; text-align: right; }
+.panel-b .player-details { text-align: right; }
+.player-avatar {
+    width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--gold);
+    display: flex; align-items: center; justify-content: center; font-size: 24px;
+    background: rgba(0, 0, 0, 0.3); flex-shrink: 0;
+}
+.panel-a .player-avatar { border-color: var(--red-light); }
+.panel-b .player-avatar { border-color: var(--blue-light); }
+.player-details { min-width: 0; flex: 1; }
+.player-name { font-size: 11px; color: var(--text-dim); }
+.player-char-name { font-family: 'Ma Shan Zheng', cursive; font-size: 15px; color: var(--gold-light); }
+.hp-bar-container {
+    width: 100%; min-width: 70px; height: 14px; background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px; overflow: hidden; position: relative; border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.hp-bar { height: 100%; border-radius: 8px; transition: width 0.5s ease; }
+.panel-a .hp-bar { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+.panel-b .hp-bar { background: linear-gradient(90deg, #2980b9, #3498db); }
+.hp-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 9px; font-weight: 700; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+.ability-badge {
+    font-size: 10px; padding: 1px 5px; border-radius: 4px;
+    background: rgba(212, 168, 67, 0.15); color: var(--gold-light); display: inline-block; margin-top: 2px;
+}
+
+.player-info.active-turn { background: rgba(212, 168, 67, 0.1); border-radius: 8px; padding: 4px 8px; }
+.player-info.active-turn .player-avatar { box-shadow: 0 0 12px rgba(212, 168, 67, 0.6); }
+
+.panel-library {
+    flex: 1 1 auto; overflow-y: auto; padding: 6px 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    border-bottom: 1px solid rgba(212, 168, 67, 0.15);
+    min-height: 0;
+}
+.panel-library-title {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 13px; color: var(--gold-light);
+    text-align: center; padding: 2px 0; border-bottom: 1px solid rgba(212, 168, 67, 0.2); margin-bottom: 2px;
+}
+.panel-library-section { margin-bottom: 4px; }
+.panel-library-subtitle {
+    font-size: 10px; color: var(--text-dim); padding: 2px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.panel-library-cards { display: flex; flex-wrap: wrap; gap: 3px; padding: 3px 0; }
+
+.panel-select-area {
+    padding: 6px 4px; margin-bottom: 4px;
+    background: rgba(212, 168, 67, 0.08);
+    border: 1px solid rgba(212, 168, 67, 0.3);
+    border-radius: 6px;
+}
+.panel-select-area.hidden { display: none; }
+.panel-select-title {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 12px; color: var(--gold-light);
+    text-align: center; margin-bottom: 4px;
+}
+.panel-select-cards {
+    display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;
+}
+.panel-select-cards .weapon-card { width: 60px; height: 88px; padding: 3px; }
+.panel-select-cards .weapon-card .card-icon { font-size: 18px; }
+.panel-select-cards .weapon-card .card-name { font-size: 9px; }
+.panel-select-cards .weapon-card .card-value { font-size: 10px; }
+.panel-select-cards .weapon-card .card-price { display: none; }
+
+.panel-ops {
+    padding: 6px 8px; display: flex; flex-direction: column; gap: 4px;
+    border-top: 1px solid rgba(212, 168, 67, 0.15);
+    flex-shrink: 0;
+    overflow-y: visible;
+}
+.ops-status {
+    font-size: 11px; color: var(--gold-light); text-align: center;
+    padding: 4px; border-radius: 4px;
+    background: rgba(212, 168, 67, 0.1);
+    min-height: 22px;
+    font-family: 'Ma Shan Zheng', cursive;
+}
+.btn-op {
+    width: 100%; padding: 6px 10px; font-size: 12px; border-radius: 6px;
+    display: none;
+}
+.btn-op.btn-atk {
+    background: linear-gradient(135deg, #c0392b, #922b21) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(192, 57, 43, 0.4);
+}
+
+.player-gold {
+    font-size: 12px; color: var(--gold-light); text-align: center;
+    margin-bottom: 2px; padding: 3px;
+    background: rgba(212, 168, 67, 0.1); border-radius: 4px;
+    display: none;
+}
+
+.active-panel .player-gold { display: block; }
+
+.ops-trade-btns {
+    display: flex; gap: 4px;
+}
+.ops-trade-btns .btn-trade {
+    flex: 1; display: none;
+}
+.active-panel .ops-trade-btns .btn-trade { display: block; }
+
+.panel-center {
+    flex: 1; display: flex; flex-direction: column;
+    min-width: 0; overflow: hidden;
+}
+
+.center-top {
+    text-align: center; padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(212, 168, 67, 0.2);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+}
+.center-top #round-number {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 20px; color: var(--gold);
+}
+
+.attack-progress { display: flex; align-items: center; gap: 4px; }
+.attack-progress-label { font-size: 9px; color: var(--text-dim); font-family: 'Noto Sans SC', sans-serif; white-space: nowrap; }
+.attack-progress-bar-container {
+    width: 60px; height: 8px; background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px; overflow: hidden; border: 1px solid rgba(212, 168, 67, 0.3);
+}
+.attack-progress-bar {
+    height: 100%; border-radius: 4px; transition: width 0.4s ease;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold-light));
+}
+.attack-progress-text {
+    font-size: 10px; color: var(--gold-light);
+    font-family: 'Noto Sans SC', sans-serif; font-weight: 700; white-space: nowrap;
+}
+
+.action-hint {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 18px; color: var(--gold-light);
+    text-align: center;
+}
+
+.center-body {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 6px; overflow-y: auto; position: relative;
+    min-height: 0;
+}
+
+.battle-section { width: 100%; max-width: 560px; text-align: center; animation: fadeInUp 0.4s ease; }
+.section-title { font-family: 'Ma Shan Zheng', cursive; font-size: 22px; color: var(--gold-light); margin-bottom: 6px; }
+.drawn-cards { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; min-height: 60px; }
+.dice-container { display: flex; justify-content: center; margin: 16px 0; }
+.dice {
+    width: 72px; height: 72px; background: linear-gradient(135deg, #fff, #e0e0e0);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    cursor: pointer; transition: transform 0.1s;
+}
+.dice.rolling { animation: diceRoll 0.6s ease; }
+@keyframes diceRoll {
+    0% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(90deg) scale(1.1); }
+    50% { transform: rotate(180deg) scale(1); }
+    75% { transform: rotate(270deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+.dice-face { font-size: 32px; font-weight: 700; color: #333; }
+.card-hand { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 10px 0; min-height: 110px; perspective: 800px; }
+
+.damage-display { text-align: center; padding: 16px; animation: fadeInUp 0.4s ease; position: relative; z-index: 2; }
+.damage-display .damage-number {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 48px; color: var(--red-light);
+    text-shadow: 0 0 20px rgba(231, 76, 60, 0.5); animation: damagePopIn 0.5s ease;
+}
+.damage-display .damage-detail { font-size: 13px; color: var(--text-dim); margin: 6px 0; }
+.damage-display .damage-result { font-size: 17px; font-weight: 700; margin: 6px 0; }
+
+.center-actions {
+    display: flex; justify-content: center; gap: 12px; margin-top: 12px;
+    flex-wrap: wrap;
+}
+.center-actions .btn { min-width: 120px; }
+
+.battle-log {
+    width: 100%; max-width: 560px; margin-bottom: 8px;
+    background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(212, 168, 67, 0.2);
+    border-radius: 8px; padding: 6px 10px; flex-shrink: 0;
+}
+.battle-log.hidden { display: none; }
+.battle-log-title {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 14px; color: var(--gold-light);
+    text-align: center; margin-bottom: 4px;
+    border-bottom: 1px solid rgba(212, 168, 67, 0.15); padding-bottom: 3px;
+}
+.battle-log-list { display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; }
+.battle-log-round {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 4px 6px; background: rgba(0, 0, 0, 0.2); border-radius: 4px;
+}
+.battle-log-round-title {
+    font-size: 10px; color: var(--text-dim); font-weight: 700;
+}
+.battle-log-pair {
+    display: flex; align-items: center; gap: 6px; font-size: 11px;
+}
+.battle-log-atk {
+    display: flex; align-items: center; gap: 2px;
+    color: var(--red-light); font-weight: 500;
+}
+.battle-log-vs { color: var(--text-dim); font-size: 10px; }
+.battle-log-def {
+    display: flex; align-items: center; gap: 2px;
+    color: var(--blue-light); font-weight: 500;
+}
+.battle-log-dmg {
+    margin-left: auto; font-size: 10px; font-weight: 700;
+    color: var(--gold-light);
+}
+.battle-log-dmg.zero { color: var(--text-dim); }
+
+.table-cards-area {
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+    flex-wrap: wrap; min-height: 50px; padding: 6px;
+    margin-bottom: 6px;
+}
+.table-cards-empty {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 14px; color: var(--text-dim);
+    text-align: center; padding: 8px;
+}
+.table-card-item {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    animation: fadeInUp 0.3s ease;
+}
+.table-card-player {
+    font-size: 10px; font-weight: 700; color: var(--gold-light);
+    background: rgba(0, 0, 0, 0.5); border-radius: 3px; padding: 1px 4px;
+}
+.table-card {
+    width: 55px; height: 78px; padding: 3px; font-size: 8px;
+}
+.table-card .card-icon { font-size: 16px; }
+.table-card .card-name { font-size: 8px; }
+.table-card .card-value { font-size: 9px; }
+.table-card .card-price { display: none; }
+
+.pk-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 1; overflow: hidden;
+}
+.pk-overlay.active .pk-flash {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.6); animation: pkFlash 0.6s ease-out forwards;
+}
+.pk-overlay.active .pk-slash {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 80px; animation: pkSlash 0.8s ease-out forwards; z-index: 3;
+}
+.pk-overlay.active .pk-particles {
+    position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+}
+.pk-overlay.active .pk-particle {
+    position: absolute; width: 6px; height: 6px; border-radius: 50%;
+    animation: pkParticle 0.8s ease-out forwards;
+}
+
+@keyframes pkFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes pkSlash {
+    0% { transform: translate(-50%, -50%) scale(0.3) rotate(-30deg); opacity: 0; }
+    30% { transform: translate(-50%, -50%) scale(1.3) rotate(10deg); opacity: 1; }
+    60% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.8) rotate(0deg); opacity: 0; }
+}
+@keyframes pkParticle { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { opacity: 0; } }
+@keyframes pkParticleMove { 0% { transform: translate(0, 0) scale(1.5); opacity: 1; } 100% { opacity: 0; transform: scale(0.3); } }
+
+.switch-btn {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 100;
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    color: #fff; box-shadow: 0 2px 8px rgba(41, 128, 185, 0.4);
+}
+
+.weapon-card {
+    width: 80px; height: 115px; border-radius: 8px; padding: 5px; cursor: pointer;
+    transition: all 0.2s ease; position: relative; display: flex; flex-direction: column;
+    align-items: center; justify-content: space-between; font-size: 10px; flex-shrink: 0;
+}
+.weapon-card:hover { transform: translateY(-4px); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4); }
+.weapon-card.selected {
+    transform: translateY(-8px); box-shadow: 0 8px 24px rgba(212, 168, 67, 0.5);
+    outline: 2px solid var(--gold); outline-offset: 2px;
+}
+.weapon-card.rarity-common { background: linear-gradient(135deg, #616161, #424242); border: 1px solid var(--rarity-common); }
+.weapon-card.rarity-elite { background: linear-gradient(135deg, #2e7d32, #1b5e20); border: 1px solid var(--rarity-elite); }
+.weapon-card.rarity-rare { background: linear-gradient(135deg, #1565c0, #0d47a1); border: 1px solid var(--rarity-rare); }
+.weapon-card.rarity-epic { background: linear-gradient(135deg, #7b1fa2, #4a148c); border: 1px solid var(--rarity-epic); }
+.weapon-card.rarity-legend {
+    background: linear-gradient(135deg, #e65100, #bf360c); border: 1px solid var(--rarity-legend);
+    box-shadow: 0 0 12px rgba(255, 152, 0, 0.3); position: relative; overflow: hidden;
+}
+.weapon-card.rarity-legend::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent 40%, rgba(255, 215, 0, 0.15) 50%, transparent 60%);
+    animation: shimmer 3s ease-in-out infinite;
+}
+.weapon-card.rarity-epic { position: relative; overflow: hidden; }
+.weapon-card.rarity-epic::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent 45%, rgba(156, 39, 176, 0.1) 50%, transparent 55%);
+    animation: shimmer 4s ease-in-out infinite;
+}
+@keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%); }
+    100% { transform: translateX(100%) translateY(100%); }
+}
+.weapon-card .card-icon { font-size: 24px; margin: 2px 0; }
+.weapon-card .card-name { font-weight: 700; font-size: 11px; color: #fff; text-align: center; }
+.weapon-card .card-type { font-size: 8px; padding: 1px 3px; border-radius: 3px; color: #fff; }
+.weapon-card .card-type.attack { background: rgba(192, 57, 43, 0.8); }
+.weapon-card .card-type.defend { background: rgba(41, 128, 185, 0.8); }
+.weapon-card .card-value { font-size: 12px; font-weight: 700; color: var(--gold-light); }
+.weapon-card .card-price { font-size: 8px; color: var(--gold); }
+
+.weapon-card.mini {
+    width: 32px; height: 42px; padding: 2px; font-size: 7px; border-radius: 4px;
+}
+.weapon-card.mini .card-icon { font-size: 12px; margin: 0; }
+.weapon-card.mini .card-name, .weapon-card.mini .card-type, .weapon-card.mini .card-price { display: none; }
+.weapon-card.mini .card-value { font-size: 8px; }
+
+.weapon-card.selectable { transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.weapon-card.selectable:hover { transform: translateY(-8px) scale(1.05); }
+.weapon-card.selectable:active { transform: translateY(-2px) scale(0.98); }
+.weapon-card.selected {
+    transform: translateY(-12px) scale(1.08);
+    box-shadow: 0 8px 30px rgba(212, 168, 67, 0.6);
+    outline: 2px solid var(--gold); outline-offset: 3px;
+}
+
+.weapon-card.library-new { animation: cardAppear 0.5s ease; }
+@keyframes cardAppear {
+    0% { transform: scale(0) rotate(180deg); opacity: 0; }
+    60% { transform: scale(1.1) rotate(-10deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.weapon-card.rarity-highlight {
+    animation: rarityReveal 0.8s ease;
+    transform: scale(1.15);
+    box-shadow: 0 0 30px rgba(212, 168, 67, 0.6), 0 0 60px rgba(212, 168, 67, 0.3);
+}
+.weapon-card.rarity-highlight.rarity-rare {
+    box-shadow: 0 0 30px rgba(33, 150, 243, 0.6), 0 0 60px rgba(33, 150, 243, 0.3);
+}
+.weapon-card.rarity-highlight.rarity-epic {
+    box-shadow: 0 0 30px rgba(156, 39, 176, 0.6), 0 0 60px rgba(156, 39, 176, 0.3);
+}
+.weapon-card.rarity-highlight.rarity-legend {
+    box-shadow: 0 0 30px rgba(255, 152, 0, 0.6), 0 0 60px rgba(255, 152, 0, 0.3);
+}
+@keyframes rarityReveal {
+    0% { transform: scale(0.3) rotateY(180deg); opacity: 0; }
+    40% { transform: scale(1.3) rotateY(0deg); opacity: 1; }
+    60% { transform: scale(1.1); }
+    80% { transform: scale(1.2); }
+    100% { transform: scale(1.15); }
+}
+
+.rarity-tag {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 20px; text-align: center; padding: 6px 0;
+    margin-bottom: 8px; border-radius: 8px;
+    animation: tagPulse 1s ease infinite;
+}
+.rare-tag {
+    color: #2196f3; background: rgba(33, 150, 243, 0.15);
+    border: 1px solid rgba(33, 150, 243, 0.4);
+    text-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+}
+.epic-tag {
+    color: #ce93d8; background: rgba(156, 39, 176, 0.15);
+    border: 1px solid rgba(156, 39, 176, 0.4);
+    text-shadow: 0 0 10px rgba(156, 39, 176, 0.5);
+}
+.legend-tag {
+    color: #ffb74d; background: rgba(255, 152, 0, 0.15);
+    border: 1px solid rgba(255, 152, 0, 0.4);
+    text-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+}
+@keyframes tagPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.03); }
+}
+
+#screen-gameover { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); justify-content: center; }
+
+#screen-vs {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 50%, #1a1a2e 100%);
+    justify-content: center; align-items: center;
+}
+.vs-container {
+    display: flex; align-items: center; justify-content: center; gap: 24px;
+    width: 100%; max-width: 600px; padding: 20px;
+}
+.vs-fighter {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    animation: vsFighterIn 0.8s ease-out both;
+}
+.vs-fighter.vs-left { animation-delay: 0.2s; }
+.vs-fighter.vs-right { animation-delay: 0.4s; }
+.vs-fighter .vs-emoji { font-size: 64px; }
+.vs-fighter .vs-name { font-family: 'Ma Shan Zheng', cursive; font-size: 28px; color: var(--gold-light); }
+.vs-fighter .vs-player { font-size: 14px; color: var(--text-dim); }
+.vs-fighter .vs-hp { font-size: 12px; color: var(--text-dim); }
+.vs-fighter .vs-ability { font-size: 11px; color: var(--gold); background: rgba(212,168,67,0.1); padding: 2px 8px; border-radius: 4px; }
+@keyframes vsFighterIn {
+    0% { transform: translateX(-60px) scale(0.5); opacity: 0; }
+    60% { transform: translateX(10px) scale(1.05); opacity: 1; }
+    100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+.vs-fighter.vs-right {
+    animation-name: vsFighterInRight;
+}
+@keyframes vsFighterInRight {
+    0% { transform: translateX(60px) scale(0.5); opacity: 0; }
+    60% { transform: translateX(-10px) scale(1.05); opacity: 1; }
+    100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+.vs-text {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 72px; color: var(--red-light);
+    text-shadow: 0 0 30px rgba(231, 76, 60, 0.6), 0 0 60px rgba(231, 76, 60, 0.3);
+    animation: vsTextPulse 0.6s ease-out 0.6s both;
+    flex-shrink: 0;
+}
+@keyframes vsTextPulse {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); opacity: 1; }
+}
+.gameover-content { text-align: center; padding: 20px; animation: fadeInUp 0.6s ease; }
+.gameover-title { font-family: 'Ma Shan Zheng', cursive; font-size: 36px; color: var(--gold-light); margin-bottom: 20px; }
+.winner-display { margin: 20px 0; }
+.winner-display .winner-char { font-family: 'Ma Shan Zheng', cursive; font-size: 48px; color: var(--gold); margin-bottom: 8px; }
+.winner-display .winner-player { font-size: 20px; color: var(--text-light); }
+.game-stats {
+    background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(212, 168, 67, 0.2);
+    border-radius: 12px; padding: 16px; margin: 16px auto; max-width: 420px; text-align: left;
+    max-height: 50vh; overflow-y: auto;
+}
+.game-stats .stat-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
+.game-stats .stat-label { color: var(--text-dim); }
+.game-stats .stat-value { color: var(--gold-light); font-weight: 700; }
+
+.round-detail-section { margin-top: 12px; text-align: left; }
+.round-detail-title {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 16px; color: var(--gold-light);
+    text-align: center; margin-bottom: 8px; padding-bottom: 4px;
+    border-bottom: 1px solid rgba(212, 168, 67, 0.3);
+}
+.round-detail-round { margin-bottom: 8px; }
+.round-detail-round-title {
+    font-size: 12px; font-weight: 700; color: var(--gold);
+    padding: 2px 6px; background: rgba(212, 168, 67, 0.1); border-radius: 4px; margin-bottom: 4px;
+}
+.round-detail-group { margin-left: 8px; margin-bottom: 4px; }
+.round-detail-group-title { font-size: 10px; color: var(--text-dim); font-weight: 700; margin-bottom: 2px; }
+.round-detail-pair {
+    display: flex; align-items: center; gap: 4px; font-size: 11px;
+    padding: 1px 4px;
+}
+.gameover-actions { margin-top: 24px; }
+
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center;
+    z-index: 1000; animation: fadeIn 0.3s ease;
+}
+.modal-content {
+    background: linear-gradient(135deg, var(--bg-medium), var(--bg-dark));
+    border: 2px solid var(--gold); border-radius: 16px; padding: 24px;
+    max-width: 420px; width: 90%; text-align: center; animation: fadeInUp 0.3s ease;
+    position: relative; overflow: hidden;
+    max-height: 85vh; overflow-y: auto;
+}
+.modal-content::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold-light), var(--gold-dark));
+}
+.modal-content h3 { font-family: 'Ma Shan Zheng', cursive; font-size: 24px; color: var(--gold-light); margin-bottom: 12px; }
+.modal-content p { font-size: 14px; color: var(--text-dim); margin: 8px 0; }
+.modal-content .modal-btn { margin-top: 16px; }
+.modal-actions { margin-top: 12px; }
+
+.sell-cards-list {
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: 300px; overflow-y: auto;
+    margin: 8px 0;
+}
+.sell-card-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 8px; background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(212, 168, 67, 0.15); border-radius: 6px;
+}
+.sell-card-info {
+    display: flex; align-items: center; gap: 6px; font-size: 12px;
+}
+.sell-card-icon { font-size: 18px; }
+.sell-card-name { font-weight: 700; color: var(--text-light); }
+.sell-card-type { font-size: 10px; padding: 1px 4px; border-radius: 3px; color: #fff; }
+.sell-card-type.attack { background: rgba(192, 57, 43, 0.8); }
+.sell-card-type.defend { background: rgba(41, 128, 185, 0.8); }
+.sell-card-value { color: var(--gold-light); font-size: 11px; }
+.sell-card-action {
+    display: flex; align-items: center; gap: 6px;
+}
+.sell-price { color: var(--gold); font-weight: 700; font-size: 12px; }
+
+.buy-tabs {
+    display: flex; gap: 4px; margin: 8px 0;
+}
+.buy-tab {
+    flex: 1; padding: 6px 8px; font-size: 12px; border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3); color: var(--text-dim);
+    border: 1px solid rgba(212, 168, 67, 0.2);
+}
+.buy-tab.active {
+    background: rgba(212, 168, 67, 0.2); color: var(--gold-light);
+    border-color: var(--gold);
+}
+
+.buy-tab-content {
+    max-height: 350px; overflow-y: auto;
+}
+
+.shop-cards {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 12px 0; justify-content: center;
+}
+.shop-card-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.shop-card {
+    width: 70px; height: 100px; padding: 4px; cursor: default;
+}
+.shop-card .card-icon { font-size: 20px; }
+.shop-card .card-name { font-size: 9px; }
+.shop-card .card-value { font-size: 10px; }
+.shop-card .card-price { font-size: 8px; }
+
+.black-market-item .shop-card {
+    box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+}
+
+.rare-wheel-section {
+    display: flex; flex-direction: column; align-items: center;
+}
+.rare-wheel-container {
+    margin: 8px 0;
+}
+.rare-wheel-container canvas {
+    width: 200px; height: 200px;
+}
+
+.card-preview-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center;
+    z-index: 999; cursor: pointer;
+}
+.card-preview { transform: scale(1.8); transition: transform 0.3s ease; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes shakeX { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+@keyframes damagePopIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+
+.card-play-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.75); z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.2s ease;
+    pointer-events: none;
+}
+.card-play-overlay.card-play-fadeout {
+    animation: cardPlayFadeOut 0.3s ease forwards;
+}
+@keyframes cardPlayFadeOut { to { opacity: 0; } }
+.card-play-scene {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    animation: cardPlayBounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes cardPlayBounceIn {
+    0% { transform: scale(0.2) rotate(-15deg); opacity: 0; }
+    60% { transform: scale(1.15) rotate(3deg); opacity: 1; }
+    80% { transform: scale(0.95) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.card-play-player {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 20px; color: var(--gold-light);
+    text-shadow: 0 0 10px rgba(212, 168, 67, 0.5);
+}
+.card-play-card {
+    transform: scale(2.2); transform-origin: center;
+    box-shadow: 0 0 40px rgba(212, 168, 67, 0.4), 0 0 80px rgba(0, 0, 0, 0.6);
+}
+.card-play-card.rarity-legend {
+    box-shadow: 0 0 40px rgba(255, 152, 0, 0.6), 0 0 80px rgba(255, 152, 0, 0.3);
+}
+.card-play-card.rarity-epic {
+    box-shadow: 0 0 40px rgba(156, 39, 176, 0.6), 0 0 80px rgba(156, 39, 176, 0.3);
+}
+.card-play-card.rarity-rare {
+    box-shadow: 0 0 40px rgba(33, 150, 243, 0.6), 0 0 80px rgba(33, 150, 243, 0.3);
+}
+.card-play-desc {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 22px; color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    text-align: center; max-width: 320px;
+    animation: cardPlayDescIn 0.4s ease 0.3s both;
+}
+@keyframes cardPlayDescIn {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.shake { animation: shakeX 0.4s ease; }
+.pulse { animation: pulse 1s ease infinite; }
+
+.btn-primary::after {
+    content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); transition: left 0.5s;
+}
+.btn-primary:hover::after { left: 100%; }
+
+.hp-bar-container::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.1) 100%);
+    border-radius: 8px; pointer-events: none;
+}
+
+@media (max-width: 900px) {
+    :root { --panel-width: 170px; }
+    .weapon-card.mini { width: 26px; height: 34px; }
+    .weapon-card.mini .card-icon { font-size: 10px; }
+    .weapon-card.mini .card-value { font-size: 7px; }
+    .weapon-card { width: 68px; height: 100px; padding: 3px; }
+    .weapon-card .card-icon { font-size: 20px; }
+    .weapon-card .card-name { font-size: 9px; }
+    .weapon-card .card-value { font-size: 10px; }
+    .btn-op { font-size: 12px; padding: 6px 8px; }
+    .wheel-container.char-wheel canvas { width: 180px; height: 180px; }
+    .char-info-card { max-width: 220px; padding: 12px; }
+}
+
+@media (max-width: 700px) {
+    :root { --panel-width: 140px; }
+    .player-avatar { width: 36px; height: 36px; font-size: 20px; }
+    .player-char-name { font-size: 13px; }
+    .hp-bar-container { height: 12px; min-width: 50px; }
+    .panel-library-title { font-size: 11px; }
+    .panel-library-subtitle { font-size: 9px; }
+    .action-hint { font-size: 15px; }
+    .center-top { padding: 4px 8px; }
+    .btn-op { font-size: 11px; padding: 5px 6px; }
+    .char-select-layout { flex-direction: column; align-items: center; gap: 8px; }
+    .wheel-container.char-wheel canvas { width: 200px; height: 200px; }
+    .char-select-right { min-width: auto; width: 100%; }
+}
+
+@media (max-width: 560px) {
+    :root { --panel-width: 110px; }
+    .player-avatar { width: 30px; height: 30px; font-size: 16px; }
+    .player-char-name { font-size: 12px; }
+    .player-name { font-size: 9px; }
+    .ability-badge { font-size: 8px; }
+    .weapon-card.mini { width: 22px; height: 28px; }
+    .weapon-card.mini .card-icon { font-size: 8px; }
+    .weapon-card { width: 58px; height: 86px; }
+    .wheel-container.char-wheel canvas { width: 160px; height: 160px; }
+    .char-info-card { max-width: 200px; padding: 10px; }
+    .char-info-card .char-emoji { font-size: 32px; }
+    .char-info-card .char-name { font-size: 20px; }
+}
+
+@media (max-height: 700px) {
+    .wheel-container.char-wheel canvas { width: 200px; height: 200px; }
+    .wheel-container.small canvas { width: 180px; height: 180px; }
+    .btn-wheel { font-size: 16px; padding: 8px 28px; margin-top: 6px; }
+    .char-info-card { padding: 12px; }
+    .char-info-card .char-emoji { font-size: 32px; }
+    .char-info-card .char-name { font-size: 20px; }
+    .dice { width: 60px; height: 60px; }
+    .dice-face { font-size: 26px; }
+    .damage-display .damage-number { font-size: 40px; }
+    .vs-fighter .vs-emoji { font-size: 52px; }
+    .vs-fighter .vs-name { font-size: 24px; }
+    .vs-text { font-size: 56px; }
+}
+
+@media (max-height: 600px) {
+    .panel-info { padding: 4px 6px; gap: 6px; }
+    .player-avatar { width: 32px; height: 32px; font-size: 18px; }
+    .player-char-name { font-size: 12px; }
+    .hp-bar-container { height: 10px; min-width: 50px; }
+    .hp-text { font-size: 8px; }
+    .ability-badge { font-size: 9px; }
+    .center-top { padding: 3px 8px; }
+    .center-top #round-number { font-size: 16px; }
+    .action-hint { font-size: 14px; }
+    .panel-library { padding: 4px 6px; gap: 3px; }
+    .panel-library-title { font-size: 11px; padding: 1px 0; }
+    .panel-library-subtitle { font-size: 9px; }
+    .panel-library-cards { gap: 2px; padding: 2px 0; }
+    .panel-ops { padding: 4px 6px; gap: 3px; max-height: 40%; }
+    .btn-op { font-size: 11px; padding: 4px 6px; }
+    .ops-status { font-size: 10px; padding: 2px; min-height: 18px; }
+    .player-gold { font-size: 10px; padding: 2px; }
+    .wheel-container.char-wheel canvas { width: 170px; height: 170px; }
+    .wheel-container.small canvas { width: 150px; height: 150px; }
+    .btn-wheel { font-size: 14px; padding: 6px 24px; margin-top: 4px; }
+    .char-info-card { padding: 10px; max-width: 200px; }
+    .char-info-card .char-emoji { font-size: 28px; }
+    .char-info-card .char-name { font-size: 18px; }
+    .char-info-card .char-stat { font-size: 11px; }
+    .char-info-card .char-ability { font-size: 11px; padding: 4px 8px; }
+    .screen-header { padding: 6px 0 4px; }
+    .screen-header h2 { font-size: 20px; }
+    .hint-text { font-size: 12px; margin: 4px 0; }
+    .section-title { font-size: 18px; margin-bottom: 4px; }
+    .dice { width: 52px; height: 52px; }
+    .dice-face { font-size: 22px; }
+    .damage-display .damage-number { font-size: 34px; }
+    .damage-display .damage-detail { font-size: 11px; }
+    .damage-display .damage-result { font-size: 14px; }
+    .center-actions { margin-top: 8px; gap: 8px; }
+    .center-actions .btn { min-width: 100px; }
+    .battle-log { padding: 4px 8px; margin-bottom: 4px; }
+    .battle-log-list { max-height: 80px; }
+    .battle-log-title { font-size: 12px; margin-bottom: 2px; }
+    .vs-fighter .vs-emoji { font-size: 44px; }
+    .vs-fighter .vs-name { font-size: 20px; }
+    .vs-text { font-size: 48px; }
+    .vs-container { gap: 16px; padding: 12px; }
+    .gameover-title { font-size: 28px; }
+    .winner-display .winner-char { font-size: 36px; }
+    .winner-display .winner-player { font-size: 16px; }
+    .game-stats { padding: 12px; max-height: 40vh; }
+}
+
+@media (max-height: 500px) {
+    .panel-info { padding: 2px 4px; gap: 4px; }
+    .player-avatar { width: 26px; height: 26px; font-size: 14px; }
+    .player-name { font-size: 9px; }
+    .player-char-name { font-size: 11px; }
+    .hp-bar-container { height: 8px; min-width: 40px; }
+    .hp-text { font-size: 7px; }
+    .ability-badge { font-size: 8px; padding: 0 3px; }
+    .center-top { padding: 2px 6px; }
+    .center-top #round-number { font-size: 14px; }
+    .action-hint { font-size: 12px; }
+    .panel-library { padding: 2px 4px; gap: 2px; }
+    .panel-library-title { font-size: 10px; }
+    .panel-library-subtitle { font-size: 8px; }
+    .panel-library-cards { gap: 1px; padding: 1px 0; }
+    .panel-ops { padding: 3px 4px; gap: 2px; max-height: 35%; }
+    .btn-op { font-size: 10px; padding: 3px 4px; border-radius: 4px; }
+    .ops-status { font-size: 9px; padding: 1px; min-height: 14px; }
+    .player-gold { font-size: 9px; padding: 1px; }
+    .wheel-container.char-wheel canvas { width: 140px; height: 140px; }
+    .wheel-container.small canvas { width: 120px; height: 120px; }
+    .btn-wheel { font-size: 12px; padding: 4px 20px; margin-top: 2px; }
+    .char-info-card { padding: 8px; max-width: 180px; }
+    .char-info-card .char-emoji { font-size: 24px; }
+    .char-info-card .char-name { font-size: 16px; }
+    .char-info-card .char-stat { font-size: 10px; }
+    .char-info-card .char-ability { font-size: 10px; padding: 3px 6px; }
+    .screen-header { padding: 4px 0 2px; }
+    .screen-header h2 { font-size: 18px; }
+    .hint-text { font-size: 11px; margin: 2px 0; }
+    .section-title { font-size: 16px; margin-bottom: 2px; }
+    .dice { width: 44px; height: 44px; border-radius: 8px; }
+    .dice-face { font-size: 18px; }
+    .damage-display { padding: 8px; }
+    .damage-display .damage-number { font-size: 28px; }
+    .damage-display .damage-detail { font-size: 10px; }
+    .damage-display .damage-result { font-size: 12px; }
+    .center-actions { margin-top: 4px; gap: 6px; }
+    .center-actions .btn { min-width: 80px; padding: 6px 16px; font-size: 12px; }
+    .battle-log { padding: 3px 6px; margin-bottom: 2px; }
+    .battle-log-list { max-height: 60px; }
+    .battle-log-title { font-size: 11px; }
+    .vs-fighter .vs-emoji { font-size: 36px; }
+    .vs-fighter .vs-name { font-size: 18px; }
+    .vs-text { font-size: 40px; }
+    .vs-container { gap: 12px; padding: 8px; }
+    .game-title { font-size: clamp(28px, 6vw, 48px); }
+    .game-subtitle { margin-bottom: 20px; }
+    .gameover-title { font-size: 24px; }
+    .winner-display .winner-char { font-size: 28px; }
+    .winner-display .winner-player { font-size: 14px; }
+    .game-stats { padding: 8px; max-height: 35vh; }
+    .weapon-card { width: 55px; height: 80px; padding: 2px; }
+    .weapon-card .card-icon { font-size: 16px; }
+    .weapon-card .card-name { font-size: 8px; }
+    .weapon-card .card-value { font-size: 9px; }
+    .drawn-cards { margin: 6px 0; min-height: 40px; gap: 4px; }
+    .card-hand { margin: 4px 0; min-height: 80px; gap: 4px; }
+    .table-cards-area { min-height: 36px; padding: 4px; margin-bottom: 4px; }
+    .panel-select-area { padding: 4px 3px; margin-bottom: 2px; }
+    .panel-select-title { font-size: 10px; margin-bottom: 2px; }
+    .panel-select-cards .weapon-card { width: 48px; height: 70px; padding: 2px; }
+    .panel-select-cards .weapon-card .card-icon { font-size: 14px; }
+    .panel-select-cards .weapon-card .card-name { font-size: 7px; }
+    .panel-select-cards .weapon-card .card-value { font-size: 8px; }
+}
+
+/* 手机横屏模式优化 */
+@media (max-height: 600px) {
+    :root { --panel-width: 330px; } /* 增加50%，从220px变成330px */
+    .char-select-layout { flex-direction: row; align-items: flex-start; gap: 8px; }
+    .wheel-container.char-wheel canvas { width: 120px; height: 120px; }
+    .wheel-container.small canvas { width: 100px; height: 100px; }
+    .btn-wheel { font-size: 11px; padding: 4px 16px; margin-top: 4px; }
+    .char-info-card { padding: 6px; max-width: 160px; }
+    .char-info-card .char-emoji { font-size: 22px; }
+    .char-info-card .char-name { font-size: 16px; }
+    .char-info-card .char-stat { font-size: 9px; }
+    .char-info-card .char-ability { font-size: 9px; padding: 2px 6px; }
+    .screen-header { padding: 4px 0 2px; }
+    .screen-header h2 { font-size: 18px; }
+    /* 战斗界面优化 */
+    .battle-layout { min-height: 100%; }
+    .player-panel { overflow-y: auto; }
+    .panel-library { max-height: 35vh; }
+    .panel-ops { flex-shrink: 0; }
+}
+
+@media (max-height: 450px) {
+    :root { --panel-width: 195px; } /* 增加50%，从130px变成195px */
+    .panel-info { padding: 3px 4px; gap: 3px; }
+    .player-avatar { width: 22px; height: 22px; font-size: 12px; }
+    .player-name { font-size: 8px; }
+    .player-char-name { font-size: 10px; }
+    .hp-bar-container { height: 7px; min-width: 35px; }
+    .hp-text { font-size: 6px; }
+    .ability-badge { font-size: 7px; padding: 0 2px; }
+    .center-top { padding: 1px 4px; }
+    .center-top #round-number { font-size: 12px; }
+    .action-hint { font-size: 11px; }
+    .panel-library { padding: 1px 3px; gap: 1px; max-height: 30vh; }
+    .panel-library-title { font-size: 9px; }
+    .panel-library-subtitle { font-size: 7px; }
+    .panel-library-cards { gap: 1px; padding: 1px 0; }
+    .panel-ops { padding: 2px 3px; gap: 1px; flex-shrink: 0; }
+    .btn-op { font-size: 9px; padding: 2px 3px; border-radius: 3px; }
+    .ops-status { font-size: 8px; padding: 1px; min-height: 12px; }
+    .player-gold { font-size: 8px; padding: 1px; }
+    .wheel-container.char-wheel canvas { width: 100px; height: 100px; }
+    .wheel-container.small canvas { width: 90px; height: 90px; }
+    .btn-wheel { font-size: 10px; padding: 3px 14px; margin-top: 2px; }
+    .char-info-card { padding: 5px; max-width: 140px; }
+    .char-info-card .char-emoji { font-size: 18px; }
+    .char-info-card .char-name { font-size: 14px; }
+    .char-info-card .char-stat { font-size: 8px; }
+    .char-info-card .char-ability { font-size: 8px; padding: 2px 4px; }
+    .screen-header { padding: 2px 0 1px; }
+    .screen-header h2 { font-size: 16px; }
+    .hint-text { font-size: 10px; margin: 1px 0; }
+    .section-title { font-size: 14px; margin-bottom: 1px; }
+    .dice { width: 40px; height: 40px; border-radius: 6px; }
+    .dice-face { font-size: 16px; }
+    .damage-display { padding: 6px; }
+    .damage-display .damage-number { font-size: 24px; }
+    .damage-display .damage-detail { font-size: 9px; }
+    .damage-display .damage-result { font-size: 11px; }
+    .center-actions { margin-top: 3px; gap: 4px; }
+    .center-actions .btn { min-width: 70px; padding: 4px 12px; font-size: 11px; }
+    .battle-log { padding: 2px 4px; margin-bottom: 1px; }
+    .battle-log-list { max-height: 50px; }
+    .battle-log-title { font-size: 10px; }
+    .vs-fighter .vs-emoji { font-size: 30px; }
+    .vs-fighter .vs-name { font-size: 16px; }
+    .vs-text { font-size: 34px; }
+    .vs-container { gap: 10px; padding: 6px; }
+    .game-title { font-size: clamp(24px, 5vw, 40px); }
+    .game-subtitle { margin-bottom: 16px; }
+    .gameover-title { font-size: 20px; }
+    .winner-display .winner-char { font-size: 24px; }
+    .winner-display .winner-player { font-size: 12px; }
+    .game-stats { padding: 6px; max-height: 30vh; }
+    .weapon-card { width: 50px; height: 72px; padding: 1px; }
+    .weapon-card .card-icon { font-size: 14px; }
+    .weapon-card .card-name { font-size: 7px; }
+    .weapon-card .card-value { font-size: 8px; }
+    .drawn-cards { margin: 4px 0; min-height: 35px; gap: 3px; }
+    .card-hand { margin: 3px 0; min-height: 70px; gap: 3px; }
+    .table-cards-area { min-height: 30px; padding: 3px; margin-bottom: 3px; }
+    .panel-select-area { padding: 3px 2px; margin-bottom: 1px; }
+    .panel-select-title { font-size: 9px; margin-bottom: 1px; }
+    .panel-select-cards .weapon-card { width: 44px; height: 64px; padding: 1px; }
+    .panel-select-cards .weapon-card .card-icon { font-size: 12px; }
+    .panel-select-cards .weapon-card .card-name { font-size: 6px; }
+    .panel-select-cards .weapon-card .card-value { font-size: 7px; }
+}
+
