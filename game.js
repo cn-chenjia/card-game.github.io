@@ -6,53 +6,93 @@
         { id: 'zhugeliang', name: '诸葛亮', emoji: '🪶', hp: 4, maxHp: 4, atkBonus: 0, defBonus: 0.20, abilityDesc: '防御加成20%' },
         { id: 'caocao', name: '曹操', emoji: '👑', hp: 5, maxHp: 5, atkBonus: 0.10, defBonus: 0.10, abilityDesc: '攻击+10% 防御+10%' },
         { id: 'daqiao', name: '大乔', emoji: '🌸', hp: 3, maxHp: 3, atkBonus: 0, defBonus: 0.25, abilityDesc: '防御加成25%' },
-        { id: 'zhaoyun', name: '赵云', emoji: '🐉', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0, abilityDesc: '攻击加成20%' }
+        { id: 'zhaoyun', name: '赵云', emoji: '🐉', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0, abilityDesc: '攻击加成20%' },
+        { id: 'lvbu', name: '吕布', emoji: '🔱', hp: 5, maxHp: 5, atkBonus: 0.25, defBonus: 0, abilityDesc: '攻击加成25%' },
+        { id: 'sunshangxiang', name: '孙尚香', emoji: '🏹', hp: 3, maxHp: 3, atkBonus: 0.18, defBonus: 0, abilityDesc: '攻击加成18%' },
+        { id: 'zhouyu', name: '周瑜', emoji: '🔥', hp: 4, maxHp: 4, atkBonus: 0.12, defBonus: 0.08, abilityDesc: '攻击+12% 防御+8%' },
+        { id: 'simayi', name: '司马懿', emoji: '🦊', hp: 4, maxHp: 4, atkBonus: 0, defBonus: 0.22, abilityDesc: '防御加成22%' },
+        { id: 'huangzhong', name: '黄忠', emoji: '🎯', hp: 3, maxHp: 3, atkBonus: 0.22, defBonus: 0, abilityDesc: '攻击加成22%' },
+        { id: 'zhangfei', name: '张飞', emoji: '🐯', hp: 6, maxHp: 6, atkBonus: 0.10, defBonus: 0, abilityDesc: '血量6 攻击+10%' },
+        { id: 'zhenji', name: '甄姬', emoji: '❄️', hp: 3, maxHp: 3, atkBonus: 0, defBonus: 0.28, abilityDesc: '防御加成28%' },
+        { id: 'machao', name: '马超', emoji: '🐎', hp: 4, maxHp: 4, atkBonus: 0.18, defBonus: 0.05, abilityDesc: '攻击+18% 防御+5%' },
+        { id: 'dianwei', name: '典韦', emoji: '💪', hp: 6, maxHp: 6, atkBonus: 0.08, defBonus: 0.05, abilityDesc: '血量6 攻击+8% 防御+5%' },
+        { id: 'xiaoqiao', name: '小乔', emoji: '🌺', hp: 3, maxHp: 3, atkBonus: 0.05, defBonus: 0.20, abilityDesc: '攻击+5% 防御+20%' }
+    ];
+
+    var EPIC_SKILLS = [
+        { id: 'steal_card', name: '偷取', desc: '偷取对方一张卡牌', icon: '🤚' },
+        { id: 'no_defend', name: '破防', desc: '对方本次不能使用防御', icon: '💥' },
+        { id: 'reduce_attack', name: '削弱', desc: '对方下一次攻击次数减少一次', icon: '⬇️' },
+        { id: 'replace_epic', name: '降级', desc: '将对方一张史诗卡牌替换为普通卡牌', icon: '🔄' },
+        { id: 'block_ability', name: '封技', desc: '限制对方角色技能下一次不能使用', icon: '🚫' }
     ];
 
     var WEAPONS = [
-        { id: 'dagger', name: '短刀', type: 'attack', rarity: 'common', price: 100, value: 10, icon: '🗡️' },
-        { id: 'club', name: '木棒', type: 'attack', rarity: 'common', price: 100, value: 8, icon: '🏏' },
-        { id: 'spear', name: '长枪', type: 'attack', rarity: 'elite', price: 200, value: 18, icon: '🔱' },
-        { id: 'sword', name: '铁剑', type: 'attack', rarity: 'elite', price: 200, value: 16, icon: '⚔️' },
-        { id: 'bow', name: '弓箭', type: 'attack', rarity: 'rare', price: 350, value: 28, icon: '🏹' },
-        { id: 'axe', name: '战斧', type: 'attack', rarity: 'rare', price: 350, value: 25, icon: '🪓' },
-        { id: 'cannon', name: '火炮', type: 'attack', rarity: 'epic', price: 500, value: 40, icon: '💥' },
-        { id: 'halberd', name: '方天画戟', type: 'attack', rarity: 'epic', price: 500, value: 38, icon: '🔱' },
-        { id: 'laser', name: '激光炮', type: 'attack', rarity: 'legend', price: 800, value: 60, icon: '⚡' },
-        { id: 'dragonblade', name: '青龙偃月刀', type: 'attack', rarity: 'legend', price: 800, value: 55, icon: '🐉' },
-        { id: 'leather', name: '皮甲', type: 'defend', rarity: 'common', price: 100, value: 8, icon: '🛡️' },
-        { id: 'woodshield', name: '木盾', type: 'defend', rarity: 'common', price: 100, value: 10, icon: '🪵' },
-        { id: 'armor', name: '铠甲', type: 'defend', rarity: 'elite', price: 200, value: 15, icon: '🛡️' },
-        { id: 'chainmail', name: '锁子甲', type: 'defend', rarity: 'elite', price: 200, value: 18, icon: '⛓️' },
-        { id: 'shield', name: '护盾', type: 'defend', rarity: 'rare', price: 350, value: 25, icon: '🔰' },
-        { id: 'magicshield', name: '法盾', type: 'defend', rarity: 'rare', price: 350, value: 28, icon: '✨' },
-        { id: 'tankarmor', name: '坦克装甲', type: 'defend', rarity: 'epic', price: 500, value: 38, icon: '🛡️' },
-        { id: 'fortress', name: '城壁', type: 'defend', rarity: 'epic', price: 500, value: 35, icon: '🏰' },
-        { id: 'barrier', name: '能量屏障', type: 'defend', rarity: 'legend', price: 800, value: 55, icon: '🔮' },
-        { id: 'divine', name: '天罡护体', type: 'defend', rarity: 'legend', price: 800, value: 50, icon: '🌟' }
+        { id: 'dagger', name: '短刀', type: 'attack', rarity: 'common', price: 100, value: 10, icon: '🗡️', desc: '最基本的近战武器' },
+        { id: 'club', name: '木棒', type: 'attack', rarity: 'common', price: 100, value: 8, icon: '🏏', desc: '简单粗暴的打击武器' },
+        { id: 'slingshot', name: '弹弓', type: 'attack', rarity: 'common', price: 100, value: 9, icon: '🪨', desc: '远程小石子攻击' },
+        { id: 'whip', name: '鞭子', type: 'attack', rarity: 'common', price: 100, value: 7, icon: '🪢', desc: '灵活的软兵器' },
+        { id: 'spear', name: '长枪', type: 'attack', rarity: 'elite', price: 200, value: 18, icon: '🔱', desc: '一寸长一寸强' },
+        { id: 'sword', name: '铁剑', type: 'attack', rarity: 'elite', price: 200, value: 16, icon: '⚔️', desc: '百兵之君' },
+        { id: 'mace', name: '铁锤', type: 'attack', rarity: 'elite', price: 200, value: 17, icon: '🔨', desc: '重击破甲利器' },
+        { id: 'crossbow', name: '弩箭', type: 'attack', rarity: 'elite', price: 200, value: 15, icon: '🏹', desc: '精准的远程射击' },
+        { id: 'bow', name: '弓箭', type: 'attack', rarity: 'rare', price: 350, value: 28, icon: '🏹', desc: '百步穿杨的神射' },
+        { id: 'axe', name: '战斧', type: 'attack', rarity: 'rare', price: 350, value: 25, icon: '🪓', desc: '劈砍一切的利斧' },
+        { id: 'dualblade', name: '双刃剑', type: 'attack', rarity: 'rare', price: 350, value: 26, icon: '⚔️', desc: '双刃齐出攻守兼备' },
+        { id: 'throwknife', name: '飞刀', type: 'attack', rarity: 'rare', price: 350, value: 24, icon: '🔪', desc: '暗器出手防不胜防' },
+        { id: 'cannon', name: '火炮', type: 'attack', rarity: 'epic', price: 500, value: 40, icon: '💥', desc: '轰天裂地的火力', skill: EPIC_SKILLS[0] },
+        { id: 'halberd', name: '方天画戟', type: 'attack', rarity: 'epic', price: 500, value: 38, icon: '🔱', desc: '吕布专属神兵', skill: EPIC_SKILLS[1] },
+        { id: 'poisonsword', name: '毒蛇剑', type: 'attack', rarity: 'epic', price: 500, value: 36, icon: '🐍', desc: '淬毒之剑削敌战力', skill: EPIC_SKILLS[2] },
+        { id: 'cursescythe', name: '诅咒镰刀', type: 'attack', rarity: 'epic', price: 500, value: 42, icon: '🌙', desc: '诅咒之力降级敌卡', skill: EPIC_SKILLS[3] },
+        { id: 'silenceblade', name: '封魔刃', type: 'attack', rarity: 'epic', price: 500, value: 37, icon: '🗡️', desc: '封印敌方角色技能', skill: EPIC_SKILLS[4] },
+        { id: 'laser', name: '激光炮', type: 'attack', rarity: 'legend', price: 800, value: 60, icon: '⚡', desc: '未来科技毁灭一切' },
+        { id: 'dragonblade', name: '青龙偃月刀', type: 'attack', rarity: 'legend', price: 800, value: 55, icon: '🐉', desc: '关圣帝君之刀' },
+        { id: 'divinesword', name: '轩辕剑', type: 'attack', rarity: 'legend', price: 800, value: 58, icon: '✨', desc: '上古神兵斩妖除魔' },
+        { id: 'thunderhammer', name: '雷神之锤', type: 'attack', rarity: 'legend', price: 800, value: 62, icon: '⛈️', desc: '雷霆万钧之势' },
+        { id: 'leather', name: '皮甲', type: 'defend', rarity: 'common', price: 100, value: 8, icon: '🛡️', desc: '轻便的皮革护甲' },
+        { id: 'woodshield', name: '木盾', type: 'defend', rarity: 'common', price: 100, value: 10, icon: '🪵', desc: '简易的木质盾牌' },
+        { id: 'clotharmor', name: '布甲', type: 'defend', rarity: 'common', price: 100, value: 7, icon: '👘', desc: '基础的布料防护' },
+        { id: 'bambooshield', name: '竹盾', type: 'defend', rarity: 'common', price: 100, value: 9, icon: '🎋', desc: '轻巧的竹编盾牌' },
+        { id: 'armor', name: '铠甲', type: 'defend', rarity: 'elite', price: 200, value: 15, icon: '🛡️', desc: '铁制全身铠甲' },
+        { id: 'chainmail', name: '锁子甲', type: 'defend', rarity: 'elite', price: 200, value: 18, icon: '⛓️', desc: '环环相扣的铁甲' },
+        { id: 'ironshield', name: '铁盾', type: 'defend', rarity: 'elite', price: 200, value: 16, icon: '🛡️', desc: '坚固的铁质盾牌' },
+        { id: 'bronzearmor', name: '铜甲', type: 'defend', rarity: 'elite', price: 200, value: 14, icon: '🥉', desc: '青铜铸造的护甲' },
+        { id: 'shield', name: '护盾', type: 'defend', rarity: 'rare', price: 350, value: 25, icon: '🔰', desc: '能量护盾防御攻击' },
+        { id: 'magicshield', name: '法盾', type: 'defend', rarity: 'rare', price: 350, value: 28, icon: '✨', desc: '魔法加持的防御' },
+        { id: 'crystalarmor', name: '水晶甲', type: 'defend', rarity: 'rare', price: 350, value: 26, icon: '💎', desc: '水晶凝结的护甲' },
+        { id: 'windcloak', name: '风之披风', type: 'defend', rarity: 'rare', price: 350, value: 23, icon: '🌬️', desc: '风之守护闪避攻击' },
+        { id: 'tankarmor', name: '坦克装甲', type: 'defend', rarity: 'epic', price: 500, value: 38, icon: '🛡️', desc: '移动堡垒般防御', skill: EPIC_SKILLS[0] },
+        { id: 'fortress', name: '城壁', type: 'defend', rarity: 'epic', price: 500, value: 35, icon: '🏰', desc: '坚不可摧的城壁', skill: EPIC_SKILLS[1] },
+        { id: 'thornarmor', name: '荆棘甲', type: 'defend', rarity: 'epic', price: 500, value: 33, icon: '🌵', desc: '反弹伤害削敌战力', skill: EPIC_SKILLS[2] },
+        { id: 'darkbarrier', name: '暗影壁垒', type: 'defend', rarity: 'epic', price: 500, value: 40, icon: '🌑', desc: '暗影之力降级敌卡', skill: EPIC_SKILLS[3] },
+        { id: 'holyshield', name: '圣光盾', type: 'defend', rarity: 'epic', price: 500, value: 36, icon: '☀️', desc: '圣光封印敌方技能', skill: EPIC_SKILLS[4] },
+        { id: 'barrier', name: '能量屏障', type: 'defend', rarity: 'legend', price: 800, value: 55, icon: '🔮', desc: '终极能量防御屏障' },
+        { id: 'divine', name: '天罡护体', type: 'defend', rarity: 'legend', price: 800, value: 50, icon: '🌟', desc: '天罡正气护体不侵' },
+        { id: 'dragonscale', name: '龙鳞甲', type: 'defend', rarity: 'legend', price: 800, value: 53, icon: '🐲', desc: '神龙之鳞刀枪不入' },
+        { id: 'aegis', name: '宙斯盾', type: 'defend', rarity: 'legend', price: 800, value: 57, icon: '🛡️', desc: '神级防御绝对守护' }
     ];
 
     var BLACK_MARKET_WEAPONS = [
-        { id: 'bm_soulreaper', name: '噬魂镰刀', type: 'attack', rarity: 'legend', price: 1200, value: 70, icon: '💀' },
-        { id: 'bm_thunder', name: '雷霆之怒', type: 'attack', rarity: 'legend', price: 1300, value: 75, icon: '⛈️' },
-        { id: 'bm_dragon', name: '龙牙剑', type: 'attack', rarity: 'legend', price: 1100, value: 65, icon: '🐲' },
-        { id: 'bm_void', name: '虚空之刃', type: 'attack', rarity: 'legend', price: 1400, value: 80, icon: '🌀' },
-        { id: 'bm_inferno', name: '炼狱火弓', type: 'attack', rarity: 'legend', price: 1250, value: 72, icon: '🔥' },
-        { id: 'bm_storm', name: '风暴战锤', type: 'attack', rarity: 'legend', price: 1150, value: 68, icon: '🔨' },
-        { id: 'bm_shadow', name: '暗影匕首', type: 'attack', rarity: 'legend', price: 1050, value: 62, icon: '🌑' },
-        { id: 'bm_phoenix', name: '凤凰羽扇', type: 'attack', rarity: 'legend', price: 1350, value: 78, icon: '🦅' },
-        { id: 'bm_abyss', name: '深渊巨剑', type: 'attack', rarity: 'legend', price: 1500, value: 85, icon: '🗡️' },
-        { id: 'bm_titan', name: '泰坦之拳', type: 'attack', rarity: 'legend', price: 1200, value: 70, icon: '✊' },
-        { id: 'bm_doomaxe', name: '毁灭战斧', type: 'attack', rarity: 'legend', price: 1300, value: 76, icon: '🪓' },
-        { id: 'bm_starbow', name: '星辰之弓', type: 'attack', rarity: 'legend', price: 1400, value: 82, icon: '🌟' },
-        { id: 'bm_divinewall', name: '神圣壁垒', type: 'defend', rarity: 'legend', price: 1200, value: 70, icon: '🏛️' },
-        { id: 'bm_dragonshield', name: '龙鳞护盾', type: 'defend', rarity: 'legend', price: 1300, value: 75, icon: '🐉' },
-        { id: 'bm_cosmic', name: '宇宙护甲', type: 'defend', rarity: 'legend', price: 1400, value: 80, icon: '🌌' },
-        { id: 'bm_eternal', name: '永恒之盾', type: 'defend', rarity: 'legend', price: 1100, value: 65, icon: '♾️' },
-        { id: 'bm_icebarrier', name: '冰霜结界', type: 'defend', rarity: 'legend', price: 1250, value: 72, icon: '❄️' },
-        { id: 'bm_holy', name: '圣光守护', type: 'defend', rarity: 'legend', price: 1350, value: 78, icon: '👼' },
-        { id: 'bm_voidwall', name: '虚空壁垒', type: 'defend', rarity: 'legend', price: 1500, value: 85, icon: '🕳️' },
-        { id: 'bm_nature', name: '自然之怒', type: 'defend', rarity: 'legend', price: 1150, value: 68, icon: '🌿' }
+        { id: 'bm_soulreaper', name: '噬魂镰刀', type: 'attack', rarity: 'legend', price: 1200, value: 70, icon: '💀', desc: '收割灵魂的死神之镰' },
+        { id: 'bm_thunder', name: '雷霆之怒', type: 'attack', rarity: 'legend', price: 1300, value: 75, icon: '⛈️', desc: '天雷降世万物臣服' },
+        { id: 'bm_dragon', name: '龙牙剑', type: 'attack', rarity: 'legend', price: 1100, value: 65, icon: '🐲', desc: '龙牙铸剑无坚不摧' },
+        { id: 'bm_void', name: '虚空之刃', type: 'attack', rarity: 'legend', price: 1400, value: 80, icon: '🌀', desc: '来自虚空的毁灭之力' },
+        { id: 'bm_inferno', name: '炼狱火弓', type: 'attack', rarity: 'legend', price: 1250, value: 72, icon: '🔥', desc: '炼狱之火焚尽一切' },
+        { id: 'bm_storm', name: '风暴战锤', type: 'attack', rarity: 'legend', price: 1150, value: 68, icon: '🔨', desc: '风暴之力粉碎万物' },
+        { id: 'bm_shadow', name: '暗影匕首', type: 'attack', rarity: 'legend', price: 1050, value: 62, icon: '🌑', desc: '暗影中致命一击' },
+        { id: 'bm_phoenix', name: '凤凰羽扇', type: 'attack', rarity: 'legend', price: 1350, value: 78, icon: '🦅', desc: '涅槃之火浴火重生' },
+        { id: 'bm_abyss', name: '深渊巨剑', type: 'attack', rarity: 'legend', price: 1500, value: 85, icon: '🗡️', desc: '深渊之力吞噬光明' },
+        { id: 'bm_titan', name: '泰坦之拳', type: 'attack', rarity: 'legend', price: 1200, value: 70, icon: '✊', desc: '泰坦之力碾压一切' },
+        { id: 'bm_doomaxe', name: '毁灭战斧', type: 'attack', rarity: 'legend', price: 1300, value: 76, icon: '🪓', desc: '毁灭之斧终结一切' },
+        { id: 'bm_starbow', name: '星辰之弓', type: 'attack', rarity: 'legend', price: 1400, value: 82, icon: '🌟', desc: '星辰坠落化为利箭' },
+        { id: 'bm_divinewall', name: '神圣壁垒', type: 'defend', rarity: 'legend', price: 1200, value: 70, icon: '🏛️', desc: '神圣之力守护一切' },
+        { id: 'bm_dragonshield', name: '龙鳞护盾', type: 'defend', rarity: 'legend', price: 1300, value: 75, icon: '🐉', desc: '龙鳞之盾坚不可摧' },
+        { id: 'bm_cosmic', name: '宇宙护甲', type: 'defend', rarity: 'legend', price: 1400, value: 80, icon: '🌌', desc: '宇宙之力绝对防御' },
+        { id: 'bm_eternal', name: '永恒之盾', type: 'defend', rarity: 'legend', price: 1100, value: 65, icon: '♾️', desc: '永恒不灭的守护' },
+        { id: 'bm_icebarrier', name: '冰霜结界', type: 'defend', rarity: 'legend', price: 1250, value: 72, icon: '❄️', desc: '冰封万物绝对防御' },
+        { id: 'bm_holy', name: '圣光守护', type: 'defend', rarity: 'legend', price: 1350, value: 78, icon: '👼', desc: '圣光庇佑万邪不侵' },
+        { id: 'bm_voidwall', name: '虚空壁垒', type: 'defend', rarity: 'legend', price: 1500, value: 85, icon: '🕳️', desc: '虚空之力吞噬攻击' },
+        { id: 'bm_nature', name: '自然之怒', type: 'defend', rarity: 'legend', price: 1150, value: 68, icon: '🌿', desc: '自然之力守护生命' }
     ];
 
     var RARITY_NAMES = { common: '普通', elite: '精英', rare: '稀有', epic: '史诗', legend: '传说' };
@@ -80,7 +120,11 @@
         currentDefendCard: null,
         roundLog: [],
         allRoundLogs: [],
-        tableCards: []
+        tableCards: [],
+        noDefendFlag: false,
+        blockAbilityA: false,
+        blockAbilityB: false,
+        attackReduction: 0
     };
 
     var audioCtx = null;
@@ -112,6 +156,7 @@
                 case 'epic': osc.frequency.value = 440; osc.type = 'sine'; gain.gain.value = 0.12; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1); osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2); osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.35); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.6); osc.stop(ctx.currentTime + 0.6); break;
                 case 'bonus': osc.frequency.value = 880; osc.type = 'triangle'; gain.gain.value = 0.1; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1); osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.2); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4); osc.stop(ctx.currentTime + 0.4); break;
                 case 'coin': osc.frequency.value = 1200; osc.type = 'sine'; gain.gain.value = 0.08; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(1400, ctx.currentTime + 0.08); osc.frequency.setValueAtTime(1600, ctx.currentTime + 0.15); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25); osc.stop(ctx.currentTime + 0.25); break;
+                case 'skill': osc.frequency.value = 300; osc.type = 'sawtooth'; gain.gain.value = 0.12; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.2); osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.4); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5); osc.stop(ctx.currentTime + 0.5); break;
                 default: osc.frequency.value = 440; osc.type = 'sine'; gain.gain.value = 0.05; osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.08);
             }
         } catch (e) { }
@@ -141,13 +186,23 @@
         var typeLabel = card.type === 'attack' ? '攻击' : '防御';
         var valueLabel = card.type === 'attack' ? '伤害' : '防御';
         var rarityName = RARITY_NAMES[card.rarity] || card.rarity;
+        var desc = card.desc || '';
+        var skillHtml = '';
+        if (card.skill) {
+            skillHtml = '<div style="margin-top:8px;padding:6px 10px;background:rgba(156,39,176,0.2);border:1px solid rgba(156,39,176,0.5);border-radius:6px;font-size:11px;color:#ce93d8;">' +
+                card.skill.icon + ' <strong>' + card.skill.name + '</strong>：' + card.skill.desc + '</div>';
+        }
         $('card-preview').innerHTML =
             '<div class="weapon-card rarity-' + card.rarity + '" style="transform:scale(2);margin:60px auto;">' +
             '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
             '<span class="card-icon">' + card.icon + '</span>' +
             '<span class="card-name">' + card.name + '</span>' +
             '<span class="card-value">' + valueLabel + ':' + card.value + '</span>' +
-            '<span class="card-price">💰' + card.price + ' · ' + rarityName + '</span></div>';
+            '<span class="card-price">💰' + card.price + ' · ' + rarityName + '</span></div>' +
+            '<div style="margin-top:50px;padding:10px 16px;max-width:280px;text-align:center;">' +
+            '<div style="font-size:13px;color:var(--text-dim);margin-bottom:6px;">' + desc + '</div>' +
+            skillHtml +
+            '</div>';
         $('card-preview-overlay').classList.remove('hidden');
     }
 
@@ -156,18 +211,22 @@
         if (selectable) cls += ' selectable';
         var typeLabel = card.type === 'attack' ? '攻击' : '防御';
         var valueLabel = card.type === 'attack' ? '伤害' : '防御';
+        var skillIcon = card.skill ? ' ' + card.skill.icon : '';
         return '<div class="' + cls + '" data-uid="' + card.uid + '">' +
             '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
             '<span class="card-icon">' + card.icon + '</span>' +
-            '<span class="card-name">' + card.name + '</span>' +
+            '<span class="card-name">' + card.name + skillIcon + '</span>' +
             '<span class="card-value">' + valueLabel + ':' + card.value + '</span>' +
             '<span class="card-price">💰' + card.price + '</span></div>';
     }
 
     function createMiniCardHTML(card, isNew) {
         var extraCls = isNew ? ' library-new' : '';
-        return '<div class="weapon-card mini rarity-' + card.rarity + extraCls + '" data-uid="' + card.uid + '" title="' + card.name + ' ' + (card.type === 'attack' ? '伤害' : '防御') + ':' + card.value + '">' +
-            '<span class="card-icon">' + card.icon + '</span><span class="card-value">' + card.value + '</span></div>';
+        var skillIcon = card.skill ? card.skill.icon : '';
+        return '<div class="weapon-card mini rarity-' + card.rarity + extraCls + '" data-uid="' + card.uid + '" title="' + card.name + ' ' + (card.type === 'attack' ? '伤害' : '防御') + ':' + card.value + (card.skill ? ' 技能:' + card.skill.name : '') + '">' +
+            '<span class="card-icon">' + card.icon + '</span><span class="card-value">' + card.value + '</span>' +
+            (card.skill ? '<span class="card-skill-icon">' + skillIcon + '</span>' : '') +
+            '</div>';
     }
 
     function getPlayer(pid) { return pid === 'A' ? game.playerA : game.playerB; }
@@ -235,8 +294,22 @@
 
     function updatePlayerInfo() {
         var a = game.playerA, b = game.playerB;
-        if (a.char) { $('player-a-avatar').textContent = a.char.emoji; $('player-a-char').textContent = a.char.name; $('player-a-hp-text').textContent = a.hp.toFixed(1) + '/' + a.maxHp; $('player-a-hp-bar').style.width = (a.hp / a.maxHp * 100) + '%'; $('player-a-ability').textContent = a.char.abilityDesc; }
-        if (b.char) { $('player-b-avatar').textContent = b.char.emoji; $('player-b-char').textContent = b.char.name; $('player-b-hp-text').textContent = b.hp.toFixed(1) + '/' + b.maxHp; $('player-b-hp-bar').style.width = (b.hp / b.maxHp * 100) + '%'; $('player-b-ability').textContent = b.char.abilityDesc; }
+        if (a.char) {
+            $('player-a-avatar').textContent = a.char.emoji;
+            $('player-a-char').textContent = a.char.name;
+            $('player-a-hp-text').textContent = a.hp.toFixed(1) + '/' + a.maxHp;
+            $('player-a-hp-bar').style.width = (a.hp / a.maxHp * 100) + '%';
+            var aAbility = game.blockAbilityA ? '🚫 技能被封印' : a.char.abilityDesc;
+            $('player-a-ability').textContent = aAbility;
+        }
+        if (b.char) {
+            $('player-b-avatar').textContent = b.char.emoji;
+            $('player-b-char').textContent = b.char.name;
+            $('player-b-hp-text').textContent = b.hp.toFixed(1) + '/' + b.maxHp;
+            $('player-b-hp-bar').style.width = (b.hp / b.maxHp * 100) + '%';
+            var bAbility = game.blockAbilityB ? '🚫 技能被封印' : b.char.abilityDesc;
+            $('player-b-ability').textContent = bAbility;
+        }
         $('round-number').textContent = '第' + game.round + '轮';
         updateGoldDisplay();
         updateLibraryDisplay();
@@ -276,7 +349,7 @@
     function announcePlayerTurn(pid, action) { var p = getPlayer(pid); speak(playerLabel(pid) + '，' + (p.char ? p.char.name : '') + '，' + action); }
     function switchPlayer() { var next = game.currentPlayer === 'A' ? 'B' : 'A'; setActivePlayer(next); $('action-hint').textContent = '已切换至' + playerLabel(next) + '操作'; }
     function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-    function getMaxAttacks() { return BASE_MAX_ATTACKS + game.bonusAttacks; }
+    function getMaxAttacks() { return Math.max(1, BASE_MAX_ATTACKS + game.bonusAttacks - game.attackReduction); }
 
     function updateAttackProgress() {
         var el = $('attack-progress');
@@ -347,13 +420,26 @@
             ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
             ctx.save(); ctx.rotate(sa + arc / 2);
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
-            ctx.font = 'bold 13px "Noto Sans SC", sans-serif'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 3;
-            var label = items[i].name || items[i]; if (label.length > 4) label = label.substring(0, 4);
-            ctx.fillText(label, r * 0.58, 0); ctx.restore();
+            var hasIcon = items[i].icon;
+            var nameFontSize = n > 12 ? 16 : n > 8 ? 20 : 26;
+            var iconFontSize = n > 12 ? 18 : n > 8 ? 22 : 30;
+            if (hasIcon) {
+                ctx.font = iconFontSize + 'px sans-serif'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 4;
+                ctx.fillText(hasIcon, r * 0.45, 0);
+                ctx.font = 'bold ' + nameFontSize + 'px "Noto Sans SC", sans-serif'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 4;
+                var label = items[i].name || items[i]; if (label.length > 4) label = label.substring(0, 4);
+                ctx.fillText(label, r * 0.72, 0);
+            } else {
+                ctx.font = 'bold ' + nameFontSize + 'px "Noto Sans SC", sans-serif'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 4;
+                var label = items[i].name || items[i]; if (label.length > 4) label = label.substring(0, 4);
+                ctx.fillText(label, r * 0.58, 0);
+            }
+            ctx.restore();
         }
-        ctx.beginPath(); ctx.arc(0, 0, 22, 0, 2 * Math.PI); ctx.fillStyle = '#d4a843'; ctx.fill();
-        ctx.strokeStyle = '#8b6914'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.fillStyle = '#1a1a2e'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowBlur = 0;
+        var centerR = w > 400 ? 30 : 22;
+        ctx.beginPath(); ctx.arc(0, 0, centerR, 0, 2 * Math.PI); ctx.fillStyle = '#d4a843'; ctx.fill();
+        ctx.strokeStyle = '#8b6914'; ctx.lineWidth = 3; ctx.stroke();
+        ctx.fillStyle = '#1a1a2e'; ctx.font = 'bold ' + (w > 400 ? 16 : 12) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowBlur = 0;
         ctx.fillText('GO', 0, 0); ctx.restore();
     }
 
@@ -362,13 +448,32 @@
         var n = items.length;
         var arc = (2 * Math.PI) / n;
         var targetAngle = (2 * Math.PI) - (targetIndex * arc + arc / 2);
-        var fullRotations = Math.PI * 2 * randomInt(5, 10);
+        var fullRotations = Math.PI * 2 * randomInt(8, 14);
         var totalRot = fullRotations + targetAngle - (wheelAngle % (Math.PI * 2));
         if (totalRot < fullRotations) totalRot += Math.PI * 2;
-        var dur = 3000, st = null, sa = wheelAngle;
+        var dur = 5500, st = null, sa = wheelAngle;
+        var lastTickAngle = sa;
+
         function anim(ts) {
             if (!st) st = ts; var el = ts - st; var pr = Math.min(el / dur, 1);
-            var eased = 1 - Math.pow(1 - pr, 3); wheelAngle = sa + totalRot * eased; drawWheel(canvasId, items);
+            var eased = 1 - Math.pow(1 - pr, 4);
+            wheelAngle = sa + totalRot * eased;
+            drawWheel(canvasId, items);
+
+            var currentTickAngle = wheelAngle % (Math.PI * 2);
+            var tickArc = arc;
+            if (Math.floor(currentTickAngle / tickArc) !== Math.floor(lastTickAngle / tickArc)) {
+                try {
+                    var ctx2 = getAudioCtx(); if (ctx2) {
+                        var o = ctx2.createOscillator(), g = ctx2.createGain();
+                        o.connect(g); g.connect(ctx2.destination);
+                        o.frequency.value = 600 + Math.random() * 200; o.type = 'sine'; g.gain.value = 0.03;
+                        o.start(ctx2.currentTime); o.stop(ctx2.currentTime + 0.02);
+                    }
+                } catch (e) { }
+            }
+            lastTickAngle = currentTickAngle;
+
             if (pr < 1) { requestAnimationFrame(anim); }
             else { wheelSpinning = false; playSound('result'); callback(items[targetIndex], targetIndex); }
         }
@@ -385,7 +490,7 @@
         showScreen('screen-character'); $('char-result').classList.add('hidden'); $('btn-spin-char').disabled = false;
         $('char-select-title').textContent = '角色抽取'; $('char-select-hint').textContent = '请玩家A点击转盘抽取角色';
         $('btn-switch-player').style.display = 'none';
-        var ci = CHARACTERS.map(function (c) { return { name: c.name, id: c.id }; });
+        var ci = CHARACTERS.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
         wheelAngle = 0; drawWheel('character-wheel', ci); speak('请玩家A点击转盘抽取角色');
     }
 
@@ -411,7 +516,7 @@
                 game.currentPlayer = 'B'; $('char-result').classList.add('hidden'); $('btn-spin-char').disabled = false;
                 $('char-select-hint').textContent = '请玩家B点击转盘抽取角色';
                 var ac = CHARACTERS.filter(function (c) { return game.usedCharIds.indexOf(c.id) === -1; });
-                var ci = ac.map(function (c) { return { name: c.name, id: c.id }; });
+                var ci = ac.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
                 wheelAngle = 0; drawWheel('character-wheel', ci); speak('请玩家B点击转盘抽取角色');
             } else { showVSAnimation(); }
         });
@@ -460,6 +565,10 @@
         });
         game.totalDamageA = 0; game.totalDamageB = 0;
         game.allRoundLogs = [];
+        game.noDefendFlag = false;
+        game.blockAbilityA = false;
+        game.blockAbilityB = false;
+        game.attackReduction = 0;
         clearTableCards();
         showScreen('screen-battle'); updatePlayerInfo();
         $('btn-switch-player').style.display = 'none';
@@ -489,7 +598,7 @@
         $('weapon-draw-hint').textContent = pn + '（' + cn + '）还有' + (5 - game.weaponDrawCount) + '次抽取机会';
     }
 
-    function drawWeaponWheel() { drawWheel('weapon-wheel', WEAPONS.map(function (w) { return { name: w.name, id: w.id }; })); }
+    function drawWeaponWheel() { drawWheel('weapon-wheel', WEAPONS.map(function (w) { return { name: w.name, id: w.id, icon: w.icon }; })); }
 
     function handleSpinWeapon() {
         if (wheelSpinning) return;
@@ -513,12 +622,16 @@
             else if (drawn.rarity === 'epic') { highlightTag = '<div class="rarity-tag epic-tag">💥 史诗装备 💥</div>'; playSound('epic'); speak('恭喜获得史诗装备' + drawn.name); }
             else if (drawn.rarity === 'legend') { highlightTag = '<div class="rarity-tag legend-tag">👑 传说装备 👑</div>'; playSound('epic'); speak('恭喜获得传说装备' + drawn.name); }
             else { speak('获得' + drawn.name); }
+            var skillTag = '';
+            if (drawn.skill) {
+                skillTag = '<div style="margin-top:6px;padding:4px 8px;background:rgba(156,39,176,0.2);border:1px solid rgba(156,39,176,0.5);border-radius:4px;font-size:11px;color:#ce93d8;">' + drawn.skill.icon + ' ' + drawn.skill.name + '：' + drawn.skill.desc + '</div>';
+            }
             $('drawn-cards').innerHTML = highlightTag + '<div class="' + cardCls + '" data-uid="' + drawn.uid + '">' +
                 '<span class="card-type ' + drawn.type + '">' + typeLabel + '</span>' +
                 '<span class="card-icon">' + drawn.icon + '</span>' +
                 '<span class="card-name">' + drawn.name + '</span>' +
                 '<span class="card-value">' + valueLabel + ':' + drawn.value + '</span>' +
-                '<span class="card-price">💰' + drawn.price + '</span></div>';
+                '<span class="card-price">💰' + drawn.price + '</span></div>' + skillTag;
             var cardEl = $('drawn-cards').querySelector('.weapon-card');
             if (cardEl) cardEl.addEventListener('click', function () { showCardPreview(drawn); });
             updateLibraryDisplay([drawn.uid]);
@@ -570,18 +683,17 @@
                 $('dice-face').textContent = randomInt(1, 6); cnt++;
                 if (cnt >= 12) {
                     clearInterval(iv); $('dice-face').textContent = result; $('dice').classList.remove('rolling');
-                    $('btn-roll-dice').style.display = 'none'; // 1. 骰子点数出来后立即隐藏按钮
+                    $('btn-roll-dice').style.display = 'none';
                     var isOdd = result % 2 === 1;
                     game.firstAttacker = isOdd ? 'A' : 'B'; game.secondAttacker = isOdd ? 'B' : 'A';
                     $('dice-result').classList.remove('hidden');
                     var fl = playerLabel(game.firstAttacker), fn = getPlayer(game.firstAttacker).char.name;
                     $('dice-result').innerHTML = '点数：<strong style="font-size:24px;">' + result + '</strong>（' + (isOdd ? '单数' : '双数') + '）<br><span style="color:var(--gold-light);font-size:18px;">' + fl + '（' + fn + '）先攻！</span>';
                     playSound('result'); speak('点数' + result + '，' + fl + fn + '先攻');
-                    // 2. 骰子点数出来后停个2秒，然后桌面移除骰子和文描
                     setTimeout(function () {
-                        $('dice-area').innerHTML = ''; // 清空骰子区域
-                        setTimeout(function () { startAttackPhase(false); }, 200); // 再等待一下再进入下阶段
-                    }, 2000); // 2秒
+                        $('dice-area').innerHTML = '';
+                        setTimeout(function () { startAttackPhase(false); }, 200);
+                    }, 2000);
                 }
             }, 80);
         }, 800);
@@ -594,9 +706,11 @@
         game.phaseDefender = isCounter ? game.firstAttacker : game.secondAttacker;
         game.currentAttackIndex = 0;
         game.bonusAttacks = 0;
+        game.attackReduction = 0;
         game.selectedCardUid = null;
         game.currentAttackCard = null;
         game.currentDefendCard = null;
+        game.noDefendFlag = false;
 
         updateAttackProgress();
         clearTableCards();
@@ -627,7 +741,11 @@
         var atkCards = getPlayer(game.phaseAttacker).library.filter(function (c) { return c.type === 'attack'; });
 
         if (atkCards.length === 0) {
-            afterAttackPhaseEnds(); return;
+            hideSelectAreas();
+            hideAllOps();
+            showOp(game.phaseAttacker, 'end-attack');
+            setOpsStatus(game.phaseAttacker, '没有攻击卡牌了');
+            return;
         }
 
         game.phase = 'attack-select'; game.selectedCardUid = null;
@@ -651,6 +769,16 @@
         var defChar = getPlayer(game.phaseDefender).char;
         var defCards = getPlayer(game.phaseDefender).library.filter(function (c) { return c.type === 'defend'; });
 
+        game.tableCards = game.tableCards.filter(function (entry) { return entry.playerPid !== 'phase-reward'; });
+        var rewardEl = document.getElementById('table-reward-info');
+        if (rewardEl) rewardEl.remove();
+
+        if (game.noDefendFlag) {
+            game.currentDefendCard = null;
+            resolveSingleAttack();
+            return;
+        }
+
         if (defCards.length === 0) {
             game.currentDefendCard = null;
             resolveSingleAttack();
@@ -666,6 +794,8 @@
         $('action-hint').textContent = '防御阶段（攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）';
         showOp(game.phaseDefender, 'confirm-card', { disabled: true });
         showOp(game.phaseDefender, 'skip-defend');
+        showOp(game.phaseDefender, 'sell');
+        showOp(game.phaseDefender, 'buy');
         setOpsStatus(game.phaseDefender, '防御阶段');
         renderCardHand(game.phaseDefender, 'defend');
         announcePlayerTurn(game.phaseDefender, '请选择防御卡牌');
@@ -691,6 +821,9 @@
             if (selectCards) selectCards.innerHTML = '';
             if (cardType === 'defend') {
                 showOp(playerId, 'skip-defend');
+            }
+            if (cardType === 'attack') {
+                showOp(playerId, 'end-attack');
             }
             var confirmBtn = opBtn(playerId, 'confirm-card');
             if (confirmBtn) confirmBtn.disabled = true;
@@ -791,24 +924,46 @@
     var CARD_VOICE = {
         dagger: '掏出小短刀，捅你一下！疼不疼？',
         club: '大棒子来啦！敲你脑壳！咚咚咚！',
+        slingshot: '弹弓发射！啪！打你个措手不及！',
+        whip: '鞭子甩起来！啪啪作响！',
         spear: '长枪一挺，谁敢挡我！突突突！',
         sword: '铁剑出鞘，亮瞎你的眼！',
+        mace: '铁锤砸下来！轰隆一声！',
+        crossbow: '弩箭上弦！嗖！精准命中！',
         bow: '弓箭上弦，嗖嗖嗖！跑不掉的！',
         axe: '战斧劈下来啦！快跑啊！',
+        dualblade: '双刃齐出！左右开弓！',
+        throwknife: '飞刀出手！嗖嗖嗖！防不胜防！',
         cannon: '火炮轰鸣！砰砰砰！灰飞烟灭！',
         halberd: '方天画戟，吕布同款！怕不怕！',
+        poisonsword: '毒蛇剑出鞘！淬毒一击！嘶嘶嘶！',
+        cursescythe: '诅咒镰刀！厄运降临！',
+        silenceblade: '封魔刃！封印你的力量！',
         laser: '激光炮发射！哔哔哔！未来战士驾到！',
         dragonblade: '青龙偃月刀！关二爷附体！一刀999！',
+        divinesword: '轩辕剑出！上古神力！斩！',
+        thunderhammer: '雷神之锤！雷霆万钧！轰！',
         leather: '穿上皮甲，刀枪不入！嗯...大概吧',
         woodshield: '木盾举起！别打脸！',
+        clotharmor: '布甲加身！聊胜于无！',
+        bambooshield: '竹盾挡住！叮！',
         armor: '铠甲加身！我就是铁桶！',
         chainmail: '锁子甲套上！叮叮当当！',
+        ironshield: '铁盾举起！坚不可摧！',
+        bronzearmor: '铜甲护体！青铜时代！',
         shield: '护盾展开！你打不动我！',
         magicshield: '法盾加持！魔法护体！闪闪发光！',
+        crystalarmor: '水晶甲！折射一切攻击！',
+        windcloak: '风之披风！飘忽不定！',
         tankarmor: '坦克装甲！我就是移动堡垒！',
         fortress: '城壁矗立！来攻城啊！',
+        thornarmor: '荆棘甲！碰我就扎你！',
+        darkbarrier: '暗影壁垒！黑暗守护！',
+        holyshield: '圣光盾！神圣庇佑！',
         barrier: '能量屏障！高科技防御！',
-        divine: '天罡护体！神仙保佑！刀枪不入！'
+        divine: '天罡护体！神仙保佑！刀枪不入！',
+        dragonscale: '龙鳞甲！龙之守护！',
+        aegis: '宙斯盾！绝对防御！'
     };
 
     function getCardVoice(card) {
@@ -822,6 +977,10 @@
         var valueLabel = card.type === 'attack' ? '伤害' : '防御';
         var rarityName = RARITY_NAMES[card.rarity] || '';
         var rarityCls = 'rarity-' + card.rarity;
+        var skillHtml = '';
+        if (card.skill) {
+            skillHtml = '<div class="card-play-skill">' + card.skill.icon + ' ' + card.skill.name + '：' + card.skill.desc + '</div>';
+        }
 
         overlay.innerHTML =
             '<div class="card-play-scene">' +
@@ -833,13 +992,14 @@
             '<span class="card-value">' + valueLabel + ':' + card.value + '</span>' +
             '<span class="card-price">' + rarityName + '</span>' +
             '</div>' +
+            skillHtml +
             '<div class="card-play-desc">' + getCardVoice(card) + '</div>' +
             '</div>';
 
         document.body.appendChild(overlay);
 
         if (card.rarity === 'legend') playSound('epic');
-        else if (card.rarity === 'epic') playSound('rare');
+        else if (card.rarity === 'epic') playSound('epic');
         else if (card.rarity === 'rare') playSound('rare');
         else playSound(card.type === 'attack' ? 'attack' : 'defend');
 
@@ -883,6 +1043,68 @@
         resolveSingleAttack();
     }
 
+    function applyEpicSkill(card, attackerPid, defenderPid) {
+        if (!card.skill) return '';
+        var attacker = getPlayer(attackerPid);
+        var defender = getPlayer(defenderPid);
+        var skill = card.skill;
+        var resultHtml = '';
+
+        playSound('skill');
+
+        switch (skill.id) {
+            case 'steal_card':
+                if (defender.library.length > 0) {
+                    var stolenIdx = Math.floor(Math.random() * defender.library.length);
+                    var stolenCard = defender.library.splice(stolenIdx, 1)[0];
+                    attacker.library.push(stolenCard);
+                    resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">🤚 偷取技能触发！偷取了' + playerLabel(defenderPid) + '的 ' + stolenCard.icon + stolenCard.name + '！</div>';
+                    speak(skill.name + '触发，偷取了' + stolenCard.name);
+                } else {
+                    resultHtml = '<div style="color:var(--text-dim);font-size:13px;margin:4px 0;">🤚 偷取技能触发！但对方没有卡牌可偷</div>';
+                }
+                break;
+            case 'no_defend':
+                game.noDefendFlag = true;
+                resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">💥 破防技能触发！对方下次不能使用防御！</div>';
+                speak(skill.name + '触发，对方不能防御');
+                break;
+            case 'reduce_attack':
+                game.attackReduction += 1;
+                resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">⬇️ 削弱技能触发！对方下次攻击次数减少一次！</div>';
+                speak(skill.name + '触发，对方攻击次数减少');
+                break;
+            case 'replace_epic':
+                var epicCards = defender.library.filter(function (c) { return c.rarity === 'epic'; });
+                if (epicCards.length > 0) {
+                    var targetCard = epicCards[Math.floor(Math.random() * epicCards.length)];
+                    var commonWeapons = WEAPONS.filter(function (w) { return w.rarity === 'common' && w.type === targetCard.type; });
+                    if (commonWeapons.length > 0) {
+                        var replacement = Object.assign({}, commonWeapons[Math.floor(Math.random() * commonWeapons.length)]);
+                        replacement.uid = targetCard.uid;
+                        var idx = defender.library.findIndex(function (c) { return c.uid === targetCard.uid; });
+                        if (idx >= 0) {
+                            defender.library[idx] = replacement;
+                            resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">🔄 降级技能触发！将对方 ' + targetCard.icon + targetCard.name + ' 替换为 ' + replacement.icon + replacement.name + '！</div>';
+                            speak(skill.name + '触发，降级了' + targetCard.name);
+                        }
+                    }
+                } else {
+                    resultHtml = '<div style="color:var(--text-dim);font-size:13px;margin:4px 0;">🔄 降级技能触发！但对方没有史诗卡牌</div>';
+                }
+                break;
+            case 'block_ability':
+                if (defenderPid === 'A') game.blockAbilityA = true;
+                else game.blockAbilityB = true;
+                resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">🚫 封技技能触发！对方角色技能下次不能使用！</div>';
+                speak(skill.name + '触发，封印对方技能');
+                break;
+        }
+
+        updatePlayerInfo();
+        return resultHtml;
+    }
+
     function resolveSingleAttack() {
         var attacker = getPlayer(game.phaseAttacker);
         var defender = getPlayer(game.phaseDefender);
@@ -890,11 +1112,16 @@
         var defCard = game.currentDefendCard;
 
         var atkVal = atkCard.value;
-        var atkWithBonus = Math.round(atkVal * (1 + attacker.char.atkBonus));
+        var atkBonus = (game.phaseAttacker === 'A' ? game.blockAbilityA : game.blockAbilityB) ? 0 : attacker.char.atkBonus;
+        var atkWithBonus = Math.round(atkVal * (1 + atkBonus));
         var defVal = defCard ? defCard.value : 0;
-        var defWithBonus = defCard ? Math.round(defVal * (1 + defender.char.defBonus)) : 0;
+        var defBonus = (game.phaseDefender === 'A' ? game.blockAbilityA : game.blockAbilityB) ? 0 : defender.char.defBonus;
+        var defWithBonus = defCard ? Math.round(defVal * (1 + defBonus)) : 0;
         var finalDamage = Math.max(0, atkWithBonus - defWithBonus);
         var hpLoss = finalDamage / 10;
+
+        if (game.phaseAttacker === 'A') { game.blockAbilityA = false; } else { game.blockAbilityB = false; }
+        if (game.phaseDefender === 'A') { game.blockAbilityA = false; } else { game.blockAbilityB = false; }
 
         if (hpLoss > 0) {
             defender.hp = Math.max(0, defender.hp - hpLoss);
@@ -911,8 +1138,17 @@
         updateAttackProgress();
 
         var abilityText = '';
-        if (attacker.char.atkBonus > 0) abilityText += '<div style="color:var(--gold-light);font-size:13px;margin:4px 0;">⚡ 触发特殊能力：' + attacker.char.abilityDesc + '</div>';
-        if (defCard && defender.char.defBonus > 0) abilityText += '<div style="color:var(--gold-light);font-size:13px;margin:4px 0;">🛡️ 触发特殊能力：' + defender.char.abilityDesc + '</div>';
+        if (atkBonus > 0) abilityText += '<div style="color:var(--gold-light);font-size:13px;margin:4px 0;">⚡ 触发特殊能力：' + attacker.char.abilityDesc + '</div>';
+        if (defCard && defBonus > 0) abilityText += '<div style="color:var(--gold-light);font-size:13px;margin:4px 0;">🛡️ 触发特殊能力：' + defender.char.abilityDesc + '</div>';
+
+        var epicSkillHtml = '';
+        if (atkCard.skill && finalDamage > 0) {
+            epicSkillHtml = applyEpicSkill(atkCard, game.phaseAttacker, game.phaseDefender);
+        }
+        if (defCard && defCard.skill) {
+            var defSkillHtml = applyEpicSkill(defCard, game.phaseDefender, game.phaseAttacker);
+            epicSkillHtml += defSkillHtml;
+        }
 
         var maxAtk = getMaxAttacks();
         var phaseLabel = game.isCounterPhase ? '反击' : '攻击';
@@ -925,6 +1161,7 @@
             '<div class="damage-result">' + playerLabel(game.phaseDefender) + '（' + defender.char.name + '）受到 <span style="color:var(--red-light)">' + finalDamage + '</span> 点伤害' +
             (hpLoss > 0 ? '，扣除 <span style="color:var(--red-light)">' + hpLoss.toFixed(1) + '</span> 点血量' : '，未造成伤害') + '</div>' +
             '<div style="margin-top:8px;font-size:14px;">' + playerLabel(game.phaseDefender) + '（' + defender.char.name + '）剩余血量：<strong style="color:var(--gold-light)">' + defender.hp.toFixed(1) + '/' + defender.maxHp + '</strong></div>' +
+            epicSkillHtml +
             bonusInfo;
 
         showSection('damage-area');
@@ -1092,30 +1329,54 @@
 
     function refreshCurrentCardSelect() {
         if (game.phase === 'attack-select') {
+            var atkCards = getPlayer(game.phaseAttacker).library.filter(function (c) { return c.type === 'attack'; });
+            if (atkCards.length === 0) {
+                hideSelectAreas();
+                hideAllOps();
+                showOp(game.phaseAttacker, 'end-attack');
+                setOpsStatus(game.phaseAttacker, '没有攻击卡牌了');
+                return;
+            }
             renderCardHand(game.phaseAttacker, 'attack');
+            showOp(game.phaseAttacker, 'confirm-card', { disabled: true });
+            showOp(game.phaseAttacker, 'sell');
+            showOp(game.phaseAttacker, 'buy');
         } else if (game.phase === 'defend-select') {
+            var defCards = getPlayer(game.phaseDefender).library.filter(function (c) { return c.type === 'defend'; });
+            if (defCards.length === 0) {
+                hideSelectAreas();
+                hideAllOps();
+                showOp(game.phaseDefender, 'skip-defend');
+                setOpsStatus(game.phaseDefender, '没有防御卡牌了');
+                return;
+            }
             renderCardHand(game.phaseDefender, 'defend');
+            showOp(game.phaseDefender, 'confirm-card', { disabled: true });
+            showOp(game.phaseDefender, 'skip-defend');
+            showOp(game.phaseDefender, 'sell');
+            showOp(game.phaseDefender, 'buy');
         }
     }
 
     function showSellModal(pid) {
         var player = getPlayer(pid);
         if (player.library.length === 0) {
-            showModal('<h3>出售卡牌</h3><p style="color:var(--text-dim);">没有可出售的卡牌</p><button class="btn btn-primary modal-btn" id="btn-close-sell">关闭</button>');
-            $('btn-close-sell').addEventListener('click', function () { hideModal(); refreshCurrentCardSelect(); });
+            showModal('<div class="modal-close-btn" id="btn-close-sell-x">✕</div><h3>出售卡牌</h3><p style="color:var(--text-dim);">没有可出售的卡牌</p>');
+            $('btn-close-sell-x').addEventListener('click', function () { hideModal(); refreshCurrentCardSelect(); });
             return;
         }
-        var html = '<h3>🔄 出售卡牌</h3>' +
+        var html = '<div class="modal-close-btn" id="btn-close-sell-x">✕</div><h3>🔄 出售卡牌</h3>' +
             '<p class="hint-text">当前金币: 💰' + player.gold + '</p>' +
             '<div class="sell-cards-list">';
         player.library.forEach(function (card) {
             var typeLabel = card.type === 'attack' ? '攻击' : '防御';
             var valueLabel = card.type === 'attack' ? '伤害' : '防御';
             var sellPrice = Math.round(card.price * 0.8);
+            var skillTag = card.skill ? ' ' + card.skill.icon : '';
             html += '<div class="sell-card-item" data-uid="' + card.uid + '">' +
                 '<div class="sell-card-info">' +
                 '<span class="sell-card-icon">' + card.icon + '</span>' +
-                '<span class="sell-card-name">' + card.name + '</span>' +
+                '<span class="sell-card-name">' + card.name + skillTag + '</span>' +
                 '<span class="sell-card-type ' + card.type + '">' + typeLabel + '</span>' +
                 '<span class="sell-card-value">' + valueLabel + ':' + card.value + '</span>' +
                 '</div>' +
@@ -1124,11 +1385,10 @@
                 '<button class="btn btn-small btn-sell-one" data-uid="' + card.uid + '">出售</button>' +
                 '</div></div>';
         });
-        html += '</div>' +
-            '<div class="modal-actions">' +
-            '<button class="btn btn-secondary modal-btn" id="btn-close-sell">关闭</button>' +
-            '</div>';
+        html += '</div>';
         showModal(html);
+
+        $('btn-close-sell-x').addEventListener('click', function () { hideModal(); refreshCurrentCardSelect(); });
 
         document.querySelectorAll('.btn-sell-one').forEach(function (btn) {
             btn.addEventListener('click', function () {
@@ -1145,22 +1405,18 @@
                 showSellModal(pid);
             });
         });
-        $('btn-close-sell').addEventListener('click', function () { hideModal(); refreshCurrentCardSelect(); });
     }
 
     function showBuyModal(pid) {
         var player = getPlayer(pid);
-        var html = '<h3>🛒 购买</h3>' +
+        var html = '<div class="modal-close-btn" id="btn-close-buy-x">✕</div><h3>🛒 购买</h3>' +
             '<p class="hint-text">当前金币: 💰' + player.gold + '</p>' +
             '<div class="buy-tabs">' +
             '<button class="btn btn-small buy-tab active" data-tab="cards">卡牌商店</button>' +
             '<button class="btn btn-small buy-tab" data-tab="rare-wheel">稀有转盘</button>' +
             '<button class="btn btn-small buy-tab" data-tab="black-market">黑市</button>' +
             '</div>' +
-            '<div class="buy-tab-content" id="buy-tab-content"></div>' +
-            '<div class="modal-actions">' +
-            '<button class="btn btn-secondary modal-btn" id="btn-close-buy">关闭</button>' +
-            '</div>';
+            '<div class="buy-tab-content" id="buy-tab-content"></div>';
         showModal(html);
 
         function renderBuyTab(tabName) {
@@ -1174,11 +1430,12 @@
                     var typeLabel = wp.type === 'attack' ? '攻击' : '防御';
                     var valueLabel = wp.type === 'attack' ? '伤害' : '防御';
                     var canBuy = player.gold >= wp.price;
+                    var skillIcon = wp.skill ? ' ' + wp.skill.icon : '';
                     cardsHtml += '<div class="shop-card-item">' +
                         '<div class="weapon-card rarity-' + wp.rarity + ' shop-card">' +
                         '<span class="card-type ' + wp.type + '">' + typeLabel + '</span>' +
                         '<span class="card-icon">' + wp.icon + '</span>' +
-                        '<span class="card-name">' + wp.name + '</span>' +
+                        '<span class="card-name">' + wp.name + skillIcon + '</span>' +
                         '<span class="card-value">' + valueLabel + ':' + wp.value + '</span>' +
                         '<span class="card-price">💰' + wp.price + '</span>' +
                         '</div>' +
@@ -1232,7 +1489,7 @@
                     var w = canvas.width, h = canvas.height, cx = w / 2, cy = h / 2, r = Math.min(cx, cy) - 10;
                     var n = rareWheelItems.length; if (n === 0) return; var arc = (2 * Math.PI) / n;
                     ctx.clearRect(0, 0, w, h); ctx.save(); ctx.translate(cx, cy); ctx.rotate(rareWheelAngle);
-                    var colors = ['#1565c0', '#7b1fa2', '#0d47a1', '#4a148c', '#1976d2', '#6a1b9a', '#0d47a1', '#4a148c'];
+                    var colors = ['#1565c0', '#7b1fa2', '#0d47a1', '#4a148c', '#1976d2', '#6a1b9a', '#0d47a1', '#4a148c', '#1565c0', '#7b1fa2'];
                     for (var i = 0; i < n; i++) {
                         var sa = i * arc - Math.PI / 2, ea = sa + arc;
                         ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, r, sa, ea); ctx.closePath();
@@ -1240,7 +1497,7 @@
                         ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
                         ctx.save(); ctx.rotate(sa + arc / 2);
                         ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
-                        ctx.font = 'bold 12px "Noto Sans SC", sans-serif'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 3;
+                        ctx.font = 'bold 11px "Noto Sans SC", sans-serif'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 3;
                         var label = rareWheelItems[i].name; if (label.length > 4) label = label.substring(0, 4);
                         ctx.fillText(label, r * 0.58, 0); ctx.restore();
                     }
@@ -1275,15 +1532,15 @@
                         }
 
                         var targetAngle = (2 * Math.PI) - (selectedIdx * ((2 * Math.PI) / rareWheelItems.length) + ((2 * Math.PI) / rareWheelItems.length) / 2);
-                        var fullRot = Math.PI * 2 * randomInt(5, 8);
+                        var fullRot = Math.PI * 2 * randomInt(8, 14);
                         var totalRot = fullRot + targetAngle - (rareWheelAngle % (Math.PI * 2));
                         if (totalRot < fullRot) totalRot += Math.PI * 2;
-                        var dur = 3000, st = null, sa = rareWheelAngle;
+                        var dur = 5500, st = null, sa = rareWheelAngle;
                         playSound('spin');
 
                         function animRare(ts) {
                             if (!st) st = ts; var el = ts - st; var pr = Math.min(el / dur, 1);
-                            var eased = 1 - Math.pow(1 - pr, 3); rareWheelAngle = sa + totalRot * eased; drawRareWheel();
+                            var eased = 1 - Math.pow(1 - pr, 4); rareWheelAngle = sa + totalRot * eased; drawRareWheel();
                             if (pr < 1) { requestAnimationFrame(animRare); }
                             else {
                                 playSound('rare');
@@ -1357,7 +1614,7 @@
         });
 
         renderBuyTab('cards');
-        $('btn-close-buy').addEventListener('click', function () { hideModal(); refreshCurrentCardSelect(); });
+        $('btn-close-buy-x').addEventListener('click', function () { hideModal(); refreshCurrentCardSelect(); });
     }
 
     function initGameOver() {
@@ -1375,7 +1632,8 @@
                 currentDrawnCard: null, currentAttackIndex: 0, bonusAttacks: 0,
                 phaseAttacker: null, phaseDefender: null, isCounterPhase: false,
                 currentAttackCard: null, currentDefendCard: null, roundLog: [],
-                allRoundLogs: [], tableCards: []
+                allRoundLogs: [], tableCards: [],
+                noDefendFlag: false, blockAbilityA: false, blockAbilityB: false, attackReduction: 0
             };
             wheelAngle = 0; cardUidCounter = 0; showScreen('screen-start');
         });
