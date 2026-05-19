@@ -418,16 +418,32 @@
 
         ctx.save(); ctx.translate(cx, cy); ctx.rotate(wheelAngle);
 
-        var segColorsA = '#fff5e6', segColorsB = '#ffe4cc';
+        var segColorsA = '#ffffff', segColorsB = '#f0f0f0';
+        var rarityColors = {
+            rare: { fill: '#1565c0', stroke: 'rgba(255,255,255,0.4)', glow: 'rgba(21,101,192,0.4)' },
+            epic: { fill: '#c62828', stroke: 'rgba(255,255,255,0.4)', glow: 'rgba(198,40,40,0.4)' }
+        };
         for (var i = 0; i < n; i++) {
             var sa = i * arc - Math.PI / 2, ea = sa + arc;
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, r, sa, ea); ctx.closePath();
-            ctx.fillStyle = i % 2 === 0 ? segColorsA : segColorsB; ctx.fill();
-            ctx.strokeStyle = 'rgba(210,150,80,0.25)'; ctx.lineWidth = 1.5; ctx.stroke();
+            if (items[i].rarity && rarityColors[items[i].rarity]) {
+                var rc = rarityColors[items[i].rarity];
+                ctx.fillStyle = rc.fill;
+                ctx.shadowColor = rc.glow; ctx.shadowBlur = 15;
+                ctx.fill(); ctx.shadowBlur = 0;
+                ctx.strokeStyle = rc.stroke; ctx.lineWidth = 2; ctx.stroke();
+            } else {
+                ctx.fillStyle = i % 2 === 0 ? segColorsA : segColorsB; ctx.fill();
+                ctx.strokeStyle = 'rgba(210,150,80,0.25)'; ctx.lineWidth = 1.5; ctx.stroke();
+            }
             ctx.save(); ctx.rotate(sa + arc / 2);
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#4a2c17'; ctx.shadowColor = 'rgba(74,44,23,0.5)'; ctx.shadowBlur = 3;
-            var nameFontSize = n > 12 ? 22 : n > 8 ? 28 : 36;
+            if (items[i].rarity && rarityColors[items[i].rarity]) {
+                ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 3;
+            } else {
+                ctx.fillStyle = '#4a2c17'; ctx.shadowColor = 'rgba(74,44,23,0.5)'; ctx.shadowBlur = 3;
+            }
+            var nameFontSize = n > 12 ? 26 : n > 8 ? 32 : 40;
             ctx.font = 'bold ' + nameFontSize + 'px "Noto Sans SC", sans-serif';
             var label = items[i].name || items[i]; if (label.length > 5) label = label.substring(0, 5);
             ctx.fillText(label, r * 0.82, 0);
@@ -620,15 +636,42 @@
         $('weapon-draw-hint').textContent = pn + '（' + cn + '）还有' + (5 - game.weaponDrawCount) + '次抽取机会';
     }
 
-    function drawWeaponWheel() { drawWheel('weapon-wheel', WEAPONS.map(function (w) { return { name: w.name, id: w.id, icon: w.icon }; })); }
+    function drawWeaponWheel() {
+        var mapped = WEAPONS.map(function (w) { return { name: w.name, id: w.id, icon: w.icon, rarity: w.rarity }; });
+        var groups = {}; for (var g = 0; g < mapped.length; g++) {
+            var rk = mapped[g].rarity || 'common';
+            if (!groups[rk]) groups[rk] = []; groups[rk].push(mapped[g]);
+        }
+        var rarityOrder = ['common', 'elite', 'rare', 'epic', 'legend'];
+        var spread = []; var maxLen = 0;
+        for (var ro = 0; ro < rarityOrder.length; ro++) if (groups[rarityOrder[ro]] && groups[rarityOrder[ro]].length > maxLen) maxLen = groups[rarityOrder[ro]].length;
+        for (var idx = 0; idx < maxLen; idx++) {
+            for (var ri = 0; ri < rarityOrder.length; ri++) {
+                if (groups[rarityOrder[ri]] && idx < groups[rarityOrder[ri]].length) spread.push(groups[rarityOrder[ri]][idx]);
+            }
+        }
+        drawWheel('weapon-wheel', spread);
+    }
 
     function handleSpinWeapon() {
         if (wheelSpinning) return;
         var btn = opBtn(game.weaponDrawPlayer, 'spin-weapon');
         if (btn) btn.disabled = true;
-        var wi = WEAPONS.map(function (w) { return { name: w.name, id: w.id, icon: w.icon }; });
+        var mapped = WEAPONS.map(function (w) { return { name: w.name, id: w.id, icon: w.icon, rarity: w.rarity }; });
+        var groups = {}; for (var g2 = 0; g2 < mapped.length; g2++) {
+            var rk2 = mapped[g2].rarity || 'common';
+            if (!groups[rk2]) groups[rk2] = []; groups[rk2].push(mapped[g2]);
+        }
+        var rarityOrder2 = ['common', 'elite', 'rare', 'epic', 'legend'];
+        var wi = []; var maxLen2 = 0;
+        for (var ro2 = 0; ro2 < rarityOrder2.length; ro2++) if (groups[rarityOrder2[ro2]] && groups[rarityOrder2[ro2]].length > maxLen2) maxLen2 = groups[rarityOrder2[ro2]].length;
+        for (var idx2 = 0; idx2 < maxLen2; idx2++) {
+            for (var ri2 = 0; ri2 < rarityOrder2.length; ri2++) {
+                if (groups[rarityOrder2[ri2]] && idx2 < groups[rarityOrder2[ri2]].length) wi.push(groups[rarityOrder2[ri2]][idx2]);
+            }
+        }
         var selectedWp = weightedRandomWeapon();
-        var targetIdx = WEAPONS.findIndex(function (w) { return w.id === selectedWp.id; });
+        var targetIdx = wi.findIndex(function (item) { return item.id === selectedWp.id; });
         spinWheel('weapon-wheel', wi, targetIdx, function (sel) {
             var wp = selectedWp;
             var drawn = Object.assign({}, wp); drawn.uid = newCardUid();
@@ -1511,21 +1554,28 @@
                     var w = canvas.width, h = canvas.height, cx = w / 2, cy = h / 2, r = Math.min(cx, cy) - 10;
                     var n = rareWheelItems.length; if (n === 0) return; var arc = (2 * Math.PI) / n;
                     ctx.clearRect(0, 0, w, h); ctx.save(); ctx.translate(cx, cy); ctx.rotate(rareWheelAngle);
-                    var colors = ['#1565c0', '#7b1fa2', '#0d47a1', '#4a148c', '#1976d2', '#6a1b9a', '#0d47a1', '#4a148c', '#1565c0', '#7b1fa2'];
+                    var rareColors = { rare: '#1565c0', epic: '#c62828' };
                     for (var i = 0; i < n; i++) {
                         var sa = i * arc - Math.PI / 2, ea = sa + arc;
                         ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, r, sa, ea); ctx.closePath();
-                        ctx.fillStyle = colors[i % colors.length]; ctx.fill();
-                        ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
+                        var wp = rareWeapons.find(function (x) { return x.id === rareWheelItems[i].id; });
+                        var rkColor = wp && wp.rarity === 'epic' ? '#c62828' : '#1565c0';
+                        ctx.fillStyle = rkColor; ctx.fill();
+                        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.5; ctx.stroke();
                         ctx.save(); ctx.rotate(sa + arc / 2);
                         ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
-                        ctx.font = 'bold 11px "Noto Sans SC", sans-serif'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 3;
-                        var label = rareWheelItems[i].name; if (label.length > 4) label = label.substring(0, 4);
-                        ctx.fillText(label, r * 0.58, 0); ctx.restore();
+                        ctx.font = 'bold 16px "Noto Sans SC", sans-serif'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 3;
+                        var label = rareWheelItems[i].name; if (label.length > 5) label = label.substring(0, 5);
+                        ctx.fillText(label, r * 0.78, 0); ctx.restore();
                     }
-                    ctx.beginPath(); ctx.arc(0, 0, 20, 0, 2 * Math.PI); ctx.fillStyle = '#d4a843'; ctx.fill();
-                    ctx.strokeStyle = '#8b6914'; ctx.lineWidth = 2; ctx.stroke();
-                    ctx.fillStyle = '#1a1a2e'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowBlur = 0;
+                    var centerR = 22;
+                    ctx.beginPath(); ctx.arc(0, 0, centerR + 3, 0, 2 * Math.PI); ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(0, 0, centerR, 0, 2 * Math.PI);
+                    var cGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, centerR);
+                    cGrad.addColorStop(0, '#ff6b5b'); cGrad.addColorStop(1, '#e74c3c');
+                    ctx.fillStyle = cGrad; ctx.fill();
+                    ctx.strokeStyle = 'rgba(255,220,200,0.7)'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px "Noto Sans SC", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowBlur = 0;
                     ctx.fillText('GO', 0, 0); ctx.restore();
                 }
 
