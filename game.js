@@ -404,7 +404,7 @@
         el.innerHTML = html;
     }
 
-    var wheelAngle = 0, wheelSpinning = false;
+    var wheelAngle = 0, wheelSpinning = false, wheelBlinkFrame = 0, diceRolled = false;
 
     function drawWheel(canvasId, items) {
         var canvas = $(canvasId); if (!canvas) return;
@@ -459,7 +459,7 @@
         ctx.strokeStyle = 'rgba(255,220,200,0.7)'; ctx.lineWidth = 3; ctx.stroke();
         ctx.fillStyle = '#fff'; ctx.font = 'bold ' + (w > 400 ? 20 : 15) + 'px "Noto Sans SC", sans-serif';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowBlur = 0;
-        ctx.fillText('GO', 0, 0);
+        ctx.fillText('幸运抽', 0, 0);
         ctx.restore();
 
         ctx.save(); ctx.translate(cx, cy);
@@ -470,13 +470,21 @@
         ctx.fillStyle = rimGrad; ctx.fill();
 
         var dotCount = n > 12 ? 24 : n > 8 ? 20 : 16;
-        var dotColors = ['#fff9e6', '#a8e6cf', '#fff9e6', '#a8e6cf'];
         for (var d = 0; d < dotCount; d++) {
             var da = (d / dotCount) * Math.PI * 2 - Math.PI / 2;
             var dr = outerR - rimW / 2;
             var dotR = rimW * 0.32;
             ctx.beginPath(); ctx.arc(Math.cos(da) * dr, Math.sin(da) * dr, dotR, 0, 2 * Math.PI);
-            ctx.fillStyle = dotColors[d % dotColors.length]; ctx.globalAlpha = 0.85; ctx.fill(); ctx.globalAlpha = 1;
+            if (wheelSpinning) {
+                var blinkPhase = Math.floor(wheelBlinkFrame / 6);
+                var isLit = (d + blinkPhase) % 2 === 0;
+                ctx.fillStyle = isLit ? '#fff9e6' : '#a8e6cf';
+                ctx.globalAlpha = isLit ? 0.95 : 0.3;
+            } else {
+                var dotColors = ['#fff9e6', '#a8e6cf', '#fff9e6', '#a8e6cf'];
+                ctx.fillStyle = dotColors[d % dotColors.length]; ctx.globalAlpha = 0.85;
+            }
+            ctx.fill(); ctx.globalAlpha = 1;
         }
         ctx.restore();
     }
@@ -496,6 +504,7 @@
             if (!st) st = ts; var el = ts - st; var pr = Math.min(el / dur, 1);
             var eased = 1 - Math.pow(1 - pr, 4);
             wheelAngle = sa + totalRot * eased;
+            wheelBlinkFrame++;
             drawWheel(canvasId, items);
 
             var currentTickAngle = wheelAngle % (Math.PI * 2);
@@ -513,7 +522,7 @@
             lastTickAngle = currentTickAngle;
 
             if (pr < 1) { requestAnimationFrame(anim); }
-            else { wheelSpinning = false; playSound('result'); callback(items[targetIndex], targetIndex); }
+            else { wheelSpinning = false; wheelBlinkFrame = 0; playSound('result'); callback(items[targetIndex], targetIndex); }
         }
         requestAnimationFrame(anim);
     }
@@ -633,7 +642,7 @@
 
     function updateWeaponDrawHint() {
         var pn = playerLabel(game.weaponDrawPlayer), cn = getPlayer(game.weaponDrawPlayer).char.name;
-        $('weapon-draw-hint').textContent = pn + '（' + cn + '）还有' + (5 - game.weaponDrawCount) + '次抽取机会';
+        $('weapon-draw-hint').textContent = pn + '（' + cn + '）还有' + (3 - game.weaponDrawCount) + '次抽取机会';
     }
 
     function drawWeaponWheel() {
@@ -706,7 +715,7 @@
     }
 
     function afterWeaponDrawAction() {
-        if (game.weaponDrawCount < 5) {
+        if (game.weaponDrawCount < 3) {
             updateWeaponDrawHint();
             var btn = opBtn(game.weaponDrawPlayer, 'spin-weapon');
             if (btn) { btn.style.display = 'block'; btn.disabled = false; }
@@ -737,32 +746,43 @@
         game.phase = 'dice'; showSection('dice-area');
         hideAllOps();
         $('action-hint').textContent = '投掷骰子决定攻击顺序';
-        $('dice-hint').textContent = '';
+        $('dice-hint').textContent = '请点击下方按钮投掷骰子';
         $('dice-face').textContent = '?'; $('dice-result').classList.add('hidden');
         $('btn-roll-dice').style.display = 'block';
-        $('btn-roll-dice').disabled = true; $('dice').classList.remove('rolling');
-        setTimeout(function () {
-            $('dice').classList.add('rolling'); playSound('dice');
-            var result = randomInt(1, 6), cnt = 0;
-            var iv = setInterval(function () {
-                $('dice-face').textContent = randomInt(1, 6); cnt++;
-                if (cnt >= 12) {
-                    clearInterval(iv); $('dice-face').textContent = result; $('dice').classList.remove('rolling');
-                    $('btn-roll-dice').style.display = 'none';
-                    var isOdd = result % 2 === 1;
-                    game.firstAttacker = isOdd ? 'A' : 'B'; game.secondAttacker = isOdd ? 'B' : 'A';
-                    $('dice-result').classList.remove('hidden');
-                    var fl = playerLabel(game.firstAttacker), fn = getPlayer(game.firstAttacker).char.name;
-                    $('dice-result').innerHTML = '点数：<strong style="font-size:24px;">' + result + '</strong>（' + (isOdd ? '单数' : '双数') + '）<br><span style="color:var(--gold-light);font-size:18px;">' + fl + '（' + fn + '）先攻！</span>';
-                    playSound('result'); speak('点数' + result + '，' + fl + fn + '先攻');
-                    setTimeout(function () {
-                        $('dice-area').innerHTML = '';
-                        setTimeout(function () { startAttackPhase(false); }, 200);
-                    }, 2000);
-                }
-            }, 80);
-        }, 800);
+        $('btn-roll-dice').disabled = false;
+        diceRolled = false;
     }
+
+    function doRollDice() {
+        if (diceRolled || game.phase !== 'dice') return;
+        diceRolled = true;
+        var btn = $('btn-roll-dice');
+        if (btn) btn.style.display = 'none';
+        playSound('click');
+        var hintEl = $('dice-hint');
+        if (hintEl) hintEl.textContent = '';
+        var diceEl = $('dice');
+        if (diceEl) diceEl.classList.add('rolling');
+        playSound('dice');
+        var result = randomInt(1, 6), cnt = 0;
+        var iv = setInterval(function () {
+            $('dice-face').textContent = randomInt(1, 6); cnt++;
+            if (cnt >= 12) {
+                clearInterval(iv); $('dice-face').textContent = result; $('dice').classList.remove('rolling');
+                var isOdd = result % 2 === 1;
+                game.firstAttacker = isOdd ? 'A' : 'B'; game.secondAttacker = isOdd ? 'B' : 'A';
+                $('dice-result').classList.remove('hidden');
+                var fl = playerLabel(game.firstAttacker), fn = getPlayer(game.firstAttacker).char.name;
+                $('dice-result').innerHTML = '点数：<strong style="font-size:24px;">' + result + '</strong>（' + (isOdd ? '单数' : '双数') + '）<br><span style="color:var(--gold-light);font-size:18px;">' + fl + '（' + fn + '）先攻！</span>';
+                playSound('result'); speak('点数' + result + '，' + fl + fn + '先攻');
+                setTimeout(function () {
+                    $('dice-area').innerHTML = '';
+                    setTimeout(function () { startAttackPhase(false); }, 200);
+                }, 2000);
+            }
+        }, 80);
+    }
+    window.doRollDice = doRollDice;
 
     function startAttackPhase(isCounter) {
         game.phase = 'attack-select';
@@ -1325,15 +1345,42 @@
 
     function nextRound() {
         game.allRoundLogs.push({ round: game.round, log: game.roundLog.slice() });
+
+        var rewardCardsA = [];
+        var rewardCardsB = [];
+        ['A', 'B'].forEach(function (pid) {
+            var player = getPlayer(pid);
+            player.gold += 500;
+            for (var i = 0; i < 2; i++) {
+                var card = randomWeapon();
+                player.library.push(card);
+                if (pid === 'A') rewardCardsA.push(card);
+                else rewardCardsB.push(card);
+            }
+        });
+        var newCardUids = rewardCardsA.concat(rewardCardsB).map(function (c) { return c.uid; });
+        updatePlayerInfo();
+        updateLibraryDisplay(newCardUids);
+
         game.round++;
         if (game.round > MAX_ROUNDS) {
             if (game.playerA.hp > game.playerB.hp) endGame('A');
             else if (game.playerB.hp > game.playerA.hp) endGame('B');
             else endGame('draw'); return;
         }
+
+        var rewardInfoA = rewardCardsA.map(function (c) { return c.icon + c.name; }).join('、');
+        var rewardInfoB = rewardCardsB.map(function (c) { return c.icon + c.name; }).join('、');
+
         showModal('<h3>第' + (game.round - 1) + '轮结束</h3>' +
             '<p>玩家A（' + game.playerA.char.name + '）剩余血量：' + game.playerA.hp.toFixed(1) + '/' + game.playerA.maxHp + '</p>' +
             '<p>玩家B（' + game.playerB.char.name + '）剩余血量：' + game.playerB.hp.toFixed(1) + '/' + game.playerB.maxHp + '</p>' +
+            '<div style="margin:10px 0;padding:10px;background:rgba(212,168,67,0.15);border:1px solid var(--gold);border-radius:8px;">' +
+            '<div style="color:var(--gold-light);font-size:15px;font-weight:700;">🎁 轮次奖励</div>' +
+            '<div style="color:var(--text-light);font-size:13px;margin:4px 0;">💰 每位玩家获得 500 金币</div>' +
+            '<div style="color:var(--text-light);font-size:13px;">玩家A获得卡牌：' + rewardInfoA + '</div>' +
+            '<div style="color:var(--text-light);font-size:13px;">玩家B获得卡牌：' + rewardInfoB + '</div>' +
+            '</div>' +
             '<p style="color:var(--text-dim);font-size:12px;margin-top:8px;">未使用的卡牌将保留至下一轮</p>' +
             '<button class="btn btn-primary modal-btn" id="btn-nr">开始第' + game.round + '轮</button>');
         $('btn-nr').addEventListener('click', function () { hideModal(); startWeaponDrawPhase(); });
@@ -1576,7 +1623,7 @@
                     ctx.fillStyle = cGrad; ctx.fill();
                     ctx.strokeStyle = 'rgba(255,220,200,0.7)'; ctx.lineWidth = 2; ctx.stroke();
                     ctx.fillStyle = '#fff'; ctx.font = 'bold 13px "Noto Sans SC", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowBlur = 0;
-                    ctx.fillText('GO', 0, 0); ctx.restore();
+                    ctx.fillText('幸运抽', 0, 0); ctx.restore();
                 }
 
                 drawRareWheel();
