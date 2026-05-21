@@ -404,7 +404,7 @@
         el.innerHTML = html;
     }
 
-    var wheelAngle = 0, wheelSpinning = false, wheelBlinkFrame = 0, diceRolled = false;
+    var wheelAngle = 0, wheelSpinning = false, wheelBlinkFrame = 0, diceRolled = false, autoSpinning = false;
 
     function drawWheel(canvasId, items) {
         var canvas = $(canvasId); if (!canvas) return;
@@ -493,7 +493,7 @@
         if (wheelSpinning) return; wheelSpinning = true; playSound('spin');
         var n = items.length;
         var arc = (2 * Math.PI) / n;
-        var targetAngle = (2 * Math.PI) - (targetIndex * arc + arc / 2);
+        var targetAngle = (2 * Math.PI) - (targetIndex * arc + arc / 2) + Math.PI / 2;
         var fullRotations = Math.PI * 2 * randomInt(8, 14);
         var totalRot = fullRotations + targetAngle - (wheelAngle % (Math.PI * 2));
         if (totalRot < fullRotations) totalRot += Math.PI * 2;
@@ -664,6 +664,9 @@
 
     function handleSpinWeapon() {
         if (wheelSpinning) return;
+        var autoCheckbox = $('auto-spin-' + game.weaponDrawPlayer.toLowerCase());
+        var isAutoMode = autoCheckbox && autoCheckbox.checked;
+        var autoSpinPlayer = game.weaponDrawPlayer;
         var btn = opBtn(game.weaponDrawPlayer, 'spin-weapon');
         if (btn) btn.disabled = true;
         var mapped = WEAPONS.map(function (w) { return { name: w.name, id: w.id, icon: w.icon, rarity: w.rarity }; });
@@ -710,7 +713,15 @@
             if (cardEl) cardEl.addEventListener('click', function () { showCardPreview(drawn); });
             updateLibraryDisplay([drawn.uid]);
             var delay = isRare ? 2500 : 1200;
-            setTimeout(function () { $('drawn-cards').innerHTML = ''; afterWeaponDrawAction(); }, delay);
+            setTimeout(function () {
+                $('drawn-cards').innerHTML = '';
+                afterWeaponDrawAction();
+                if (isAutoMode && game.weaponDrawPlayer === autoSpinPlayer && game.weaponDrawCount < 3 && game.phase === 'weapon-draw') {
+                    setTimeout(function () {
+                        handleSpinWeapon();
+                    }, 1000);
+                }
+            }, delay);
         });
     }
 
@@ -739,7 +750,19 @@
         var al = game.playerA.roundCards.map(function (c) { return c.name; }).join('、');
         var bl = game.playerB.roundCards.map(function (c) { return c.name; }).join('、');
         showModal('<h3>武器抽取完成</h3><p>玩家A获得 ' + game.playerA.roundCards.length + ' 张：' + (al || '无') + '</p><p>玩家B获得 ' + game.playerB.roundCards.length + ' 张：' + (bl || '无') + '</p><button class="btn btn-primary modal-btn" id="btn-td">投掷骰子</button>');
-        $('btn-td').addEventListener('click', function () { hideModal(); startDicePhase(); });
+        $('btn-td').addEventListener('click', function () {
+            hideModal();
+            game.phase = 'dice';
+            showSection('dice-area');
+            hideAllOps();
+            $('action-hint').textContent = '投掷骰子决定攻击顺序';
+            $('dice-hint').textContent = '骰子投掷中...';
+            $('dice-face').textContent = '?';
+            $('dice-result').classList.add('hidden');
+            $('btn-roll-dice').style.display = 'none';
+            diceRolled = false;
+            setTimeout(function () { doRollDice(); }, 300);
+        });
     }
 
     function startDicePhase() {
@@ -1203,7 +1226,7 @@
         var defBonus = (game.phaseDefender === 'A' ? game.blockAbilityA : game.blockAbilityB) ? 0 : defender.char.defBonus;
         var defWithBonus = defCard ? Math.round(defVal * (1 + defBonus)) : 0;
         var finalDamage = Math.max(0, atkWithBonus - defWithBonus);
-        var hpLoss = finalDamage / 10;
+        var hpLoss = finalDamage / 30;
 
         if (game.phaseAttacker === 'A') { game.blockAbilityA = false; } else { game.blockAbilityB = false; }
         if (game.phaseDefender === 'A') { game.blockAbilityA = false; } else { game.blockAbilityB = false; }
@@ -1650,7 +1673,7 @@
                             if (rand < cum) { selectedIdx = i; break; }
                         }
 
-                        var targetAngle = (2 * Math.PI) - (selectedIdx * ((2 * Math.PI) / rareWheelItems.length) + ((2 * Math.PI) / rareWheelItems.length) / 2);
+                        var targetAngle = (2 * Math.PI) - (selectedIdx * ((2 * Math.PI) / rareWheelItems.length) + ((2 * Math.PI) / rareWheelItems.length) / 2) + Math.PI / 2;
                         var fullRot = Math.PI * 2 * randomInt(8, 14);
                         var totalRot = fullRot + targetAngle - (rareWheelAngle % (Math.PI * 2));
                         if (totalRot < fullRot) totalRot += Math.PI * 2;
