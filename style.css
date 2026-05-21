@@ -120,6 +120,7 @@ body {
     top: 50%; left: 100%; transform: translate(-20%, -50%);
     border-top: 14px solid transparent; border-bottom: 14px solid transparent;
     border-right: 60px solid #e74c3c; border-left: none;
+    z-index: 20;
     filter: drop-shadow(0 0 12px rgba(231,76,60,0.7)) drop-shadow(-2px 2px 4px rgba(0,0,0,0.5));
 }
 
@@ -133,8 +134,9 @@ body {
     width: 0; height: 0;
     border-top: 14px solid transparent; border-bottom: 14px solid transparent;
     border-right: 60px solid #e74c3c; border-left: none;
-    z-index: 10;
-    filter: drop-shadow(0 0 12px rgba(231,76,60,0.7)) drop-shadow(-2px 2px 4px rgba(0,0,0,0.5));
+    z-index: 20;
+    filter: drop-shadow(0 0 12px rgba(231,76,60,0.7)) drop-shadow(-2px 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 20px rgba(231,76,60,0.4));
+    pointer-events: none;
 }
 .wheel-pointer::after {
     content: '';
@@ -692,9 +694,9 @@ body {
 .modal-content {
     background: linear-gradient(135deg, var(--bg-medium), var(--bg-dark));
     border: 2px solid var(--gold); border-radius: 16px; padding: 24px;
-    max-width: 420px; width: 90%; text-align: center; animation: fadeInUp 0.3s ease;
+    max-width: 560px !important; width: 92% !important; text-align: center; animation: fadeInUp 0.3s ease;
     position: relative; overflow: hidden;
-    max-height: 85vh; overflow-y: auto;
+    max-height: 90vh !important; overflow-y: auto;
 }
 .modal-content::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
@@ -772,7 +774,7 @@ body {
     margin: 8px 0;
 }
 .rare-wheel-container canvas {
-    width: 200px; height: 200px;
+    width: 280px; height: 280px;
 }
 
 .card-preview-overlay {
@@ -825,6 +827,66 @@ body {
 }
 .card-play-card.rarity-rare {
     box-shadow: 0 0 40px rgba(33, 150, 243, 0.6), 0 0 80px rgba(33, 150, 243, 0.3);
+}
+
+.auto-spin-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 6px 0;
+}
+
+.auto-spin-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(212, 168, 67, 0.3);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.auto-spin-label:hover {
+    background: rgba(212, 168, 67, 0.1);
+    border-color: rgba(212, 168, 67, 0.5);
+}
+
+.auto-spin-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--gold);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.auto-spin-checkbox:checked {
+    background: var(--gold);
+    border-color: var(--gold-light);
+}
+
+.auto-spin-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--bg-dark);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.auto-spin-text {
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: 500;
 }
 .card-play-desc {
     font-family: 'Ma Shan Zheng', cursive; font-size: 22px; color: #fff;
