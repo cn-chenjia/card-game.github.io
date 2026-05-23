@@ -61,6 +61,7 @@
                                 <span class="hp-text" id="player-a-hp-text"></span>
                             </div>
                             <div class="ability-badge" id="player-a-ability"></div>
+                            <div class="learned-martial-arts" id="player-a-martial-arts"></div>
                         </div>
                     </div>
                     <div class="panel-library">
@@ -78,17 +79,20 @@
                             <div class="panel-library-cards" id="player-a-defend-library"></div>
                         </div>
                     </div>
+                    <button class="btn btn-primary btn-op" id="btn-a-confirm-card" disabled style="margin:6px 8px;">✅ 确认选择</button>
                     <div class="panel-ops" id="ops-a">
                         <div class="ops-status" id="ops-a-status"></div>
                         <div class="player-gold">💰 金币: <span id="player-a-gold">0</span></div>
-                        <div class="auto-spin-container">
-                            <label class="auto-spin-label">
-                                <input type="checkbox" id="auto-spin-a" class="auto-spin-checkbox">
-                                <span class="auto-spin-text">🤖 自动</span>
-                            </label>
+                        <div class="ops-row-top">
+                            <div class="auto-spin-container">
+                                <label class="auto-spin-label">
+                                    <input type="checkbox" id="auto-spin-a" class="auto-spin-checkbox">
+                                    <span class="auto-spin-text">🤖</span>
+                                </label>
+                            </div>
+                            <button class="btn btn-primary btn-op" id="btn-a-spin-weapon">🎰 转动转盘</button>
                         </div>
-                        <button class="btn btn-primary btn-op" id="btn-a-spin-weapon">🎰 转动转盘</button>
-                        <button class="btn btn-primary btn-op" id="btn-a-confirm-card" disabled>✅ 确认选择</button>
+                        <button class="btn btn-primary btn-op hidden" id="btn-a-confirm-card-old" disabled>✅ 确认选择</button>
                         <button class="btn btn-secondary btn-op" id="btn-a-skip-defend">⏭️ 跳过防御</button>
                         <button class="btn btn-primary btn-op btn-atk" id="btn-a-continue-attack">⚔️ 继续攻击</button>
                         <button class="btn btn-secondary btn-op" id="btn-a-end-attack">🛑 结束攻击</button>
@@ -96,6 +100,10 @@
                         <div class="ops-trade-btns">
                             <button class="btn btn-secondary btn-op btn-trade" id="btn-a-sell">🔄 出售</button>
                             <button class="btn btn-primary btn-op btn-trade" id="btn-a-buy">🛒 购买</button>
+                        </div>
+                        <div class="ops-special-btns">
+                            <button class="btn btn-special" id="btn-a-synthesis">🔮 卡牌合成</button>
+                            <button class="btn btn-special" id="btn-a-cultivation">🧘 闭关修炼</button>
                         </div>
                     </div>
                 </div>
@@ -169,6 +177,7 @@
                                 <span class="hp-text" id="player-b-hp-text"></span>
                             </div>
                             <div class="ability-badge" id="player-b-ability"></div>
+                            <div class="learned-martial-arts" id="player-b-martial-arts"></div>
                         </div>
                     </div>
                     <div class="panel-library">
@@ -186,17 +195,20 @@
                             <div class="panel-library-cards" id="player-b-defend-library"></div>
                         </div>
                     </div>
+                    <button class="btn btn-primary btn-op" id="btn-b-confirm-card" disabled style="margin:6px 8px;">✅ 确认选择</button>
                     <div class="panel-ops" id="ops-b">
                         <div class="ops-status" id="ops-b-status"></div>
                         <div class="player-gold">💰 金币: <span id="player-b-gold">0</span></div>
-                        <div class="auto-spin-container">
-                            <label class="auto-spin-label">
-                                <input type="checkbox" id="auto-spin-b" class="auto-spin-checkbox">
-                                <span class="auto-spin-text">🤖 自动</span>
-                            </label>
+                        <div class="ops-row-top">
+                            <div class="auto-spin-container">
+                                <label class="auto-spin-label">
+                                    <input type="checkbox" id="auto-spin-b" class="auto-spin-checkbox">
+                                    <span class="auto-spin-text">🤖</span>
+                                </label>
+                            </div>
+                            <button class="btn btn-primary btn-op" id="btn-b-spin-weapon">🎰 转动转盘</button>
                         </div>
-                        <button class="btn btn-primary btn-op" id="btn-b-spin-weapon">🎰 转动转盘</button>
-                        <button class="btn btn-primary btn-op" id="btn-b-confirm-card" disabled>✅ 确认选择</button>
+                        <button class="btn btn-primary btn-op hidden" id="btn-b-confirm-card-old" disabled>✅ 确认选择</button>
                         <button class="btn btn-secondary btn-op" id="btn-b-skip-defend">⏭️ 跳过防御</button>
                         <button class="btn btn-primary btn-op btn-atk" id="btn-b-continue-attack">⚔️ 继续攻击</button>
                         <button class="btn btn-secondary btn-op" id="btn-b-end-attack">🛑 结束攻击</button>
@@ -204,6 +216,10 @@
                         <div class="ops-trade-btns">
                             <button class="btn btn-secondary btn-op btn-trade" id="btn-b-sell">🔄 出售</button>
                             <button class="btn btn-primary btn-op btn-trade" id="btn-b-buy">🛒 购买</button>
+                        </div>
+                        <div class="ops-special-btns">
+                            <button class="btn btn-special" id="btn-b-synthesis">🔮 卡牌合成</button>
+                            <button class="btn btn-special" id="btn-b-cultivation">🧘 闭关修炼</button>
                         </div>
                     </div>
                 </div>
@@ -229,6 +245,53 @@
 
     <div id="card-preview-overlay" class="card-preview-overlay hidden">
         <div class="card-preview" id="card-preview"></div>
+    </div>
+
+    <div id="synthesis-modal" class="modal-overlay hidden">
+        <div class="modal-content synthesis-modal">
+            <h3>🔮 卡片炼化炉</h3>
+            <div class="synthesis-slots">
+                <div class="synthesis-slot" data-slot="A">
+                    <div class="slot-label">左侧卡牌</div>
+                    <div class="slot-content" id="synth-slot-A"><span style="color:var(--text-dim)">点击选择</span></div>
+                </div>
+                <div class="synthesis-furnace">
+                    <div class="furnace-animation">🔥</div>
+                    <div class="furnace-glow"></div>
+                </div>
+                <div class="synthesis-slot" data-slot="B">
+                    <div class="slot-label">右侧卡牌</div>
+                    <div class="slot-content" id="synth-slot-B"><span style="color:var(--text-dim)">点击选择</span></div>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-large" id="btn-do-synthesis" disabled>开始合成</button>
+            <button class="btn btn-secondary modal-btn" id="btn-close-synthesis">关闭</button>
+        </div>
+    </div>
+
+    <div id="cultivation-modal" class="modal-overlay hidden">
+        <div class="modal-content cultivation-modal">
+            <h3>🧘 闭关修炼 - 学习武功</h3>
+            <p class="hint-text">选择一门武功 + 消耗2张史诗/传说卡牌进行修炼</p>
+            <div class="cultivation-section-title">📜 选择武功</div>
+            <div class="cultivation-martial-list" id="cultivation-martial-list"></div>
+            <div class="selected-martial-display">
+                <p>已选武功：<span id="selected-martial-name" style="color:var(--gold-light);font-weight:bold;">未选择</span></p>
+            </div>
+            <div class="cultivation-section-title">💎 祭炼材料（需2张史诗或传说卡牌）</div>
+            <div class="cultivation-card-slots">
+                <div class="cultivation-slot" data-slot="1">
+                    <div class="slot-label">材料槽位1</div>
+                    <div class="slot-content" id="cult-slot-1"><span style="color:var(--text-dim)">点击选择</span></div>
+                </div>
+                <div class="cultivation-slot" data-slot="2">
+                    <div class="slot-label">材料槽位2</div>
+                    <div class="slot-content" id="cult-slot-2"><span style="color:var(--text-dim)">点击选择</span></div>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-large" id="btn-do-cultivation" disabled>开始修炼</button>
+            <button class="btn btn-secondary modal-btn" id="btn-close-cultivation">关闭</button>
+        </div>
     </div>
 
     <script src="game.js"></script>
