@@ -34,7 +34,7 @@
     var EPIC_SKILLS = [
         { id: 'steal_card', name: '偷取', desc: '偷取对方一张卡牌', icon: '🤚', target: 'opponent', timing: 'current', condition: 'always' },
         { id: 'no_defend', name: '破防', desc: '对方本次不能使用防御', icon: '💥', target: 'opponent', timing: 'current', condition: 'always' },
-        { id: 'reduce_attack', name: '削弱', desc: '对方下一次攻击次数减少一次', icon: '⬇️', target: 'opponent', timing: 'next', condition: 'always' },
+        { id: 'reduce_attack', name: '削弱', desc: '对方本次防御值减少20%', icon: '⬇️', target: 'opponent', timing: 'current', condition: 'always' },
         { id: 'replace_epic', name: '降级', desc: '将对方一张史诗卡牌替换为普通卡牌', icon: '🔄', target: 'opponent', timing: 'current', condition: 'always' },
         { id: 'block_ability', name: '封技', desc: '限制对方角色技能下一次不能使用', icon: '🚫', target: 'opponent', timing: 'next', condition: 'always' }
     ];
@@ -80,7 +80,6 @@
         { id: 'xl18z', name: '降龙十八掌', icon: '🐉', type: 'attack', atkBonus: 0.22, defBonus: 0, rarity: 'legend', difficulty: 5, desc: '丐帮镇帮神功，刚猛无俦天下第一掌法', source: '射雕英雄传' },
         { id: 'lmsj', name: '六脉神剑', icon: '⚡', type: 'attack', atkBonus: 0.20, defBonus: 0.05, rarity: 'legend', difficulty: 5, desc: '大理段氏绝学，无形剑气伤敌于无形', source: '天龙八部' },
         { id: 'dg9j', name: '独孤九剑', icon: '🗡️', type: 'attack', atkBonus: 0.18, defBonus: 0.07, rarity: 'legend', difficulty: 4, desc: '独孤求败所创，无招胜有招破尽天下武功', source: '笑傲江湖' },
-        { id: 'xtzd', name: '玄铁重剑', icon: '⚔️', type: 'attack', atkBonus: 0.16, defBonus: 0, rarity: 'epic', difficulty: 3, desc: '重剑无锋大巧不工，杨过佩剑重达八八六十四斤', source: '神雕侠侣' },
         { id: 'dgbf', name: '打狗棒法', icon: '🏏', type: 'attack', atkBonus: 0.14, defBonus: 0.03, rarity: 'epic', difficulty: 3, desc: '丐帮三十六路打狗棒法，精妙绝伦', source: '射雕英雄传' },
         { id: 'qkdny', name: '乾坤大挪移', icon: '🌀', type: 'attack', atkBonus: 0.12, defBonus: 0.08, rarity: 'epic', difficulty: 4, desc: '明教护教神功，借力打力化敌于无形', source: '倚天屠龙记' },
         { id: 'jygf', name: '九阳真经', icon: '☀️', type: 'defend', atkBonus: 0, defBonus: 0.22, rarity: 'legend', difficulty: 5, desc: '九阳神功护体，万邪不侵百毒不侵', source: '倚天屠龙记' },
@@ -126,6 +125,8 @@
     var MAX_ROUNDS = 10;
     var BASE_MAX_ATTACKS = 3;
     var cardUidCounter = 0;
+    var isOnlineMode = false;
+    var vsAnimationShown = false;
 
     function newCardUid() { return 'card_' + (++cardUidCounter) + '_' + Date.now(); }
 
@@ -150,9 +151,11 @@
         tableCards: [],
         noDefendFlag: false,
         noDefendUsedThisRound: false,
+        usedSkillsThisRound: {},
         blockAbilityA: false,
         blockAbilityB: false,
         attackReduction: 0,
+        tempDefenseReduction: 0,
         pendingSkills: [],
         nextTurnNoDefend: { A: false, B: false },
         currentTurnIndex: 0,
@@ -298,6 +301,7 @@
     function hideAllOps(keepButtons) {
         keepButtons = keepButtons || [];
         ['a', 'b'].forEach(function (p) {
+            var pid = p.toUpperCase();
             var autoContainer = document.querySelector('#panel-' + p.toLowerCase() + ' .auto-spin-container');
             if (autoContainer && keepButtons.indexOf('btn-' + p + '-spin-weapon') === -1) {
                 autoContainer.style.display = 'none';
@@ -312,11 +316,21 @@
                 }
             });
             var status = $('ops-' + p + '-status');
-            if (status) status.textContent = '';
+            if (status) {
+                if (isOnlineMode && !canIOperate(pid)) {
+                    status.textContent = '⏳ 等待对方操作...';
+                } else {
+                    status.textContent = '';
+                }
+            }
         });
     }
 
     function showOp(pid, btnId, opts) {
+        if (isOnlineMode && !canIOperate(pid)) {
+            setOpsStatus(pid, '⏳ 等待对方操作...');
+            return;
+        }
         opts = opts || {};
         var el = opBtn(pid, btnId);
         if (el) {
@@ -336,7 +350,13 @@
 
     function setOpsStatus(pid, text) {
         var el = $('ops-' + pPrefix(pid) + '-status');
-        if (el) el.textContent = text;
+        if (el) {
+            if (isOnlineMode && !canIOperate(pid)) {
+                el.textContent = '⏳ 等待对方操作...';
+            } else {
+                el.textContent = text;
+            }
+        }
     }
 
     function updateGoldDisplay() {
@@ -432,6 +452,14 @@
         if (panelB) { panelB.classList.toggle('active-panel', pid === 'B'); panelB.classList.toggle('inactive-panel', pid !== 'B'); }
         $('player-a-info').classList.toggle('active-turn', pid === 'A');
         $('player-b-info').classList.toggle('active-turn', pid === 'B');
+        if (isOnlineMode) {
+            var myPid = Multiplayer.getMyRole();
+            if (pid === myPid) {
+                $('action-hint').textContent = '🎯 轮到你操作 - ' + playerLabel(pid);
+            } else {
+                $('action-hint').textContent = '⏳ 等待 ' + playerLabel(pid) + ' 操作...';
+            }
+        }
     }
 
     function announcePlayerTurn(pid, action) { var p = getPlayer(pid); speak(playerLabel(pid) + '，' + (p.char ? p.char.name : '') + '，' + action); }
@@ -626,49 +654,110 @@
     }
 
     function initStartScreen() {
-        $('btn-dual').addEventListener('click', function () { playSound('click'); game.mode = 'dual'; startCharacterSelect(); });
+        $('btn-dual').addEventListener('click', function () { playSound('click'); game.mode = 'dual'; isOnlineMode = false; startCharacterSelect(); });
+        $('btn-online').addEventListener('click', function () { playSound('click'); initLobby(); showScreen('screen-lobby'); });
         $('btn-sound').addEventListener('click', function () { game.soundEnabled = !game.soundEnabled; game.voiceEnabled = game.soundEnabled; $('btn-sound').textContent = game.soundEnabled ? '🔊 音效：开' : '🔇 音效：关'; if (game.soundEnabled) playSound('click'); });
     }
 
     function startCharacterSelect() {
         game.phase = 'character-select'; game.currentPlayer = 'A'; game.usedCharIds = [];
+        vsAnimationShown = false;
         showScreen('screen-character'); $('char-result').classList.add('hidden'); $('btn-spin-char').disabled = false;
-        $('char-select-title').textContent = '角色抽取'; $('char-select-hint').textContent = '请玩家A点击转盘抽取角色';
-        $('btn-switch-player').style.display = 'none';
+        $('char-select-title').textContent = '角色抽取';
+        updateCharSelectUI();
         var ci = CHARACTERS.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
         wheelAngle = 0; drawWheel('character-wheel', ci); speak('请玩家A点击转盘抽取角色');
     }
 
+    function updateCharSelectUI() {
+        var isMyTurn = !isOnlineMode || canIOperate(game.currentPlayer);
+        var hintPrefix = isOnlineMode ? (isMyTurn ? '🎯 轮到你' : '⏳ 等待') + ' - ' : '';
+        var currentPlayerLabel = playerLabel(game.currentPlayer);
+        var charWheelEl = document.querySelector('.wheel-container.char-wheel');
+        var charResultShown = !$('char-result').classList.contains('hidden');
+
+        if (charResultShown) {
+            $('btn-spin-char').style.display = 'none';
+            $('btn-char-confirm').style.display = 'none';
+            $('char-select-hint').textContent = hintPrefix + currentPlayerLabel + '抽取到了角色，2秒后自动确认...';
+            if (charWheelEl) { charWheelEl.style.opacity = '0.3'; charWheelEl.style.pointerEvents = 'none'; }
+        } else {
+            if (isMyTurn) {
+                $('char-select-hint').textContent = hintPrefix + '请' + currentPlayerLabel + '点击转盘抽取角色';
+                $('btn-spin-char').style.display = '';
+                $('btn-char-confirm').style.display = 'none';
+                if (charWheelEl) { charWheelEl.style.opacity = '1'; charWheelEl.style.pointerEvents = 'auto'; }
+            } else {
+                $('char-select-hint').textContent = hintPrefix + currentPlayerLabel + '正在抽取角色...';
+                $('btn-spin-char').style.display = 'none';
+                $('btn-char-confirm').style.display = 'none';
+                if (charWheelEl) { charWheelEl.style.opacity = '0.3'; charWheelEl.style.pointerEvents = 'none'; }
+            }
+        }
+    }
+
     function initCharacterSelect() {
         $('btn-spin-char').addEventListener('click', function () {
-            if (wheelSpinning) return; $('btn-spin-char').disabled = true;
+            if (wheelSpinning) return;
+            if (isOnlineMode && !canIOperate(game.currentPlayer)) return;
+            $('btn-spin-char').disabled = true;
             var ac = CHARACTERS.filter(function (c) { return game.usedCharIds.indexOf(c.id) === -1; });
             var ci = ac.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
             var targetIdx = randomInt(0, ac.length - 1);
+            var selectedCharId = ac[targetIdx].id;
             spinWheel('character-wheel', ci, targetIdx, function (sel) {
-                var ch = CHARACTERS.find(function (c) { return c.id === sel.id; });
-                var p = game.currentPlayer === 'A' ? game.playerA : game.playerB;
-                p.char = ch; p.hp = ch.hp; p.maxHp = ch.maxHp; game.usedCharIds.push(ch.id);
-                $('char-info-display').innerHTML = '<div class="char-emoji">' + ch.emoji + '</div><div class="char-name">' + ch.name + '</div><div class="char-stat">血量：' + ch.hp + '点（' + (ch.hp * 10) + '伤害值）</div><div class="char-ability">特殊能力：' + generateAbilityDesc(ch) + '</div>';
-                $('char-result').classList.remove('hidden');
-                $('char-select-hint').textContent = playerLabel(game.currentPlayer) + '抽取到了 ' + ch.name + '！';
-                speak(playerLabel(game.currentPlayer) + '抽到了' + ch.name);
+                if (!isOnlineMode || canIOperate(game.currentPlayer)) {
+                    var ch = CHARACTERS.find(function (c) { return c.id === sel.id; });
+                    var p = game.currentPlayer === 'A' ? game.playerA : game.playerB;
+                    p.char = ch; p.hp = ch.hp; p.maxHp = ch.maxHp; game.usedCharIds.push(ch.id);
+                    $('char-info-display').innerHTML = '<div class="char-emoji">' + ch.emoji + '</div><div class="char-name">' + ch.name + '</div><div class="char-stat">血量：' + ch.hp + '点（' + (ch.hp * 10) + '伤害值）</div><div class="char-ability">特殊能力：' + generateAbilityDesc(ch) + '</div>';
+                    $('char-result').classList.remove('hidden');
+                    speak(playerLabel(game.currentPlayer) + '抽到了' + ch.name);
+                    notifyPeer('char-spin-result', { charId: selectedCharId });
+                    updateCharSelectUI();
+                    setTimeout(function () { autoConfirmChar(); }, 2000);
+                }
             });
+            if (isOnlineMode) notifyPeer('char-spin-start', {});
         });
         $('btn-char-confirm').addEventListener('click', function () {
             playSound('click');
-            if (game.currentPlayer === 'A') {
-                game.currentPlayer = 'B'; $('char-result').classList.add('hidden'); $('btn-spin-char').disabled = false;
-                $('char-select-hint').textContent = '请玩家B点击转盘抽取角色';
-                var ac = CHARACTERS.filter(function (c) { return game.usedCharIds.indexOf(c.id) === -1; });
-                var ci = ac.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
-                wheelAngle = 0; drawWheel('character-wheel', ci); speak('请玩家B点击转盘抽取角色');
-            } else { showVSAnimation(); }
+            if (isOnlineMode && !canIOperate(game.currentPlayer)) return;
+            autoConfirmChar();
         });
     }
 
+    function autoConfirmChar() {
+        if (game.currentPlayer === 'A') {
+            game.currentPlayer = 'B'; $('char-result').classList.add('hidden'); $('btn-spin-char').disabled = false;
+            var ac = CHARACTERS.filter(function (c) { return game.usedCharIds.indexOf(c.id) === -1; });
+            var ci = ac.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
+            wheelAngle = 0; drawWheel('character-wheel', ci); speak('请玩家B点击转盘抽取角色');
+            updateCharSelectUI();
+            notifyPeer('char-confirm', { from: 'A' });
+        } else { showVSAnimation(); notifyPeer('char-confirm', { from: 'B' }); }
+    }
+
     function showVSAnimation() {
+        console.log('[ VS ] showVSAnimation 被调用');
+
+        if (vsAnimationShown) {
+            console.warn('[ VS ] VS动画已经显示过，跳过重复调用');
+            return;
+        }
+
         var a = game.playerA, b = game.playerB;
+        console.log('[ VS ] 玩家A角色:', a.char ? a.char.name : 'null', '玩家B角色:', b.char ? b.char.name : 'null');
+
+        if (!a.char || !b.char) {
+            console.warn('[ VS ] 角色数据不完整，延迟执行');
+            setTimeout(function () { showVSAnimation(); }, 500);
+            return;
+        }
+
+        vsAnimationShown = true;
+        console.log('[ VS ] 设置 vsAnimationShown = true，开始显示VS动画');
+
         $('vs-container').innerHTML =
             '<div class="vs-fighter vs-left">' +
             '<div class="vs-emoji">' + a.char.emoji + '</div>' +
@@ -686,12 +775,60 @@
         showScreen('screen-vs');
         playSound('pk');
         speak(a.char.name + ' 对阵 ' + b.char.name);
-        setTimeout(function () { startBattle(); }, 3000);
+        console.log('[ VS ] isOnlineMode:', isOnlineMode, 'isGuest():', Multiplayer.isGuest());
+        if (isOnlineMode && Multiplayer.isGuest()) {
+            setTimeout(function () {
+                $('vs-container').innerHTML = '<p style="color:var(--text-dim);font-size:16px;">等待房主同步游戏数据...</p>';
+                console.log('[ VS ] 显示等待房主同步...');
+            }, 3000);
+        } else {
+            setTimeout(function () {
+                console.log('[ VS ] 3秒后调用 startBattle()');
+                startBattle();
+            }, 3000);
+        }
+    }
+
+    function updateOnlineStatusBar() {
+        var statusBar = $('online-status-bar');
+        if (!statusBar) return;
+
+        if (!isOnlineMode) {
+            statusBar.classList.add('hidden');
+            return;
+        }
+
+        statusBar.classList.remove('hidden');
+
+        var roomIdEl = $('battle-room-id');
+        var peerStatusEl = $('battle-peer-status');
+        var peerTextEl = $('battle-peer-text');
+        var peerDotEl = peerStatusEl ? peerStatusEl.querySelector('.peer-status-dot-small') : null;
+
+        if (roomIdEl) {
+            roomIdEl.textContent = Multiplayer.getRoomId() || '未知';
+        }
+
+        if (Multiplayer.isConnected()) {
+            if (peerDotEl) peerDotEl.classList.add('connected');
+            if (peerTextEl) {
+                peerTextEl.textContent = '对方已连接';
+                peerTextEl.classList.add('connected');
+            }
+        } else {
+            if (peerDotEl) peerDotEl.classList.remove('connected');
+            if (peerTextEl) {
+                peerTextEl.textContent = '未连接';
+                peerTextEl.classList.remove('connected');
+            }
+        }
     }
 
     function startBattle() {
+        console.log('[ Battle ] startBattle 被调用');
         game.phase = 'battle'; game.round = 1;
         game.playerA.library = []; game.playerB.library = [];
+        game.playerA.roundCards = []; game.playerB.roundCards = [];
         game.playerA.gold = 3000; game.playerB.gold = 3000;
         var atkWeapons = WEAPONS.filter(function (w) { return w.type === 'attack'; });
         var defWeapons = WEAPONS.filter(function (w) { return w.type === 'defend'; });
@@ -709,18 +846,37 @@
             }
         });
         game.totalDamageA = 0; game.totalDamageB = 0;
-        game.allRoundLogs = [];
-        game.noDefendFlag = false;
-        game.noDefendUsedThisRound = false;
+        game.allRoundLogs = []; game.roundLog = [];
+        game.noDefendFlag = false; game.noDefendUsedThisRound = false; game.usedSkillsThisRound = {};
+        game.weaponDrawCount = 0; game.weaponDrawPlayer = 'A';
+        game.currentAttackIndex = 0; game.bonusAttacks = 0;
+        game.phaseAttacker = null; game.phaseDefender = null; game.isCounterPhase = false;
+        game.currentAttackCard = null; game.currentDefendCard = null; game.selectedCardUid = null;
 
         updateAttackProgress();
-        game.blockAbilityA = false;
-        game.blockAbilityB = false;
-        game.attackReduction = 0;
-        clearTableCards();
-        showScreen('screen-battle'); updatePlayerInfo();
+        game.blockAbilityA = false; game.blockAbilityB = false;
+        game.attackReduction = 0; game.tempDefenseReduction = 0;
+        clearTableCards(); clearBattleLog();
+        showScreen('screen-battle'); updatePlayerInfo(); updateLibraryDisplay([]);
         $('btn-switch-player').style.display = 'none';
-        speak('对战开始'); startWeaponDrawPhase();
+        updateOnlineStatusBar();
+        speak('对战开始');
+        if (isOnlineMode && Multiplayer.isHost()) {
+            var initState = {
+                libraryA: game.playerA.library.map(function (c) { return { id: c.id, uid: c.uid, type: c.type }; }),
+                libraryB: game.playerB.library.map(function (c) { return { id: c.id, uid: c.uid, type: c.type }; }),
+                goldA: game.playerA.gold,
+                goldB: game.playerB.gold
+            };
+            console.log('[ Battle ] 发送 battle-init 消息给对方');
+            console.log('[ Battle ] libraryA 长度:', initState.libraryA.length, 'libraryB 长度:', initState.libraryB.length);
+            console.log('[ Battle ] libraryA 示例:', initState.libraryA.slice(0, 2));
+            console.log('[ Battle ] libraryB 示例:', initState.libraryB.slice(0, 2));
+            notifyPeer('battle-init', initState);
+        } else {
+            console.log('[ Battle ] 不是房主，不发送 battle-init');
+        }
+        startWeaponDrawPhase();
     }
 
     function startWeaponDrawPhase() {
@@ -731,16 +887,31 @@
         setActivePlayer('A'); showSection('weapon-draw-area');
         updateAttackProgress();
         hideAllOps();
-        showOp('A', 'spin-weapon');
-        showOp('A', 'sell');
-        showOp('A', 'buy');
-        showOp('A', 'synthesis');
-        showOp('A', 'cultivation');
-        setOpsStatus('A', '请抽取武器');
+        updateWeaponDrawUI();
         $('action-hint').textContent = '第' + game.round + '轮 - 武器抽取阶段';
         updateWeaponDrawHint(); wheelAngle = 0; drawWeaponWheel();
         $('drawn-cards').innerHTML = '';
         announcePlayerTurn('A', '请抽取武器');
+    }
+
+    function updateWeaponDrawUI() {
+        var pid = game.weaponDrawPlayer;
+        var isMyTurn = !isOnlineMode || canIOperate(pid);
+        var otherPid = pid === 'A' ? 'B' : 'A';
+        var weaponWheelEl = document.querySelector('#weapon-draw-area .wheel-container');
+
+        if (isMyTurn) {
+            showOp(pid, 'spin-weapon');
+            setOpsStatus(pid, '请抽取武器');
+            if (weaponWheelEl) { weaponWheelEl.style.opacity = '1'; weaponWheelEl.style.pointerEvents = 'auto'; }
+            $('action-hint').textContent = '🎯 第' + game.round + '轮 - 轮到' + playerLabel(pid) + '抽取武器';
+        } else {
+            hideAllOps();
+            setOpsStatus(otherPid, '');
+            setOpsStatus(pid, '⏳ 等待对方抽取...');
+            if (weaponWheelEl) { weaponWheelEl.style.opacity = '0.3'; weaponWheelEl.style.pointerEvents = 'none'; }
+            $('action-hint').textContent = '⏳ 等待' + playerLabel(pid) + '抽取武器...';
+        }
     }
 
     function updateWeaponDrawHint() {
@@ -767,6 +938,7 @@
 
     function handleSpinWeapon() {
         if (wheelSpinning) return;
+        if (isOnlineMode && !canIOperate(game.weaponDrawPlayer)) return;
         var autoCheckbox = $('auto-spin-' + game.weaponDrawPlayer.toLowerCase());
         var isAutoMode = autoCheckbox && autoCheckbox.checked;
         var autoSpinPlayer = game.weaponDrawPlayer;
@@ -792,6 +964,8 @@
             var drawn = Object.assign({}, wp); drawn.uid = newCardUid();
             var player = getPlayer(game.weaponDrawPlayer);
             player.roundCards.push(drawn); player.library.push(drawn); game.weaponDrawCount++;
+            console.log('[ Weapon ] 本地抽取武器:', drawn.name, 'uid:', drawn.uid, 'player:', game.weaponDrawPlayer, 'count:', game.weaponDrawCount);
+            console.log('[ Weapon ] 玩家', game.weaponDrawPlayer, '库大小:', player.library.length);
             var isRare = drawn.rarity === 'rare' || drawn.rarity === 'epic' || drawn.rarity === 'legend';
             var cardCls = 'weapon-card rarity-' + drawn.rarity;
             if (isRare) cardCls += ' rarity-highlight';
@@ -815,6 +989,8 @@
             var cardEl = $('drawn-cards').querySelector('.weapon-card');
             if (cardEl) cardEl.addEventListener('click', function () { showCardPreview(drawn); });
             updateLibraryDisplay([drawn.uid]);
+            console.log('[ Weapon ] 发送 weapon-spin 消息, uid:', drawn.uid);
+            notifyPeer('weapon-spin', { weapon: { id: wp.id, uid: drawn.uid }, player: game.weaponDrawPlayer });
             var delay = isRare ? 2500 : 1200;
             setTimeout(function () {
                 $('drawn-cards').innerHTML = '';
@@ -839,15 +1015,9 @@
         } else if (game.weaponDrawPlayer === 'A') {
             game.weaponDrawPlayer = 'B'; game.weaponDrawCount = 0;
             setActivePlayer('B'); updateWeaponDrawHint();
-            hideAllOps();
-            showOp('B', 'spin-weapon');
-            showOp('B', 'sell');
-            showOp('B', 'buy');
-            showOp('B', 'synthesis');
-            showOp('B', 'cultivation');
-            setOpsStatus('B', '请抽取武器');
             wheelAngle = 0; drawWeaponWheel(); $('drawn-cards').innerHTML = '';
             announcePlayerTurn('B', '请抽取武器');
+            updateWeaponDrawUI();
         } else { finishWeaponDraw(); }
     }
 
@@ -856,22 +1026,41 @@
         updatePlayerInfo();
         var al = game.playerA.roundCards.map(function (c) { return c.name; }).join('、');
         var bl = game.playerB.roundCards.map(function (c) { return c.name; }).join('、');
+        console.log('[ Weapon ] 武器抽取完成');
+        console.log('[ Weapon ] 玩家A库大小:', game.playerA.library.length, 'roundCards:', game.playerA.roundCards.length);
+        console.log('[ Weapon ] 玩家B库大小:', game.playerB.library.length, 'roundCards:', game.playerB.roundCards.length);
+
+        if (isOnlineMode && Multiplayer.isHost()) {
+            var syncData = {
+                libraryA: game.playerA.library.map(function (c) { return { id: c.id, uid: c.uid, type: c.type }; }),
+                libraryB: game.playerB.library.map(function (c) { return { id: c.id, uid: c.uid, type: c.type }; }),
+                roundCardsA: game.playerA.roundCards.map(function (c) { return c.uid; }),
+                roundCardsB: game.playerB.roundCards.map(function (c) { return c.uid; })
+            };
+            console.log('[ Weapon ] 发送武器抽取完成同步消息');
+            notifyPeer('weapon-draw-complete', syncData);
+        }
+
         showModal('<h3>🎲 武器抽取完成</h3>' +
             '<p style="font-size:14px;color:var(--text-light);margin:8px 0;">玩家A获得 ' + game.playerA.roundCards.length + ' 张：' + (al || '无') + '</p>' +
             '<p style="font-size:14px;color:var(--text-light);margin:8px 0;">玩家B获得 ' + game.playerB.roundCards.length + ' 张：' + (bl || '无') + '</p>' +
             '<p style="color:var(--gold-light);font-size:13px;margin-top:12px;">⏳ 3秒后投掷骰子...</p>');
         setTimeout(function () {
             hideModal();
-            game.phase = 'dice';
-            showSection('dice-area');
-            hideAllOps();
-            $('action-hint').textContent = '投掷骰子决定攻击顺序';
-            $('dice-hint').textContent = '骰子投掷中...';
-            $('dice-face').textContent = '?';
-            $('dice-result').classList.add('hidden');
-            $('btn-roll-dice').style.display = 'none';
-            diceRolled = false;
-            doRollDice();
+            if (isOnlineMode) {
+                startDicePhase();
+            } else {
+                game.phase = 'dice';
+                showSection('dice-area');
+                hideAllOps();
+                $('action-hint').textContent = '投掷骰子决定攻击顺序';
+                $('dice-hint').textContent = '骰子投掷中...';
+                $('dice-face').textContent = '?';
+                $('dice-result').classList.add('hidden');
+                $('btn-roll-dice').style.display = 'none';
+                diceRolled = false;
+                doRollDice();
+            }
         }, 3000);
     }
 
@@ -879,15 +1068,30 @@
         game.phase = 'dice'; showSection('dice-area');
         hideAllOps();
         $('action-hint').textContent = '投掷骰子决定攻击顺序';
-        $('dice-hint').textContent = '请点击下方按钮投掷骰子';
         $('dice-face').textContent = '?'; $('dice-result').classList.add('hidden');
-        $('btn-roll-dice').style.display = 'block';
-        $('btn-roll-dice').disabled = false;
+        $('btn-roll-dice').style.display = 'none';
         diceRolled = false;
+
+        if (isOnlineMode) {
+            var isMyTurn = canIOperate(game.currentPlayer);
+            if (isMyTurn) {
+                $('dice-hint').textContent = '正在自动投掷骰子...';
+                $('action-hint').textContent = '🎯 正在投掷骰子...';
+                setTimeout(function () { doRollDice(); }, 500);
+            } else {
+                $('dice-hint').textContent = '⏳ 等待对方投掷骰子...';
+                $('action-hint').textContent = '⏳ 等待对方投掷骰子...';
+            }
+        } else {
+            $('dice-hint').textContent = '请点击下方按钮投掷骰子';
+            $('btn-roll-dice').style.display = 'block';
+            $('btn-roll-dice').disabled = false;
+        }
     }
 
     function doRollDice() {
         if (diceRolled || game.phase !== 'dice') return;
+        if (isOnlineMode && !canIOperate(game.currentPlayer)) return;
         diceRolled = true;
         var btn = $('btn-roll-dice');
         if (btn) btn.style.display = 'none';
@@ -908,14 +1112,12 @@
                 var fl = playerLabel(game.firstAttacker), fn = getPlayer(game.firstAttacker).char.name;
                 $('dice-result').innerHTML = '点数：<strong style="font-size:24px;">' + result + '</strong>（' + (isOdd ? '单数' : '双数') + '）<br><span style="color:var(--gold-light);font-size:18px;">' + fl + '（' + fn + '）先攻！</span>';
                 playSound('result'); speak('点数' + result + '，' + fl + fn + '先攻');
+                notifyPeer('dice-roll', { value: result });
                 setTimeout(function () {
                     var diceArea = $('dice-area');
                     if (diceArea) {
                         diceArea.classList.add('hidden');
-                        setTimeout(function () {
-                            if (diceArea) diceArea.innerHTML = '';
-                            startAttackPhase(false);
-                        }, 300);
+                        startAttackPhase(false);
                     } else {
                         startAttackPhase(false);
                     }
@@ -926,18 +1128,22 @@
     window.doRollDice = doRollDice;
 
     function startAttackPhase(isCounter) {
+        console.log('[ startAttackPhase ] isCounter:', isCounter, 'firstAttacker:', game.firstAttacker, 'secondAttacker:', game.secondAttacker);
         game.phase = 'attack-select';
         game.isCounterPhase = !!isCounter;
         game.phaseAttacker = isCounter ? game.secondAttacker : game.firstAttacker;
         game.phaseDefender = isCounter ? game.firstAttacker : game.secondAttacker;
+        console.log('[ startAttackPhase ] 设置完成 - isCounterPhase:', game.isCounterPhase, 'phaseAttacker:', game.phaseAttacker, 'phaseDefender:', game.phaseDefender);
         game.currentAttackIndex = 0;
         game.bonusAttacks = 0;
         game.attackReduction = 0;
+        game.tempDefenseReduction = 0;
         game.selectedCardUid = null;
         game.currentAttackCard = null;
         game.currentDefendCard = null;
         game.noDefendFlag = false;
         game.noDefendUsedThisRound = false;
+        game.usedSkillsThisRound = {};
         clearTableCards();
 
         var atkChar = getPlayer(game.phaseAttacker).char;
@@ -950,10 +1156,10 @@
             speak(atkChar.name + '没有攻击卡牌');
             if (isCounter) {
                 $('center-actions').innerHTML = '<button class="btn btn-primary" id="btn-center-nr">进入下一轮 →</button>';
-                $('btn-center-nr').addEventListener('click', function () { playSound('click'); $('center-actions').innerHTML = ''; nextRound(); });
+                $('btn-center-nr').addEventListener('click', function () { playSound('click'); $('center-actions').innerHTML = ''; notifyPeer('end-attack', { currentAttackIndex: game.currentAttackIndex, attackReduction: game.attackReduction, bonusAttacks: game.bonusAttacks, isCounterPhase: true }); nextRound(); });
             } else {
                 $('center-actions').innerHTML = '<button class="btn btn-primary" id="btn-center-counter">后攻方反击 →</button>';
-                $('btn-center-counter').addEventListener('click', function () { playSound('click'); $('center-actions').innerHTML = ''; startAttackPhase(true); });
+                $('btn-center-counter').addEventListener('click', function () { playSound('click'); $('center-actions').innerHTML = ''; notifyPeer('start-counter', { isCounterPhase: true }); startAttackPhase(true); });
             }
             return;
         }
@@ -963,6 +1169,7 @@
 
     function showAttackCardSelect() {
         processPendingSkills();
+        game.noDefendFlag = false;
         var atkChar = getPlayer(game.phaseAttacker).char;
         var atkCards = getPlayer(game.phaseAttacker).library.filter(function (c) { return c.type === 'attack'; });
 
@@ -1011,19 +1218,31 @@
 
         if (defCards.length === 0) {
             game.currentDefendCard = null;
-            game.phase = 'defend-select'; game.selectedCardUid = null;
-            setActivePlayer(game.phaseDefender);
-            updateAttackProgress();
-            hideAllOps();
-            showSection('card-select-area');
-
-            var maxAtk = getMaxAttacks();
-            $('action-hint').textContent = '防御阶段（攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）- 您没有防御卡牌';
-            showOp(game.phaseDefender, 'skip-defend');
-            showOp(game.phaseDefender, 'sell');
-            showOp(game.phaseDefender, 'buy');
-            setOpsStatus(game.phaseDefender, '您没有防御卡牌，请选择操作');
-            announcePlayerTurn(game.phaseDefender, '您没有防御卡牌，请选择是否跳过防御');
+            if (isOnlineMode && !canIOperate(game.phaseDefender)) {
+                var prefix = 'player-' + game.phaseDefender.toLowerCase();
+                var selectArea = $(prefix + '-select-area');
+                var selectTitle = $(prefix + '-select-title');
+                var selectCards = $(prefix + '-select-cards');
+                if (selectArea) selectArea.classList.remove('hidden');
+                if (selectTitle) selectTitle.textContent = '🛡️ 对方没有防御卡牌';
+                if (selectCards) selectCards.innerHTML = '<div style="color:var(--text-dim);padding:12px;text-align:center;font-size:13px;">' + playerLabel(game.phaseDefender) + ' 没有防御卡牌，自动跳过防御</div>';
+                setOpsStatus(game.phaseDefender, '⏳ 等待对方确认...');
+                setTimeout(function () { resolveSingleAttack(); }, 800);
+            } else {
+                setActivePlayer(game.phaseDefender);
+                updateAttackProgress();
+                hideAllOps();
+                showSection('card-select-area');
+                var maxAtk = getMaxAttacks();
+                $('action-hint').textContent = '防御阶段（攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）- 您没有防御卡牌';
+                showOp(game.phaseDefender, 'skip-defend');
+                showOp(game.phaseDefender, 'sell');
+                showOp(game.phaseDefender, 'buy');
+                showOp(game.phaseDefender, 'synthesis');
+                showOp(game.phaseDefender, 'cultivation');
+                setOpsStatus(game.phaseDefender, '您没有防御卡牌，请选择操作');
+                announcePlayerTurn(game.phaseDefender, '您没有防御卡牌，请选择是否跳过防御');
+            }
             return;
         }
 
@@ -1057,6 +1276,13 @@
             var sa = $('player-' + p + '-select-area');
             if (sa) sa.classList.add('hidden');
         });
+
+        if (isOnlineMode && !canIOperate(playerId)) {
+            if (selectArea) selectArea.classList.remove('hidden');
+            if (selectTitle) selectTitle.textContent = '⏳ 等待对方选择...';
+            if (selectCards) selectCards.innerHTML = '<div style="color:var(--text-dim);padding:12px;text-align:center;font-size:13px;">等待 ' + playerLabel(playerId) + ' 选择卡牌</div>';
+            return;
+        }
 
         var cards = player.library.filter(function (c) { return c.type === cardType; });
 
@@ -1287,6 +1513,7 @@
 
     function handleConfirmCard() {
         var pid = game.phase === 'attack-select' ? game.phaseAttacker : game.phaseDefender;
+        if (isOnlineMode && !canIOperate(pid)) return;
         var card = getSelectedCard(pid);
         if (!card) return; playSound('click');
         hideSelectAreas();
@@ -1296,20 +1523,29 @@
             removeFromLibrary(game.phaseAttacker, card);
             updatePlayerInfo();
             addTableCard(card, game.phaseAttacker);
+            notifyPeer('card-selected', { uid: card.uid, player: pid });
+            if (card.skill && card.skill.id === 'no_defend' && card.skill.timing === 'current' && !game.usedSkillsThisRound['no_defend']) {
+                game.noDefendFlag = true;
+                game.usedSkillsThisRound['no_defend'] = true;
+            }
             showCardPlayAnimation(card, pid, function () { showDefendCardSelect(); });
         } else if (game.phase === 'defend-select') {
             game.currentDefendCard = card;
             removeFromLibrary(game.phaseDefender, card);
             updatePlayerInfo();
             addTableCard(card, game.phaseDefender);
+            notifyPeer('card-selected', { uid: card.uid, player: pid });
             showCardPlayAnimation(card, pid, function () { resolveSingleAttack(); });
         }
     }
 
     function handleSkipDefend() {
+        var pid = game.phaseDefender;
+        if (isOnlineMode && !canIOperate(pid)) return;
         playSound('click');
         hideSelectAreas();
         game.currentDefendCard = null;
+        notifyPeer('skip-defend', {});
         resolveSingleAttack();
     }
 
@@ -1322,8 +1558,16 @@
 
         playSound('skill');
 
+        if (game.usedSkillsThisRound[skill.id]) {
+            resultHtml = '<div style="color:var(--text-dim);font-size:13px;margin:4px 0;">' + skill.icon + ' ' + skill.name + '技能本轮已经使用过，无法再次使用</div>';
+            speak(skill.name + '技能本轮已使用');
+            updatePlayerInfo();
+            return resultHtml;
+        }
+
         switch (skill.id) {
             case 'steal_card':
+                game.usedSkillsThisRound[skill.id] = true;
                 if (defender.library.length > 0) {
                     var stolenIdx = Math.floor(Math.random() * defender.library.length);
                     var stolenCard = defender.library.splice(stolenIdx, 1)[0];
@@ -1335,12 +1579,9 @@
                 }
                 break;
             case 'no_defend':
-                if (game.noDefendUsedThisRound) {
-                    resultHtml = '<div style="color:var(--text-dim);font-size:13px;margin:4px 0;">💥 破防技能本轮已经使用过，无法再次使用</div>';
-                    speak('破防技能本轮已使用');
-                } else if (skill.timing === 'current') {
+                game.usedSkillsThisRound[skill.id] = true;
+                if (skill.timing === 'current') {
                     game.noDefendFlag = true;
-                    game.noDefendUsedThisRound = true;
                     resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">💥 破防技能触发！对方本次不能使用防御！</div>';
                     speak(skill.name + '触发，对方不能防御');
                 } else if (skill.timing === 'next') {
@@ -1359,22 +1600,13 @@
                 speak(skill.name + '触发，对方不能防御');
                 break;
             case 'reduce_attack':
-                if (skill.timing === 'next') {
-                    game.pendingSkills.push({
-                        skillId: skill.id,
-                        targetPid: defenderPid,
-                        timing: 'next',
-                        turnIndex: game.currentTurnIndex + 1,
-                        executed: false
-                    });
-                    resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">⬇️ 削弱技能触发！对方下次攻击次数减少一次！</div>';
-                } else {
-                    game.attackReduction += 1;
-                    resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">⬇️ 削弱技能触发！对方攻击次数减少一次！</div>';
-                }
-                speak(skill.name + '触发，对方攻击次数减少');
+                game.usedSkillsThisRound[skill.id] = true;
+                game.tempDefenseReduction += 0.2;
+                resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">⬇️ 削弱技能触发！对方本次防御值减少20%！</div>';
+                speak(skill.name + '触发，对方防御值减少');
                 break;
             case 'replace_epic':
+                game.usedSkillsThisRound[skill.id] = true;
                 var epicCards = defender.library.filter(function (c) { return c.rarity === 'epic'; });
                 if (epicCards.length > 0) {
                     var targetCard = epicCards[Math.floor(Math.random() * epicCards.length)];
@@ -1394,6 +1626,7 @@
                 }
                 break;
             case 'block_ability':
+                game.usedSkillsThisRound[skill.id] = true;
                 if (skill.timing === 'next') {
                     game.pendingSkills.push({
                         skillId: skill.id,
@@ -1432,8 +1665,8 @@
                     speak('破防效果生效，对方本次不能防御');
                     break;
                 case 'reduce_attack':
-                    game.attackReduction += 1;
-                    speak('削弱效果生效，攻击次数减少');
+                    game.tempDefenseReduction += 0.2;
+                    speak('削弱效果生效，防御值减少');
                     break;
                 case 'block_ability':
                     if (effect.targetPid === 'A') game.blockAbilityA = true;
@@ -1501,6 +1734,14 @@
         if (defCard && defCard.skill) {
             var defSkillHtml = applyEpicSkill(defCard, game.phaseDefender, game.phaseAttacker);
             epicSkillHtml += defSkillHtml;
+        }
+
+        if (game.tempDefenseReduction > 0 && defWithBonus > 0) {
+            var reducedDef = Math.round(defWithBonus * (1 - game.tempDefenseReduction));
+            defWithBonus = Math.max(0, reducedDef);
+            finalDamage = Math.max(0, atkWithBonus - defWithBonus);
+            hpLoss = finalDamage / 30;
+            game.tempDefenseReduction = 0;
         }
 
         var maxAtk = getMaxAttacks();
@@ -1581,6 +1822,7 @@
         var maxAtk = getMaxAttacks();
 
         if (game.currentAttackIndex >= maxAtk || atkCards.length === 0) {
+            notifyPeer('end-attack', { currentAttackIndex: game.currentAttackIndex, attackReduction: game.attackReduction, bonusAttacks: game.bonusAttacks, isCounterPhase: game.isCounterPhase });
             afterAttackPhaseEnds();
             return;
         }
@@ -1603,9 +1845,22 @@
         hideAllOps();
         var el = $('attack-progress');
         if (el) el.style.display = 'none';
-        if (!game.isCounterPhase) {
+        console.log('[ afterAttackPhaseEnds ] isCounterPhase:', game.isCounterPhase, 'phaseAttacker:', game.phaseAttacker, 'firstAttacker:', game.firstAttacker, 'secondAttacker:', game.secondAttacker);
+
+        var shouldStartCounter = !game.isCounterPhase;
+
+        if (!shouldStartCounter && game.phaseAttacker === game.firstAttacker) {
+            console.warn('[ afterAttackPhaseEnds ] 状态不一致！phaseAttacker是先攻方但isCounterPhase为true，修正为开始反击阶段');
+            shouldStartCounter = true;
+        }
+
+        console.log('[ afterAttackPhaseEnds ] shouldStartCounter:', shouldStartCounter);
+
+        if (shouldStartCounter) {
+            console.log('[ afterAttackPhaseEnds ] 开始反击阶段 - 设置 isCounterPhase = true');
             startAttackPhase(true);
         } else {
+            console.log('[ afterAttackPhaseEnds ] 进入下一轮');
             nextRound();
         }
     }
@@ -1728,6 +1983,10 @@
                 hideSelectAreas();
                 hideAllOps();
                 showOp(game.phaseDefender, 'skip-defend');
+                showOp(game.phaseDefender, 'sell');
+                showOp(game.phaseDefender, 'buy');
+                showOp(game.phaseDefender, 'synthesis');
+                showOp(game.phaseDefender, 'cultivation');
                 setOpsStatus(game.phaseDefender, '没有防御卡牌了');
                 return;
             }
@@ -1784,6 +2043,7 @@
                 if (idx >= 0) player.library.splice(idx, 1);
                 playSound('coin');
                 updatePlayerInfo();
+                notifyPeer('sell-card', { uid: uid, pid: pid });
                 hideModal();
                 showSellModal(pid);
             });
@@ -1847,6 +2107,7 @@
                         player.library.push(newCard);
                         playSound('coin');
                         updatePlayerInfo();
+                        notifyPeer('buy-card', { weaponId: wp.id, price: wp.price, pid: pid, cardUid: newCard.uid });
                         hideModal();
                         showCardPreview(newCard);
                         setTimeout(function () {
@@ -1947,6 +2208,7 @@
                                 var newCard = Object.assign({}, wp); newCard.uid = newCardUid();
                                 player.library.push(newCard);
                                 updatePlayerInfo();
+                                notifyPeer('buy-card', { weaponId: wp.id, price: rareWheelPrice, pid: pid, cardUid: newCard.uid });
                                 var rarityName = RARITY_NAMES[wp.rarity];
                                 speak('恭喜获得' + rarityName + '装备' + wp.name);
                                 hideModal();
@@ -1994,6 +2256,7 @@
                         player.library.push(newCard);
                         playSound('coin');
                         updatePlayerInfo();
+                        notifyPeer('buy-card', { weaponId: wp.id, price: wp.price, pid: pid, cardUid: newCard.uid });
                         speak('购买成功，获得' + wp.name);
                         hideModal();
                         showCardPreview(newCard);
@@ -2019,23 +2282,79 @@
     function initGameOver() {
         $('btn-restart').addEventListener('click', function () {
             playSound('click');
-            var sm = game.mode, ss = game.soundEnabled;
-            game = {
-                mode: sm, phase: 'start', currentPlayer: 'A', round: 1,
-                playerA: { char: null, hp: 0, maxHp: 0, library: [], roundCards: [], gold: 3000 },
-                playerB: { char: null, hp: 0, maxHp: 0, library: [], roundCards: [], gold: 3000 },
-                firstAttacker: null, secondAttacker: null,
-                weaponDrawCount: 0, weaponDrawPlayer: 'A',
-                selectedCardUid: null, soundEnabled: ss, voiceEnabled: ss,
-                totalDamageA: 0, totalDamageB: 0, usedCharIds: [],
-                currentDrawnCard: null, currentAttackIndex: 0, bonusAttacks: 0,
-                phaseAttacker: null, phaseDefender: null, isCounterPhase: false,
-                currentAttackCard: null, currentDefendCard: null, roundLog: [],
-                allRoundLogs: [], tableCards: [],
-                noDefendFlag: false, blockAbilityA: false, blockAbilityB: false, attackReduction: 0
-            };
-            wheelAngle = 0; cardUidCounter = 0; showScreen('screen-start');
+            if (isOnlineMode && Multiplayer.isConnected()) {
+                if (game.peerRematchRequested) {
+                    game.rematchRequested = true;
+                    notifyPeer('rematch-request', {});
+                    startRematch();
+                } else if (!game.rematchRequested) {
+                    $('btn-restart').disabled = true;
+                    $('btn-restart').textContent = '⏳ 等待对方确认...';
+                    game.rematchRequested = true;
+                    notifyPeer('rematch-request', {});
+                }
+            } else {
+                var sm = game.mode, ss = game.soundEnabled;
+                game = {
+                    mode: sm, phase: 'start', currentPlayer: 'A', round: 1,
+                    playerA: { char: null, hp: 0, maxHp: 0, library: [], roundCards: [], gold: 3000 },
+                    playerB: { char: null, hp: 0, maxHp: 0, library: [], roundCards: [], gold: 3000 },
+                    firstAttacker: null, secondAttacker: null,
+                    weaponDrawCount: 0, weaponDrawPlayer: 'A',
+                    selectedCardUid: null, soundEnabled: ss, voiceEnabled: ss,
+                    totalDamageA: 0, totalDamageB: 0, usedCharIds: [],
+                    currentDrawnCard: null, currentAttackIndex: 0, bonusAttacks: 0,
+                    phaseAttacker: null, phaseDefender: null, isCounterPhase: false,
+                    currentAttackCard: null, currentDefendCard: null, roundLog: [],
+                    allRoundLogs: [], tableCards: [],
+                    noDefendFlag: false, blockAbilityA: false, blockAbilityB: false, attackReduction: 0, tempDefenseReduction: 0,
+                    pendingSkills: [], nextTurnNoDefend: { A: false, B: false },
+                    currentTurnIndex: 0,
+                    characterBonus: { A: { atkBonus: 0, defBonus: 0 }, B: { atkBonus: 0, defBonus: 0 } },
+                    martialArts: { A: [], B: [] },
+                    synthesisState: { slotA: null, slotB: null, isProcessing: false, playerPid: null },
+                    cultivationState: { selectedArtId: null, isProcessing: false, playerPid: null },
+                    rematchRequested: false, peerRematchRequested: false
+                };
+                wheelAngle = 0; cardUidCounter = 0; showScreen('screen-start');
+            }
         });
+    }
+
+    function startRematch() {
+        console.log('[ rematch ] 开始新一局');
+        var ss = game.soundEnabled;
+        console.log('[ rematch ] isOnlineMode:', isOnlineMode, 'Multiplayer.isConnected():', Multiplayer.isConnected());
+        vsAnimationShown = false;
+        console.log('[ rematch ] 重置 vsAnimationShown = false');
+        game = {
+            mode: 'online', phase: 'start', currentPlayer: 'A', round: 1,
+            playerA: { char: null, hp: 0, maxHp: 0, library: [], roundCards: [], gold: 3000 },
+            playerB: { char: null, hp: 0, maxHp: 0, library: [], roundCards: [], gold: 3000 },
+            firstAttacker: null, secondAttacker: null,
+            weaponDrawCount: 0, weaponDrawPlayer: 'A',
+            selectedCardUid: null, soundEnabled: ss, voiceEnabled: ss,
+            totalDamageA: 0, totalDamageB: 0, usedCharIds: [],
+            currentDrawnCard: null, currentAttackIndex: 0, bonusAttacks: 0,
+            phaseAttacker: null, phaseDefender: null, isCounterPhase: false,
+            currentAttackCard: null, currentDefendCard: null, roundLog: [],
+            allRoundLogs: [], tableCards: [],
+            noDefendFlag: false, noDefendUsedThisRound: false, usedSkillsThisRound: {},
+            blockAbilityA: false, blockAbilityB: false, attackReduction: 0, tempDefenseReduction: 0,
+            pendingSkills: [], nextTurnNoDefend: { A: false, B: false },
+            currentTurnIndex: 0,
+            characterBonus: { A: { atkBonus: 0, defBonus: 0 }, B: { atkBonus: 0, defBonus: 0 } },
+            martialArts: { A: [], B: [] },
+            synthesisState: { slotA: null, slotB: null, isProcessing: false, playerPid: null },
+            cultivationState: { selectedArtId: null, isProcessing: false, playerPid: null },
+            rematchRequested: false, peerRematchRequested: false
+        };
+        wheelAngle = 0; cardUidCounter = 0;
+        $('char-result').classList.add('hidden');
+        $('btn-spin-char').disabled = false;
+        hideModal();
+        console.log('[ rematch ] 调用 startCharacterSelect()');
+        startCharacterSelect();
     }
 
     function initSwitchPlayer() { $('btn-switch-player').addEventListener('click', function () { playSound('click'); switchPlayer(); }); }
@@ -2072,12 +2391,16 @@
             $('btn-' + p + '-continue-attack').addEventListener('click', function () {
                 var pid = p === 'a' ? 'A' : 'B';
                 if (game.phaseAttacker !== pid) return;
+                if (isOnlineMode && !canIOperate(pid)) return;
                 playSound('click'); showAttackCardSelect();
+                notifyPeer('continue-attack', { currentAttackIndex: game.currentAttackIndex, attackReduction: game.attackReduction, bonusAttacks: game.bonusAttacks, isCounterPhase: game.isCounterPhase });
             });
             $('btn-' + p + '-end-attack').addEventListener('click', function () {
                 var pid = p === 'a' ? 'A' : 'B';
                 if (game.phaseAttacker !== pid) return;
+                if (isOnlineMode && !canIOperate(pid)) return;
                 playSound('click'); afterAttackPhaseEnds();
+                notifyPeer('end-attack', { currentAttackIndex: game.currentAttackIndex, attackReduction: game.attackReduction, bonusAttacks: game.bonusAttacks, isCounterPhase: game.isCounterPhase });
             });
         });
     }
@@ -2087,12 +2410,14 @@
             $('btn-' + p + '-sell').addEventListener('click', function () {
                 var pid = p === 'a' ? 'A' : 'B';
                 if (game.currentPlayer !== pid) return;
+                if (isOnlineMode && !canIOperate(pid)) return;
                 playSound('click');
                 showSellModal(pid);
             });
             $('btn-' + p + '-buy').addEventListener('click', function () {
                 var pid = p === 'a' ? 'A' : 'B';
                 if (game.currentPlayer !== pid) return;
+                if (isOnlineMode && !canIOperate(pid)) return;
                 playSound('click');
                 showBuyModal(pid);
             });
@@ -2104,8 +2429,586 @@
         initStartScreen(); initCharacterSelect(); initWeaponDraw();
         initCardSelect(); initContinueChoice();
         initGameOver(); initCardPreview(); initSellBuy();
-        initSynthesisCultivationButtons();
+        initSynthesisCultivationButtons(); initMultiplayer();
         showScreen('screen-start');
+    }
+
+    var lobbyReady = false;
+
+    function initMultiplayer() {
+        $('tab-create').addEventListener('click', function () {
+            document.querySelectorAll('.btn-tab').forEach(function (t) { t.classList.remove('active'); });
+            document.querySelectorAll('.lobby-panel').forEach(function (p) { p.classList.remove('active'); });
+            this.classList.add('active');
+            $('panel-create').classList.add('active');
+        });
+        $('tab-join').addEventListener('click', function () {
+            document.querySelectorAll('.btn-tab').forEach(function (t) { t.classList.remove('active'); });
+            document.querySelectorAll('.lobby-panel').forEach(function (p) { p.classList.remove('active'); });
+            this.classList.add('active');
+            $('panel-join').classList.add('active');
+        });
+
+        $('btn-create-room').addEventListener('click', handleCreateRoom);
+        $('btn-join-room').addEventListener('click', handleJoinRoom);
+        $('btn-copy-room').addEventListener('click', handleCopyRoomId);
+        $('btn-start-online').addEventListener('click', handleStartOnlineGame);
+        $('btn-leave-lobby').addEventListener('click', handleLeaveLobby);
+        $('btn-leave-join').addEventListener('click', handleLeaveLobby);
+        $('btn-disconnect-ok').addEventListener('click', function () {
+            $('disconnect-notice').classList.add('hidden');
+            Multiplayer.cleanup();
+            isOnlineMode = false;
+            initLobby();
+            showScreen('screen-start');
+        });
+
+        $('input-room-id').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') handleJoinRoom();
+        });
+
+        Multiplayer.on('connected', function (info) {
+            playSound('result');
+            updateOnlineStatusBar();
+            if (info.isHost) {
+                $('peer-info').classList.remove('hidden');
+                $('create-status').textContent = '✅ 对方已连接！';
+                $('btn-create-room').classList.add('hidden');
+                $('btn-start-online').classList.remove('hidden');
+                lobbyReady = true;
+            } else {
+                $('join-peer-info').classList.remove('hidden');
+                $('join-status').textContent = '✅ 已连接到房主';
+                $('btn-join-room').classList.add('hidden');
+                lobbyReady = true;
+            }
+        });
+
+        Multiplayer.on('disconnected', function () {
+            updateOnlineStatusBar();
+            showDisconnectNotice('对方已断开连接');
+        });
+
+        Multiplayer.on('connection-error', function () {
+            showDisconnectNotice('连接发生错误');
+        });
+
+        Multiplayer.on('peer-left', function (data) {
+            updateOnlineStatusBar();
+            showDisconnectNotice('对方已离开游戏');
+        });
+
+        Multiplayer.on('peer-timeout', function () {
+            updateOnlineStatusBar();
+            showDisconnectNotice('对方已掉线（无心跳响应）');
+            Multiplayer.cleanup();
+        });
+
+        Multiplayer.on('game:action', function (msg) {
+            handlePeerAction(msg.action, msg.payload, msg.from);
+        });
+
+        Multiplayer.on('game:sync', function (data) {
+            handlePeerAction('sync', data, null);
+        });
+
+        window.addEventListener('beforeunload', function () {
+            if (Multiplayer.isConnected()) {
+                Multiplayer.sendLeaveNotice();
+            }
+        });
+    }
+
+    function initLobby() {
+        lobbyReady = false;
+        $('room-created-area').classList.add('hidden');
+        $('peer-info').classList.add('hidden');
+        $('join-peer-info').classList.add('hidden');
+        $('btn-create-room').classList.remove('hidden');
+        $('btn-start-online').classList.add('hidden');
+        $('btn-join-room').classList.remove('hidden');
+        $('create-status').textContent = '等待中...';
+        $('join-status').textContent = '';
+        $('input-room-id').value = 'CG_';
+        document.querySelectorAll('.btn-tab').forEach(function (t) { t.classList.remove('active'); });
+        document.querySelectorAll('.lobby-panel').forEach(function (p) { p.classList.remove('active'); });
+        $('tab-create').classList.add('active');
+        $('panel-create').classList.add('active');
+    }
+
+    function handleCreateRoom() {
+        var btn = $('btn-create-room');
+        btn.disabled = true; btn.textContent = '创建中...';
+        $('create-status').textContent = '⏳ 正在创建房间...';
+
+        Multiplayer.createRoom().then(function (id) {
+            btn.style.display = 'none';
+            $('room-created-area').classList.remove('hidden');
+            $('my-room-id').textContent = id;
+            $('create-status').textContent = '✅ 房间已创建，等待对方加入...';
+            playSound('bonus');
+        }).catch(function (err) {
+            btn.disabled = false; btn.textContent = '创建房间';
+            $('create-status').textContent = '❌ ' + err.message;
+            playSound('lose');
+        });
+    }
+
+    function handleJoinRoom() {
+        var id = $('input-room-id').value.trim();
+        if (!id) { $('join-status').textContent = '❌ 请输入房间号'; return; }
+        var btn = $('btn-join-room');
+        btn.disabled = true; btn.textContent = '连接中...';
+        $('join-status').textContent = '⏳ 正在连接...';
+
+        Multiplayer.joinRoom(id).then(function () {
+            $('join-status').textContent = '✅ 连接成功！';
+            playSound('bonus');
+        }).catch(function (err) {
+            btn.disabled = false; btn.textContent = '加入房间';
+            $('join-status').textContent = '❌ ' + err.message;
+            playSound('lose');
+        });
+    }
+
+    function handleCopyRoomId() {
+        var id = Multiplayer.getRoomId();
+        if (!id) return;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(id).then(function () {
+                $('btn-copy-room').textContent = '✅ 已复制';
+                setTimeout(function () { $('btn-copy-room').textContent = '📋 复制房间号'; }, 1500);
+            });
+        } else {
+            var input = document.createElement('input');
+            input.value = id; document.body.appendChild(input); input.select();
+            document.execCommand('copy'); document.body.removeChild(input);
+            $('btn-copy-room').textContent = '✅ 已复制';
+            setTimeout(function () { $('btn-copy-room').textContent = '📋 复制房间号'; }, 1500);
+        }
+    }
+
+    function handleStartOnlineGame() {
+        if (!lobbyReady || !Multiplayer.isConnected()) {
+            alert('对方尚未准备好');
+            return;
+        }
+        playSound('click');
+        isOnlineMode = true;
+        game.mode = 'online';
+        Multiplayer.sendGameAction('start-game', { role: 'A' });
+        Multiplayer.sendSync({ action: 'start-game', role: 'A' });
+        setTimeout(function () {
+            if (Multiplayer.isConnected()) {
+                Multiplayer.sendGameAction('start-game', { role: 'A', retry: true });
+            }
+        }, 1000);
+        startCharacterSelect();
+    }
+
+    function handleLeaveLobby() {
+        Multiplayer.cleanup();
+        isOnlineMode = false;
+        playSound('click');
+        initLobby();
+        showScreen('screen-start');
+    }
+
+    function showDisconnectNotice(reason) {
+        $('disconnect-reason').textContent = reason || '对方已离开游戏';
+        $('disconnect-notice').classList.remove('hidden');
+        playSound('lose');
+    }
+
+    function canIOperate(pid) {
+        if (!isOnlineMode) return true;
+        return Multiplayer.amIPlayer(pid);
+    }
+
+    function notifyPeer(action, payload) {
+        if (!isOnlineMode || !Multiplayer.isConnected()) return;
+        Multiplayer.sendGameAction(action, payload);
+    }
+
+    function handlePeerAction(action, payload, from) {
+        switch (action) {
+            case 'start-game':
+                isOnlineMode = true;
+                game.mode = 'online';
+                startCharacterSelect();
+                break;
+            case 'sync':
+                if (payload.action === 'start-game') {
+                    isOnlineMode = true;
+                    game.mode = 'online';
+                    startCharacterSelect();
+                }
+                break;
+            case 'battle-init':
+                applyBattleInit(payload);
+                break;
+            case 'char-spin-result':
+                applyCharSpinResult(payload.charId);
+                break;
+            case 'char-confirm':
+                if (from === 'A') {
+                    game.currentPlayer = 'B';
+                    $('char-result').classList.add('hidden');
+                    $('btn-spin-char').disabled = false;
+                    var ac2 = CHARACTERS.filter(function (c) { return game.usedCharIds.indexOf(c.id) === -1; });
+                    var ci2 = ac2.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
+                    wheelAngle = 0; drawWheel('character-wheel', ci2);
+                    updateCharSelectUI();
+                } else {
+                    showVSAnimation();
+                }
+                break;
+            case 'weapon-spin':
+                applyWeaponSpinResult(payload.weapon, payload.player);
+                break;
+            case 'dice-roll':
+                applyDiceResult(payload.value);
+                break;
+            case 'card-selected':
+                applyCardSelected(payload.uid, payload.player);
+                break;
+            case 'skip-defend':
+                handleSkipDefendRemote();
+                break;
+            case 'continue-attack':
+                if (payload && payload.currentAttackIndex !== undefined) { game.currentAttackIndex = payload.currentAttackIndex; }
+                if (payload && payload.attackReduction !== undefined) { game.attackReduction = payload.attackReduction; }
+                if (payload && payload.bonusAttacks !== undefined) { game.bonusAttacks = payload.bonusAttacks; }
+                if (payload && payload.isCounterPhase !== undefined) { game.isCounterPhase = payload.isCounterPhase; }
+                updateAttackProgress();
+                showAttackCardSelect();
+                break;
+            case 'end-attack':
+                if (payload && payload.currentAttackIndex !== undefined) { game.currentAttackIndex = payload.currentAttackIndex; }
+                if (payload && payload.attackReduction !== undefined) { game.attackReduction = payload.attackReduction; }
+                if (payload && payload.bonusAttacks !== undefined) { game.bonusAttacks = payload.bonusAttacks; }
+                if (payload && payload.isCounterPhase !== undefined) { game.isCounterPhase = payload.isCounterPhase; }
+                updateAttackProgress();
+                afterAttackPhaseEnds();
+                break;
+            case 'start-counter':
+                startAttackPhase(true);
+                break;
+            case 'sell-card':
+                applySellCard(payload.uid, payload.pid);
+                break;
+            case 'buy-card':
+                applyBuyCard(payload);
+                break;
+            case 'weapon-draw-complete':
+                applyWeaponDrawComplete(payload);
+                break;
+            case 'synthesis-result':
+                applySynthesisResult(payload);
+                break;
+            case 'cultivation-result':
+                applyCultivationResult(payload);
+                break;
+            case 'rematch-request':
+                game.peerRematchRequested = true;
+                if (game.rematchRequested) {
+                    startRematch();
+                } else {
+                    $('btn-restart').disabled = false;
+                    $('btn-restart').textContent = '对方请求再来一局，点击确认';
+                }
+                break;
+        }
+    }
+
+    function applyCharSpinResult(charId) {
+        var ch = CHARACTERS.find(function (c) { return c.id === charId; });
+        if (!ch) return;
+        var targetPlayer = game.currentPlayer === 'A' ? game.playerA : game.playerB;
+        targetPlayer.char = ch; targetPlayer.hp = ch.hp; targetPlayer.maxHp = ch.maxHp;
+        game.usedCharIds.push(ch.id);
+        $('char-info-display').innerHTML = '<div class="char-emoji">' + ch.emoji + '</div><div class="char-name">' + ch.name + '</div><div class="char-stat">血量：' + ch.hp + '点（' + (ch.hp * 10) + '伤害值）</div><div class="char-ability">特殊能力：' + generateAbilityDesc(ch) + '</div>';
+        $('char-result').classList.remove('hidden');
+        playSound('result');
+        updateCharSelectUI();
+        setTimeout(function () { autoConfirmChar(); }, 2000);
+    }
+
+    function applyWeaponSpinResult(weaponData, pid) {
+        console.log('[ Weapon ] 收到 weapon-spin 消息, weaponData:', weaponData, 'pid:', pid);
+        var wp = WEAPONS.find(function (w) { return w.id === weaponData.id; });
+        if (!wp) {
+            console.error('[ Weapon ] ❌ 找不到武器 id:', weaponData.id);
+            return;
+        }
+        var drawn = Object.assign({}, wp); drawn.uid = weaponData.uid;
+        var player = getPlayer(pid);
+        console.log('[ Weapon ] 添加武器到玩家', pid, ', uid:', drawn.uid, 'name:', wp.name, ', 当前库大小:', player.library.length);
+        player.roundCards.push(drawn); player.library.push(drawn);
+        game.weaponDrawCount++;
+        console.log('[ Weapon ] 添加后库大小:', player.library.length, 'weaponDrawCount:', game.weaponDrawCount);
+        updateLibraryDisplay([drawn.uid]);
+        renderWeaponDrawnCard(drawn);
+        advanceWeaponDrawPhase();
+    }
+
+    function applyWeaponDrawComplete(data) {
+        console.log('[ Weapon ] 收到武器抽取完成同步消息');
+        console.log('[ Weapon ] 同步数据 libraryA长度:', data.libraryA.length, 'libraryB长度:', data.libraryB.length);
+
+        game.playerA.library = data.libraryA.map(function (c) {
+            var w = WEAPONS.find(function (w) { return w.id === c.id; });
+            return w ? Object.assign({}, w, { uid: c.uid }) : null;
+        }).filter(Boolean);
+
+        game.playerB.library = data.libraryB.map(function (c) {
+            var w = WEAPONS.find(function (w) { return w.id === c.id; });
+            return w ? Object.assign({}, w, { uid: c.uid }) : null;
+        }).filter(Boolean);
+
+        game.playerA.roundCards = data.roundCardsA.map(function (uid) {
+            return game.playerA.library.find(function (c) { return c.uid === uid; });
+        }).filter(Boolean);
+
+        game.playerB.roundCards = data.roundCardsB.map(function (uid) {
+            return game.playerB.library.find(function (c) { return c.uid === uid; });
+        }).filter(Boolean);
+
+        console.log('[ Weapon ] 同步后 玩家A库大小:', game.playerA.library.length, 'roundCards:', game.playerA.roundCards.length);
+        console.log('[ Weapon ] 同步后 玩家B库大小:', game.playerB.library.length, 'roundCards:', game.playerB.roundCards.length);
+
+        updatePlayerInfo();
+        updateLibraryDisplay([]);
+    }
+
+    function renderWeaponDrawnCard(drawn) {
+        var isRare = drawn.rarity === 'rare' || drawn.rarity === 'epic' || drawn.rarity === 'legend';
+        var cardCls = 'weapon-card rarity-' + drawn.rarity;
+        if (isRare) cardCls += ' rarity-highlight';
+        var typeLabel = drawn.type === 'attack' ? '攻击' : '防御';
+        var valueLabel = drawn.type === 'attack' ? '伤害' : '防御';
+        var highlightTag = '';
+        if (drawn.rarity === 'rare') highlightTag = '<div class="rarity-tag rare-tag">✨ 稀有装备 ✨</div>';
+        else if (drawn.rarity === 'epic') highlightTag = '<div class="rarity-tag epic-tag">💥 史诗装备 💥</div>';
+        else if (drawn.rarity === 'legend') highlightTag = '<div class="rarity-tag legend-tag">👑 传说装备 👑</div>';
+        var skillTag = '';
+        if (drawn.skill) skillTag = '<div style="margin-top:6px;padding:4px 8px;background:rgba(156,39,176,0.2);border:1px solid rgba(156,39,176,0.5);border-radius:4px;font-size:11px;color:#ce93d8;">' + drawn.skill.icon + ' ' + drawn.skill.name + '：' + drawn.skill.desc + '</div>';
+
+        $('drawn-cards').innerHTML = highlightTag + '<div class="' + cardCls + '" data-uid="' + drawn.uid + '">' +
+            '<span class="card-type ' + drawn.type + '">' + typeLabel + '</span>' +
+            '<span class="card-icon">' + drawn.icon + '</span>' +
+            '<span class="card-name">' + drawn.name + '</span>' +
+            '<span class="card-value">' + valueLabel + ':' + drawn.value + '</span>' +
+            '<span class="card-price">💰' + drawn.price + '</span></div>' + skillTag;
+        var cardEl = $('drawn-cards').querySelector('.weapon-card');
+        if (cardEl) cardEl.addEventListener('click', function () { showCardPreview(drawn); });
+        if (isRare) playSound('rare'); else playSound('result');
+    }
+
+    function applyDiceResult(value) {
+        var diceEl = $('dice-face');
+        diceEl.textContent = value;
+        var isOdd = value % 2 === 1;
+        game.firstAttacker = isOdd ? 'A' : 'B';
+        game.secondAttacker = isOdd ? 'B' : 'A';
+        var fl = playerLabel(game.firstAttacker), fn = getPlayer(game.firstAttacker).char.name;
+        $('dice-result').innerHTML = '点数：<strong style="font-size:24px;">' + value + '</strong>（' + (isOdd ? '单数' : '双数') + '）<br><span style="color:var(--gold-light);font-size:18px;">' + fl + '（' + fn + '）先攻！</span>';
+        $('dice-result').classList.remove('hidden');
+        $('btn-roll-dice').disabled = true;
+        playSound('dice');
+        setTimeout(function () {
+            var diceArea = $('dice-area');
+            if (diceArea) {
+                diceArea.classList.add('hidden');
+                startAttackPhase(false);
+            } else {
+                startAttackPhase(false);
+            }
+        }, 2000);
+    }
+
+    function applySynthesisResult(payload) {
+        var pid = payload.player;
+        var player = getPlayer(pid);
+
+        payload.removedCards.forEach(function(rc) {
+            var card = player.library.find(function(c) { return c.uid === rc.uid; });
+            if (card) {
+                var idx = player.library.indexOf(card);
+                if (idx > -1) player.library.splice(idx, 1);
+            }
+        });
+
+        if (payload.success && payload.newCard) {
+            var newCard = Object.assign({}, payload.newCard);
+            player.library.push(newCard);
+            updateLibraryDisplay([newCard.uid]);
+        }
+
+        updatePlayerInfo();
+        updateLibraryDisplay();
+        renderLearnedMartialArts('A');
+        renderLearnedMartialArts('B');
+        refreshCurrentCardSelect();
+
+        if (game.phase === 'attack-select') {
+            renderCardHand(game.phaseAttacker, 'attack');
+        } else if (game.phase === 'defend-select') {
+            renderCardHand(game.phaseDefender, 'defend');
+        }
+
+        speak(payload.success ? '对方合成成功' : '对方合成失败');
+    }
+
+    function applyCultivationResult(payload) {
+        var pid = payload.player;
+        var player = getPlayer(pid);
+
+        payload.removedCards.forEach(function(rc) {
+            var card = player.library.find(function(c) { return c.uid === rc.uid; });
+            if (card) {
+                var idx = player.library.indexOf(card);
+                if (idx > -1) player.library.splice(idx, 1);
+            }
+        });
+
+        if (payload.success && payload.artId) {
+            if (game.martialArts[pid].indexOf(payload.artId) === -1) {
+                game.martialArts[pid].push(payload.artId);
+            }
+        }
+
+        updatePlayerInfo();
+        updateLibraryDisplay();
+        renderLearnedMartialArts('A');
+        renderLearnedMartialArts('B');
+        refreshCurrentCardSelect();
+
+        if (game.phase === 'attack-select') {
+            renderCardHand(game.phaseAttacker, 'attack');
+        } else if (game.phase === 'defend-select') {
+            renderCardHand(game.phaseDefender, 'defend');
+        }
+
+        speak(payload.success ? '对方修炼成功，学会了' + payload.artName : '对方修炼失败');
+    }
+
+    function applyCardSelected(uid, selectorPid) {
+        console.log('[ Card ] 收到卡牌选择消息, uid:', uid, 'player:', selectorPid);
+        console.log('[ Card ] 当前 phase:', game.phase, 'phaseAttacker:', game.phaseAttacker, 'phaseDefender:', game.phaseDefender);
+
+        var selCard = findCardByUid(getPlayer(selectorPid), uid);
+        if (!selCard) {
+            console.error('[ Card ] ❌ 找不到卡牌 uid:', uid);
+            console.error('[ Card ] 玩家', selectorPid, '的卡牌库:');
+            var player = getPlayer(selectorPid);
+            if (player && player.library) {
+                player.library.forEach(function(c, idx) {
+                    console.error('   [' + idx + '] uid:', c.uid, 'name:', c.name, 'id:', c.id);
+                });
+            } else {
+                console.error('   卡牌库为空或不存在');
+            }
+            return;
+        }
+        playSound('click');
+        hideSelectAreas();
+
+        var isDefendSelection = (selectorPid === game.phaseDefender);
+        if (!isDefendSelection) {
+            game.currentAttackCard = selCard;
+            removeFromLibrary(game.phaseAttacker, selCard);
+            updatePlayerInfo();
+            addTableCard(selCard, game.phaseAttacker);
+            if (selCard.skill && selCard.skill.id === 'no_defend' && selCard.skill.timing === 'current' && !game.usedSkillsThisRound['no_defend']) {
+                game.noDefendFlag = true;
+                game.usedSkillsThisRound['no_defend'] = true;
+            }
+            showCardPlayAnimation(selCard, selectorPid, function () {
+                showDefendCardSelect();
+            });
+        } else {
+            game.currentDefendCard = selCard;
+            removeFromLibrary(game.phaseDefender, selCard);
+            updatePlayerInfo();
+            addTableCard(selCard, game.phaseDefender);
+            showCardPlayAnimation(selCard, selectorPid, function () {
+                resolveSingleAttack();
+            });
+        }
+    }
+
+    function handleSkipDefendRemote() {
+        game.currentDefendCard = null;
+        resolveSingleAttack();
+    }
+
+    function advanceWeaponDrawPhase() {
+        afterWeaponDrawAction();
+    }
+
+    function applyBattleInit(data) {
+        console.log('[ Battle ] 收到 battle-init 消息，开始初始化');
+        console.log('[ Battle ] 接收到的数据:', data);
+        game.phase = 'battle'; game.round = 1;
+        game.playerA.library = data.libraryA.map(function (c) {
+            var w = WEAPONS.find(function (w) { return w.id === c.id; });
+            return w ? Object.assign({}, w, { uid: c.uid }) : null;
+        }).filter(Boolean);
+        game.playerB.library = data.libraryB.map(function (c) {
+            var w = WEAPONS.find(function (w) { return w.id === c.id; });
+            return w ? Object.assign({}, w, { uid: c.uid }) : null;
+        }).filter(Boolean);
+        console.log('[ Battle ] 初始化后 libraryA 长度:', game.playerA.library.length, 'libraryB 长度:', game.playerB.library.length);
+        console.log('[ Battle ] 玩家A角色:', game.playerA.char ? game.playerA.char.name : 'null');
+        console.log('[ Battle ] 玩家B角色:', game.playerB.char ? game.playerB.char.name : 'null');
+        game.playerA.roundCards = []; game.playerB.roundCards = [];
+        game.playerA.gold = data.goldA;
+        game.playerB.gold = data.goldB;
+        game.totalDamageA = 0; game.totalDamageB = 0;
+        game.allRoundLogs = []; game.roundLog = [];
+        game.noDefendFlag = false; game.noDefendUsedThisRound = false; game.usedSkillsThisRound = {};
+        game.weaponDrawCount = 0; game.weaponDrawPlayer = 'A';
+        game.currentAttackIndex = 0; game.bonusAttacks = 0;
+        game.phaseAttacker = null; game.phaseDefender = null; game.isCounterPhase = false;
+        game.currentAttackCard = null; game.currentDefendCard = null; game.selectedCardUid = null;
+
+        updateAttackProgress();
+        game.blockAbilityA = false; game.blockAbilityB = false;
+        game.attackReduction = 0; game.tempDefenseReduction = 0;
+        clearTableCards(); clearBattleLog();
+        showScreen('screen-battle'); updatePlayerInfo(); updateLibraryDisplay([]);
+        $('btn-switch-player').style.display = 'none';
+        startWeaponDrawPhase();
+    }
+
+    function applySellCard(uid, pid) {
+        var player = getPlayer(pid);
+        var card = findCardByUid(player, uid);
+        if (card) {
+            removeFromLibrary(pid, card);
+            player.gold += Math.round(card.price * 0.8);
+            updatePlayerInfo();
+            playSound('coin');
+        }
+    }
+
+    function applyBuyCard(data) {
+        console.log('[ Buy ] 收到购买卡牌消息:', data);
+        var wp = WEAPONS.find(function (w) { return w.id === data.weaponId; }) ||
+                 BLACK_MARKET_WEAPONS.find(function (w) { return w.id === data.weaponId; });
+        if (!wp) {
+            console.error('[ Buy ] ❌ 找不到武器 id:', data.weaponId);
+            return;
+        }
+        var player = getPlayer(data.pid);
+        var newCard = Object.assign({}, wp);
+        newCard.uid = data.cardUid || newCardUid();
+        console.log('[ Buy ] 添加卡牌到玩家', data.pid, ', uid:', newCard.uid, 'name:', wp.name);
+        player.library.push(newCard);
+        player.gold -= data.price;
+        updatePlayerInfo();
+        playSound('coin');
     }
 
     function initSynthesisCultivationButtons() {
@@ -2114,8 +3017,8 @@
             var btnCult = document.getElementById('btn-' + p + '-cultivation');
             if (btnSynth) {
                 btnSynth.addEventListener('click', function() {
-                    console.log('[DEBUG] 合成按钮点击, phase:', game.phase, 'player:', p);
                     var targetPid = p.toUpperCase();
+                    if (isOnlineMode && !canIOperate(targetPid)) return;
                     if (!getPlayer(targetPid) || !getPlayer(targetPid).char) {
                         alert('请先选择角色后再使用此功能');
                         return;
@@ -2128,8 +3031,8 @@
             }
             if (btnCult) {
                 btnCult.addEventListener('click', function() {
-                    console.log('[DEBUG] 修炼按钮点击, phase:', game.phase, 'player:', p);
                     var targetPid = p.toUpperCase();
+                    if (isOnlineMode && !canIOperate(targetPid)) return;
                     if (!getPlayer(targetPid) || !getPlayer(targetPid).char) {
                         alert('请先选择角色后再使用此功能');
                         return;
@@ -2279,7 +3182,8 @@
             game.synthesisState.slotA = null;
             game.synthesisState.slotB = null;
 
-            if (Math.random() < 0.7) {
+            var synthSuccess = Math.random() < 0.7;
+            if (synthSuccess) {
                 var newCard = generateSynthesizedCard(cardA, cardB);
                 newCard.uid = newCardUid();
                 player.library.push(newCard);
@@ -2295,6 +3199,14 @@
 
             game.synthesisState.isProcessing = false;
             updatePlayerInfo();
+            updateLibraryDisplay();
+            notifyPeer('synthesis-result', {
+                player: pid,
+                success: synthSuccess,
+                newCard: synthSuccess ? { id: newCard.id, uid: newCard.uid, type: newCard.type, rarity: newCard.rarity, value: newCard.value, name: newCard.name, icon: newCard.icon, price: newCard.price } : null,
+                removedCards: [{ uid: cardA.uid, id: cardA.id }, { uid: cardB.uid, id: cardB.id }]
+            });
+            refreshCurrentCardSelect();
             if (game.phase === 'attack-select') {
                 renderCardHand(game.phaseAttacker, 'attack');
             } else if (game.phase === 'defend-select') {
@@ -2623,7 +3535,8 @@
 
             document.getElementById('cultivation-modal').classList.add('hidden');
 
-            if (Math.random() < successRate) {
+            var cultSuccess = Math.random() < successRate;
+            if (cultSuccess) {
                 game.martialArts[pid].push(art.id);
                 showCultivationResult(true, art, pid, card1, card2);
                 speak('修炼成功！学会了' + art.name);
@@ -2633,8 +3546,18 @@
             }
 
             updatePlayerInfo();
+            updateLibraryDisplay();
             renderLearnedMartialArts('A');
             renderLearnedMartialArts('B');
+            notifyPeer('cultivation-result', {
+                player: pid,
+                success: cultSuccess,
+                artId: art.id,
+                artName: art.name,
+                artIcon: art.icon,
+                removedCards: [{ uid: card1.uid, id: card1.id }, { uid: card2.uid, id: card2.id }]
+            });
+            refreshCurrentCardSelect();
 
             if (game.phase === 'attack-select') {
                 renderCardHand(game.phaseAttacker, 'attack');
@@ -2697,6 +3620,11 @@
         var container = document.getElementById('player-' + pid.toLowerCase() + '-martial-arts');
         if (!container) return;
 
+        if (!game.martialArts || !game.martialArts[pid]) {
+            container.innerHTML = '<span style="font-size:10px;color:var(--text-dim)">暂未修炼其他武功</span>';
+            return;
+        }
+
         var learnedIds = game.martialArts[pid];
         if (learnedIds.length === 0) {
             container.innerHTML = '<span style="font-size:10px;color:var(--text-dim)">暂未修炼其他武功</span>';
@@ -2720,13 +3648,15 @@
     function getTotalAtkBonus(pid) {
         var player = getPlayer(pid);
         var charBonus = player.char ? player.char.atkBonus : 0;
-        var cultivationBonus = game.characterBonus[pid].atkBonus;
+        var cultivationBonus = (game.characterBonus && game.characterBonus[pid]) ? game.characterBonus[pid].atkBonus : 0;
 
         var martialBonus = 0;
-        game.martialArts[pid].forEach(function(artId) {
-            var art = MARTIAL_ARTS.find(function(a) { return a.id === artId; });
-            if (art && art.type === 'attack') martialBonus += art.atkBonus;
-        });
+        if (game.martialArts && game.martialArts[pid]) {
+            game.martialArts[pid].forEach(function(artId) {
+                var art = MARTIAL_ARTS.find(function(a) { return a.id === artId; });
+                if (art && art.type === 'attack') martialBonus += art.atkBonus;
+            });
+        }
 
         return charBonus + cultivationBonus + martialBonus;
     }
@@ -2734,13 +3664,15 @@
     function getTotalDefBonus(pid) {
         var player = getPlayer(pid);
         var charBonus = player.char ? player.char.defBonus : 0;
-        var cultivationBonus = game.characterBonus[pid].defBonus;
+        var cultivationBonus = (game.characterBonus && game.characterBonus[pid]) ? game.characterBonus[pid].defBonus : 0;
 
         var martialBonus = 0;
-        game.martialArts[pid].forEach(function(artId) {
-            var art = MARTIAL_ARTS.find(function(a) { return a.id === artId; });
-            if (art && art.type === 'defend') martialBonus += art.defBonus;
-        });
+        if (game.martialArts && game.martialArts[pid]) {
+            game.martialArts[pid].forEach(function(artId) {
+                var art = MARTIAL_ARTS.find(function(a) { return a.id === artId; });
+                if (art && art.type === 'defend') martialBonus += art.defBonus;
+            });
+        }
 
         return charBonus + cultivationBonus + martialBonus;
     }
