@@ -546,6 +546,44 @@
     }
 
     var wheelAngle = 0, wheelSpinning = false, wheelBlinkFrame = 0, diceRolled = false, autoSpinning = false;
+    var countdownTimer = null, countdownSeconds = 0, countdownMaxSeconds = 0;
+
+    function showCountdown(seconds, onTimeout) {
+        clearCountdown();
+        countdownMaxSeconds = seconds;
+        countdownSeconds = seconds;
+        var existingEl = document.getElementById('countdown-display');
+        if (!existingEl) {
+            var el = document.createElement('div');
+            el.id = 'countdown-display';
+            el.style.cssText = 'position:fixed;top:16px;right:20px;background:rgba(0,0,0,0.9);color:#fff;padding:6px 16px;border-radius:10px;font-size:18px;font-weight:bold;z-index:9999;border:2px solid #ffd700;min-width:76px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.5);font-family:inherit;';
+            document.body.appendChild(el);
+        }
+        updateCountdownDisplay();
+        countdownTimer = setInterval(function () {
+            countdownSeconds--;
+            updateCountdownDisplay();
+            if (countdownSeconds <= 0) {
+                clearCountdown();
+                if (onTimeout) onTimeout();
+            }
+        }, 1000);
+    }
+
+    function updateCountdownDisplay() {
+        var el = document.getElementById('countdown-display');
+        if (!el) return;
+        var pct = countdownSeconds / countdownMaxSeconds;
+        var color = pct > 0.5 ? '#4caf50' : (pct > 0.2 ? '#ff9800' : '#f44336');
+        el.style.borderColor = color;
+        el.textContent = '⏱️ ' + countdownSeconds + 's';
+    }
+
+    function clearCountdown() {
+        if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+        var el = document.getElementById('countdown-display');
+        if (el) { el.remove(); }
+    }
 
     function drawWheel(canvasId, items) {
         var canvas = $(canvasId); if (!canvas) return;
@@ -684,6 +722,14 @@
         updateCharSelectUI();
         var ci = CHARACTERS.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
         wheelAngle = 0; drawWheel('character-wheel', ci); speak('请玩家A点击转盘抽取角色');
+        clearCountdown();
+        if (!isOnlineMode || canIOperate(game.currentPlayer)) {
+            showCountdown(10, function () {
+                if (game.phase === 'character-select' && !$('btn-spin-char').disabled) {
+                    $('btn-spin-char').click();
+                }
+            });
+        }
         } catch (e) { handleError('startCharacterSelect', e); }
     }
 
@@ -718,6 +764,7 @@
         $('btn-spin-char').addEventListener('click', function () {
             if (wheelSpinning) return;
             if (isOnlineMode && !canIOperate(game.currentPlayer)) return;
+            clearCountdown();
             $('btn-spin-char').disabled = true;
             var ac = CHARACTERS.filter(function (c) { return game.usedCharIds.indexOf(c.id) === -1; });
             var ci = ac.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
@@ -752,8 +799,16 @@
             var ci = ac.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
             wheelAngle = 0; drawWheel('character-wheel', ci); speak('请玩家B点击转盘抽取角色');
             updateCharSelectUI();
+            clearCountdown();
+            if (!isOnlineMode || canIOperate(game.currentPlayer)) {
+                showCountdown(10, function () {
+                    if (game.phase === 'character-select' && !$('btn-spin-char').disabled) {
+                        $('btn-spin-char').click();
+                    }
+                });
+            }
             notifyPeer('char-confirm', { from: 'A' });
-        } else { showVSAnimation(); notifyPeer('char-confirm', { from: 'B' }); }
+        } else { clearCountdown(); showVSAnimation(); notifyPeer('char-confirm', { from: 'B' }); }
     }
 
     function showVSAnimation() {
@@ -912,6 +967,14 @@
         updateWeaponDrawHint(); wheelAngle = 0; drawWeaponWheel();
         $('drawn-cards').innerHTML = '';
         announcePlayerTurn('A', '请抽取武器');
+        clearCountdown();
+        if (!isOnlineMode || canIOperate(game.weaponDrawPlayer)) {
+            showCountdown(10, function () {
+                if (game.phase === 'weapon-draw' && !wheelSpinning) {
+                    handleSpinWeapon();
+                }
+            });
+        }
     }
 
     function updateWeaponDrawUI() {
@@ -960,6 +1023,7 @@
         try {
             if (wheelSpinning) return;
             if (isOnlineMode && !canIOperate(game.weaponDrawPlayer)) return;
+            clearCountdown();
             var autoCheckbox = $('auto-spin-' + game.weaponDrawPlayer.toLowerCase());
             var isAutoMode = autoCheckbox && autoCheckbox.checked;
             var autoSpinPlayer = game.weaponDrawPlayer;
@@ -1044,13 +1108,30 @@
             var btn = opBtn(game.weaponDrawPlayer, 'spin-weapon');
             if (btn) { btn.style.display = 'block'; btn.disabled = false; }
             drawWeaponWheel();
+            var autoCb = $('auto-spin-' + game.weaponDrawPlayer.toLowerCase());
+            var isAuto = autoCb && autoCb.checked;
+            if (!isAuto && (!isOnlineMode || canIOperate(game.weaponDrawPlayer))) {
+                showCountdown(10, function () {
+                    if (game.phase === 'weapon-draw' && !wheelSpinning) {
+                        handleSpinWeapon();
+                    }
+                });
+            }
         } else if (game.weaponDrawPlayer === 'A') {
             game.weaponDrawPlayer = 'B'; game.weaponDrawCount = 0;
             setActivePlayer('B'); updateWeaponDrawHint();
             wheelAngle = 0; drawWeaponWheel(); $('drawn-cards').innerHTML = '';
             announcePlayerTurn('B', '请抽取武器');
             updateWeaponDrawUI();
-        } else { finishWeaponDraw(); }
+            clearCountdown();
+            if (!isOnlineMode || canIOperate(game.weaponDrawPlayer)) {
+                showCountdown(10, function () {
+                    if (game.phase === 'weapon-draw' && !wheelSpinning) {
+                        handleSpinWeapon();
+                    }
+                });
+            }
+        } else { clearCountdown(); finishWeaponDraw(); }
     }
 
     function finishWeaponDraw() {
@@ -1248,6 +1329,22 @@
         setOpsStatus(game.phaseAttacker, phaseLabel + '阶段');
         renderCardHand(game.phaseAttacker, 'attack');
         announcePlayerTurn(game.phaseAttacker, '请选择第' + attackNum + '次攻击卡牌');
+        clearCountdown();
+        if (!isOnlineMode || canIOperate(game.phaseAttacker)) {
+            showCountdown(60, function () {
+                if (game.phase !== 'attack-select') return;
+                var cards = getPlayer(game.phaseAttacker).library.filter(function (c) { return c.type === 'attack'; });
+                if (cards.length > 0) {
+                    var randomCard = cards[Math.floor(Math.random() * cards.length)];
+                    game.selectedCardUid = randomCard.uid;
+                    var confirmBtn = opBtn(game.phaseAttacker, 'confirm-card');
+                    if (confirmBtn) confirmBtn.click();
+                } else {
+                    var endBtn = opBtn(game.phaseAttacker, 'end-attack');
+                    if (endBtn && endBtn.style.display !== 'none') endBtn.click();
+                }
+            });
+        }
     }
 
     function showDefendCardSelect() {
@@ -1312,6 +1409,22 @@
         setOpsStatus(game.phaseDefender, '防御阶段');
         renderCardHand(game.phaseDefender, 'defend');
         announcePlayerTurn(game.phaseDefender, '请选择防御卡牌');
+        clearCountdown();
+        if (!isOnlineMode || canIOperate(game.phaseDefender)) {
+            showCountdown(60, function () {
+                if (game.phase !== 'defend-select') return;
+                var cards = getPlayer(game.phaseDefender).library.filter(function (c) { return c.type === 'defend'; });
+                if (cards.length > 0) {
+                    var randomCard = cards[Math.floor(Math.random() * cards.length)];
+                    game.selectedCardUid = randomCard.uid;
+                    var confirmBtn = opBtn(game.phaseDefender, 'confirm-card');
+                    if (confirmBtn) confirmBtn.click();
+                } else {
+                    var skipBtn = opBtn(game.phaseDefender, 'skip-defend');
+                    if (skipBtn && skipBtn.style.display !== 'none') skipBtn.click();
+                }
+            });
+        }
     }
 
     function renderCardHand(playerId, cardType) {
@@ -1566,6 +1679,7 @@
         if (isOnlineMode && !canIOperate(pid)) return;
         var card = getSelectedCard(pid);
         if (!card) return; playSound('click');
+        clearCountdown();
         hideSelectAreas();
 
         if (game.phase === 'attack-select') {
@@ -1598,6 +1712,7 @@
         hideSelectAreas();
         game.currentDefendCard = null;
         notifyPeer('skip-defend', {});
+        clearCountdown();
         resolveSingleAttack();
         } catch (e) { handleError('handleSkipDefend', e); }
     }
@@ -1818,6 +1933,7 @@
         $('damage-display').innerHTML = html;
         $('center-actions').innerHTML = '';
         hideAllOps();
+        clearCountdown();
 
         if (finalDamage > 0) {
             playSound('damage');
@@ -1875,6 +1991,7 @@
     }
 
     function showContinueChoice() {
+        clearCountdown();
         var atkCards = getPlayer(game.phaseAttacker).library.filter(function (c) { return c.type === 'attack'; });
         var maxAtk = getMaxAttacks();
 
@@ -1896,9 +2013,16 @@
         setOpsStatus(game.phaseAttacker, phaseLabel + ' ' + game.currentAttackIndex + '/' + maxAtk + ' 次');
 
         announcePlayerTurn(game.phaseAttacker, '已完成' + game.currentAttackIndex + '次攻击，是否继续');
+        if (!isOnlineMode || canIOperate(game.phaseAttacker)) {
+            showCountdown(10, function () {
+                var btn = opBtn(game.phaseAttacker, 'continue-attack');
+                if (btn && btn.style.display !== 'none') btn.click();
+            });
+        }
     }
 
     function afterAttackPhaseEnds() {
+        clearCountdown();
         hideAllOps();
         var el = $('attack-progress');
         if (el) el.style.display = 'none';
@@ -1924,6 +2048,7 @@
 
     function nextRound() {
         try {
+        clearCountdown();
         game.allRoundLogs.push({ round: game.round, log: game.roundLog.slice() });
 
         var rewardCardsA = [];
@@ -1968,6 +2093,7 @@
     }
 
     function endGame(winner) {
+        clearCountdown();
         game.allRoundLogs.push({ round: game.round, log: game.roundLog.slice() });
         game.phase = 'gameover'; playSound(winner === 'draw' ? 'lose' : 'win');
         showScreen('screen-gameover');
@@ -2497,6 +2623,8 @@
         initCardSelect(); initContinueChoice();
         initGameOver(); initCardPreview(); initSellBuy();
         initSynthesisCultivationButtons(); initMultiplayer();
+        $('auto-spin-a').checked = true;
+        $('auto-spin-b').checked = true;
         showScreen('screen-start');
     }
 
