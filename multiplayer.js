@@ -1,6 +1,12 @@
 var Multiplayer = (function () {
     'use strict';
 
+    function handleError(fnName, err) {
+        var msg = err && err.message ? err.message : String(err || '未知错误');
+        console.error('[Multiplayer:' + fnName + '] 错误:', err);
+        alert('联机操作失败: ' + msg);
+    }
+
     var peer = null;
     var conn = null;
     var myRole = null;
@@ -95,126 +101,162 @@ var Multiplayer = (function () {
     }
 
     function createRoom(customId) {
-        return new Promise(function (resolve, reject) {
-            if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
-            isHostFlag = true; myRole = 'A';
-            var peerId = customId || 'CG_' + generateRoomCode();
+        try {
+            return new Promise(function (resolve, reject) {
+                if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+                isHostFlag = true; myRole = 'A';
+                var peerId = customId || 'CG_' + generateRoomCode();
 
-            peer = new Peer(peerId, {
-                debug: 0,
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'stun:stun2.l.google.com:19302' },
-                        { urls: 'stun:stun.stunprotocol.org:3478' }
-                    ]
-                }
-            });
+                peer = new Peer(peerId, {
+                    debug: 0,
+                    config: {
+                        iceServers: [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:stun1.l.google.com:19302' },
+                            { urls: 'stun:stun2.l.google.com:19302' },
+                            { urls: 'stun:stun.stunprotocol.org:3478' }
+                        ]
+                    }
+                });
 
-            peer.on('open', function (id) {
-                roomId = id;
-                emit('room-created', id);
-                resolve(id);
+                peer.on('open', function (id) {
+                    try {
+                        roomId = id;
+                        emit('room-created', id);
+                        resolve(id);
 
-                peer.on('connection', function (connection) {
-                    if (conn && conn.open) { connection.close(); return; }
-                    setupConnection(connection);
+                        peer.on('connection', function (connection) {
+                            if (conn && conn.open) { connection.close(); return; }
+                            setupConnection(connection);
+                        });
+                    } catch (e) {
+                        handleError('createRoom-open', e);
+                        reject({ type: 'error', message: e.message || '创建房间失败' });
+                    }
+                });
+
+                peer.on('error', function (err) {
+                    console.error('[联机] Peer error:', err.type);
+                    if (err.type === 'unavailable-id') reject({ type: 'room-taken', message: '房间号已被占用' });
+                    else if (err.type === 'server-error' || err.type === 'network') reject({ type: 'network-error', message: '网络错误，请检查网络后重试' });
+                    else if (err.type === 'peer-unavailable') reject({ type: 'room-not-found', message: '房间不存在' });
+                    else reject({ type: err.type, message: err.message || '连接失败，请重试' });
+                });
+
+                peer.on('disconnected', function () {
+                    emit('signal-lost');
                 });
             });
-
-            peer.on('error', function (err) {
-                console.error('[联机] Peer error:', err.type);
-                if (err.type === 'unavailable-id') reject({ type: 'room-taken', message: '房间号已被占用' });
-                else if (err.type === 'server-error' || err.type === 'network') reject({ type: 'network-error', message: '网络错误，请检查网络后重试' });
-                else if (err.type === 'peer-unavailable') reject({ type: 'room-not-found', message: '房间不存在' });
-                else reject({ type: err.type, message: err.message || '连接失败，请重试' });
-            });
-
-            peer.on('disconnected', function () {
-                emit('signal-lost');
-            });
-        });
+        } catch (e) {
+            handleError('createRoom', e);
+            return Promise.reject({ type: 'error', message: e.message || '创建房间失败' });
+        }
     }
 
     function joinRoom(targetId) {
-        return new Promise(function (resolve, reject) {
-            if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
-            isHostFlag = false; myRole = 'B';
-            roomId = targetId;
+        try {
+            return new Promise(function (resolve, reject) {
+                if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+                isHostFlag = false; myRole = 'B';
+                roomId = targetId;
 
-            peer = new Peer({
-                debug: 0,
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'stun:stun2.l.google.com:19302' },
-                        { urls: 'stun:stun.stunprotocol.org:3478' }
-                    ]
-                }
-            });
-
-            peer.on('open', function () {
-                var connection = peer.connect(targetId, { reliable: true });
-                setupConnection(connection, resolve, reject);
-
-                setTimeout(function () {
-                    if (!isConnectedFlag) {
-                        reject({ type: 'timeout', message: '连接超时（15秒），请确认房间号正确且对方在线' });
-                        cleanup();
+                peer = new Peer({
+                    debug: 0,
+                    config: {
+                        iceServers: [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:stun1.l.google.com:19302' },
+                            { urls: 'stun:stun2.l.google.com:19302' },
+                            { urls: 'stun:stun.stunprotocol.org:3478' }
+                        ]
                     }
-                }, 15000);
-            });
+                });
 
-            peer.on('error', function (err) {
-                console.error('[联机] Peer error:', err.type);
-                if (err.type === 'peer-unavailable') reject({ type: 'room-not-found', message: '房间不存在或房主已离线' });
-                else reject({ type: err.type, message: err.message || '连接失败' });
-            });
+                peer.on('open', function () {
+                    try {
+                        var connection = peer.connect(targetId, { reliable: true });
+                        setupConnection(connection, resolve, reject);
 
-            peer.on('disconnected', function () { emit('signal-lost'); });
-        });
+                        setTimeout(function () {
+                            if (!isConnectedFlag) {
+                                reject({ type: 'timeout', message: '连接超时（15秒），请确认房间号正确且对方在线' });
+                                cleanup();
+                            }
+                        }, 15000);
+                    } catch (e) {
+                        handleError('joinRoom-open', e);
+                        reject({ type: 'error', message: e.message || '加入房间失败' });
+                    }
+                });
+
+                peer.on('error', function (err) {
+                    console.error('[联机] Peer error:', err.type);
+                    if (err.type === 'peer-unavailable') reject({ type: 'room-not-found', message: '房间不存在或房主已离线' });
+                    else reject({ type: err.type, message: err.message || '连接失败' });
+                });
+
+                peer.on('disconnected', function () { emit('signal-lost'); });
+            });
+        } catch (e) {
+            handleError('joinRoom', e);
+            return Promise.reject({ type: 'error', message: e.message || '加入房间失败' });
+        }
     }
 
     function setupConnection(connection, resolve, reject) {
-        conn = connection;
+        try {
+            conn = connection;
 
-        conn.on('open', function () {
-            isConnectedFlag = true;
-            emit('connected', { role: myRole, isHost: isHostFlag });
-            send('system:hello', { role: myRole });
-            startHeartbeat();
-            flushQueue();
-            if (resolve) resolve({ role: myRole });
-        });
+            conn.on('open', function () {
+                try {
+                    isConnectedFlag = true;
+                    emit('connected', { role: myRole, isHost: isHostFlag });
+                    send('system:hello', { role: myRole });
+                    startHeartbeat();
+                    flushQueue();
+                    if (resolve) resolve({ role: myRole });
+                } catch (e) {
+                    handleError('setupConnection-open', e);
+                }
+            });
 
-        conn.on('data', function (msg) {
-            if (typeof msg === 'string') {
-                try { msg = JSON.parse(msg); } catch (e) { return; }
-            }
-            if (msg && msg.type) handleIncoming(msg.type, msg.data, msg.from);
-        });
+            conn.on('data', function (msg) {
+                try {
+                    if (typeof msg === 'string') {
+                        try { msg = JSON.parse(msg); } catch (e) { return; }
+                    }
+                    if (msg && msg.type) handleIncoming(msg.type, msg.data, msg.from);
+                } catch (e) {
+                    handleError('setupConnection-data', e);
+                }
+            });
 
-        conn.on('close', function () {
-            isConnectedFlag = false;
-            stopHeartbeat();
-            emit('disconnected');
-        });
+            conn.on('close', function () {
+                isConnectedFlag = false;
+                stopHeartbeat();
+                emit('disconnected');
+            });
 
-        conn.on('error', function (err) {
-            emit('connection-error', err);
-        });
+            conn.on('error', function (err) {
+                emit('connection-error', err);
+            });
+        } catch (e) {
+            handleError('setupConnection', e);
+        }
     }
 
     function handleIncoming(type, data, from) {
-        switch (type) {
-            case 'system:hello': emit('peer-joined', data); break;
-            case 'system:heartbeat': onPeerHeartbeat(data.time); break;
-            case 'system:leaving': emit('peer-left', data); break;
-            case 'game:action': emit('game:action', { action: data.action, payload: data.payload, from: from }); break;
-            case 'game:sync': emit('game:sync', data); break;
-            default: emit(type, data); break;
+        try {
+            switch (type) {
+                case 'system:hello': emit('peer-joined', data); break;
+                case 'system:heartbeat': onPeerHeartbeat(data.time); break;
+                case 'system:leaving': emit('peer-left', data); break;
+                case 'game:action': emit('game:action', { action: data.action, payload: data.payload, from: from }); break;
+                case 'game:sync': emit('game:sync', data); break;
+                default: emit(type, data); break;
+            }
+        } catch (e) {
+            handleError('handleIncoming', e);
         }
     }
 
