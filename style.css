@@ -85,6 +85,17 @@ body {
     pointer-events: none;
 }
 .start-content { position: relative; z-index: 1; text-align: center; padding: 20px; }
+.game-logo {
+    width: clamp(80px, 18vw, 140px);
+    height: auto;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 20px rgba(212, 168, 67, 0.4)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    animation: logoFloat 3s ease-in-out infinite;
+}
+@keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
 .game-title {
     font-family: 'Ma Shan Zheng', cursive; font-size: clamp(36px, 8vw, 72px);
     background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
@@ -356,6 +367,11 @@ body {
     transition: background 0.3s ease;
 }
 .peer-status-dot-small.connected { background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.6); }
+.peer-status-dot-small.reconnecting { background: #fbbf24; animation: reconnectPulse 1s ease-in-out infinite; }
+@keyframes reconnectPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(251,191,36,0.6); }
+    50% { opacity: 0.5; box-shadow: 0 0 2px rgba(251,191,36,0.3); }
+}
 #battle-peer-text.connected { color: #4ade80; }
 
 .attack-progress { display: flex; align-items: center; gap: 4px; }
@@ -1776,6 +1792,29 @@ body {
     color: var(--text-dim);
     margin-bottom: 20px;
 }
+.disconnect-countdown {
+    font-size: 16px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+}
+.disconnect-countdown span {
+    font-size: 28px;
+    font-weight: bold;
+    color: #fbbf24;
+    margin: 0 4px;
+}
+.disconnect-status {
+    font-size: 13px;
+    color: #60a5fa;
+    margin-bottom: 20px;
+    min-height: 20px;
+}
+.disconnect-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
 
 @media (max-width: 500px) {
     .lobby-container { width: 95vw; padding: 16px; gap: 12px; }
@@ -1786,9 +1825,17 @@ body {
 
 /* ====== 联机模式 - 非当前玩家面板 ====== */
 .player-panel.inactive-panel {
-    opacity: 0.55;
-    pointer-events: none;
+    opacity: 0.5; pointer-events: none;
     transition: opacity 0.3s ease;
+}
+
+.player-panel.inactive-panel.trade-active {
+    opacity: 0.7;
+    pointer-events: auto;
+}
+
+.player-panel.inactive-panel.trade-active .panel-ops {
+    pointer-events: auto;
 }
 .player-panel.active-panel {
     opacity: 1;

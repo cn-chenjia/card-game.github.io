@@ -12,6 +12,7 @@
         <div id="screen-start" class="screen active">
             <div class="start-bg"></div>
             <div class="start-content">
+                <img src="侠字LOGO设计.png" alt="侠客卡牌对战" class="game-logo">
                 <h1 class="game-title">侠客卡牌对战</h1>
                 <p class="game-subtitle">双人依次对抗 · 角色卡牌武器</p>
                 <div class="mode-select">
@@ -39,7 +40,7 @@
                         <div class="room-id-display" id="my-room-id"></div>
                         <button class="btn btn-small btn-copy" id="btn-copy-room">📋 复制房间号</button>
                     </div>
-                    <div class="lobby-status" id="create-status">等待中...</div>
+                    <div class="lobby-status" id="create-status"></div>
                     <div class="lobby-peer-info hidden" id="peer-info">
                         <span class="peer-status-dot"></span>
                         <span>对方已连接！等待房主开始游戏...</span>
@@ -54,11 +55,15 @@
                     <div class="join-input-wrap">
                         <input type="text" id="input-room-id" class="lobby-input" maxlength="20" autocomplete="off" value="CG_">
                     </div>
+                    <div class="lobby-room-id-area hidden" id="join-room-area">
+                        <div class="room-id-label">当前房间</div>
+                        <div class="room-id-display" id="join-room-display"></div>
+                    </div>
                     <div class="lobby-status" id="join-status"></div>
                     <button class="btn btn-primary btn-large" id="btn-join-room">加入房间</button>
                     <div class="lobby-peer-info hidden" id="join-peer-info">
                         <span class="peer-status-dot connected"></span>
-                        <span>已连接到房主，等待开始游戏...</span>
+                        <span id="join-peer-text">已连接到房主，等待开始游戏...</span>
                     </div>
                     <button class="btn btn-secondary" id="btn-leave-join">返回</button>
                 </div>
@@ -296,10 +301,17 @@
 
     <div id="disconnect-notice" class="modal-overlay hidden">
         <div class="modal-content disconnect-content">
-            <div class="disconnect-icon">🔌</div>
-            <h3>连接已断开</h3>
+            <div class="disconnect-icon" id="disconnect-icon">🔌</div>
+            <h3 id="disconnect-title">连接已断开</h3>
             <p id="disconnect-reason">对方已离开游戏</p>
-            <button class="btn btn-primary btn-large" id="btn-disconnect-ok">确定</button>
+            <div id="disconnect-countdown" class="disconnect-countdown hidden">
+                <span id="disconnect-timer">30</span> 秒后返回大厅
+            </div>
+            <div id="disconnect-status" class="disconnect-status hidden"></div>
+            <div class="disconnect-actions">
+                <button class="btn btn-primary" id="btn-disconnect-reconnect">尝试重连</button>
+                <button class="btn btn-secondary btn-large hidden" id="btn-disconnect-ok">确定</button>
+            </div>
         </div>
     </div>
 
