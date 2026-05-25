@@ -128,11 +128,22 @@ body {
 }
 .wheel-container.char-wheel canvas { width: 480px; height: 480px; }
 .wheel-container.char-wheel .wheel-pointer {
-    top: 50%; left: 100%; transform: translate(-20%, -50%);
+    position: absolute; top: 50%; left: 100%;
+    transform: translate(-20%, -50%);
+    width: 0; height: 0;
     border-top: 14px solid transparent; border-bottom: 14px solid transparent;
     border-right: 60px solid #e74c3c; border-left: none;
     z-index: 20;
-    filter: drop-shadow(0 0 12px rgba(231,76,60,0.7)) drop-shadow(-2px 2px 4px rgba(0,0,0,0.5));
+    pointer-events: none;
+    filter: drop-shadow(0 0 12px rgba(231,76,60,0.7)) drop-shadow(-2px 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 20px rgba(231,76,60,0.4));
+}
+.wheel-container.char-wheel .wheel-pointer::after {
+    content: '';
+    position: absolute;
+    top: -6px; right: -62px;
+    width: 8px; height: calc(100% + 12px);
+    background: linear-gradient(90deg, rgba(255,255,255,0.35), transparent);
+    border-radius: 2px;
 }
 
 .wheel-container {
@@ -214,7 +225,19 @@ body {
 }
 
 .player-panel.inactive-panel {
-    opacity: 0.5; pointer-events: none;
+    opacity: 0.5;
+}
+.player-panel.inactive-panel > .panel-ops {
+    pointer-events: none;
+}
+.player-panel.inactive-panel > .panel-library {
+    pointer-events: auto;
+}
+.player-panel.inactive-panel.organize-active,
+.player-panel.inactive-panel.organize-active > .panel-ops,
+.player-panel.inactive-panel.organize-active > .panel-library {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .panel-info {
@@ -816,10 +839,20 @@ body {
 
 .card-preview-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, 0.85); display: flex; align-items: flex-start; justify-content: center;
     z-index: 9999; cursor: pointer;
+    padding-top: 120px;
+    overflow-y: auto;
 }
-.card-preview { transform: scale(1.8); transition: transform 0.3s ease; }
+.card-preview {
+    animation: previewFadeIn 0.3s ease;
+    padding-bottom: 40px;
+    margin-top: 120px;
+}
+@keyframes previewFadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -1848,4 +1881,404 @@ body {
     text-align: center;
     padding: 8px;
     font-style: italic;
+}
+
+/* ====== 整理阶段 (Organize Phase) ====== */
+.organize-phase-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    margin: 8px 0;
+    background: linear-gradient(135deg, rgba(212, 168, 67, 0.1), rgba(15, 52, 96, 0.3));
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    animation: organizeFadeIn 0.5s ease;
+    max-width: 480px;
+    width: 100%;
+}
+.organize-phase-area.hidden {
+    display: none !important;
+}
+@keyframes organizeFadeIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.organize-hint {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 20px;
+    color: var(--gold-light);
+    text-align: center;
+    letter-spacing: 2px;
+}
+.organize-phase-area #btn-ready {
+    padding: 14px 48px;
+    font-size: 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: readyBtnPulse 2s ease-in-out infinite;
+}
+.organize-phase-area #btn-ready:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 24px rgba(212, 168, 67, 0.5);
+}
+.organize-phase-area #btn-ready:disabled,
+.organize-phase-area #btn-ready.ready-clicked {
+    background: linear-gradient(135deg, #27ae60, #1e8449) !important;
+    box-shadow: 0 2px 12px rgba(39, 174, 96, 0.4);
+    animation: none;
+    cursor: default;
+}
+@keyframes readyBtnPulse {
+    0%, 100% { box-shadow: 0 2px 8px rgba(212, 168, 67, 0.3); }
+    50% { box-shadow: 0 4px 24px rgba(212, 168, 67, 0.6); }
+}
+.organize-ops-hint {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-align: center;
+}
+
+/* ====== 角色卡牌抽取页面 ====== */
+#screen-character {
+    background:
+        radial-gradient(ellipse at 30% 20%, rgba(212, 168, 67, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(192, 57, 43, 0.05) 0%, transparent 50%),
+        linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    padding: 0;
+}
+.char-card-stage {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* ====== 滚动展示区域 ====== */
+.char-scroll-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    padding: 40px 0;
+    position: relative;
+    overflow: hidden;
+}
+.char-scroll-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: max-content;
+    position: absolute;
+    left: 0;
+}
+.char-scroll-top {
+    top: 28%;
+    animation: scrollRight 25s linear infinite;
+}
+.char-scroll-bottom {
+    bottom: 28%;
+    animation: scrollLeft 30s linear infinite;
+}
+@keyframes scrollRight {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100vw); }
+}
+@keyframes scrollLeft {
+    0% { transform: translateX(100vw); }
+    100% { transform: translateX(-100%); }
+}
+.char-scroll-area.scrolling-paused .char-scroll-top,
+.char-scroll-area.scrolling-paused .char-scroll-bottom {
+    animation-play-state: paused;
+}
+
+/* ====== 侠客卡牌 ====== */
+.char-card {
+    width: 110px;
+    height: 155px;
+    border-radius: 12px;
+    perspective: 800px;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+}
+.char-card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+.char-card.flipped .char-card-inner {
+    transform: rotateY(180deg);
+}
+.char-card-front,
+.char-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.char-card-front {
+    background: linear-gradient(145deg, #2a1f4e 0%, #1a1a3e 40%, #0f1729 100%);
+    border: 2px solid rgba(212, 168, 67, 0.5);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(212, 168, 67, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.char-card-front::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 32px;
+    background: linear-gradient(180deg, rgba(212, 168, 67, 0.25), transparent);
+    border-radius: 12px 12px 0 0;
+}
+.char-card-front .card-rarity-bar {
+    position: absolute;
+    top: 6px; left: 8px; right: 8px;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold-light), var(--gold-dark));
+}
+.char-card-front .card-emoji {
+    font-size: 42px;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    z-index: 1;
+}
+.char-card-front .card-char-name {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 18px;
+    color: var(--gold-light);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    z-index: 1;
+}
+.char-card-front .card-hp-badge {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: rgba(0, 0, 0, 0.35);
+    padding: 2px 10px;
+    border-radius: 10px;
+    z-index: 1;
+}
+.char-card-front .card-sig-art {
+    margin-top: 4px;
+    font-size: 10px;
+    color: var(--gold);
+    background: rgba(212, 168, 67, 0.12);
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(212, 168, 67, 0.25);
+    z-index: 1;
+}
+.char-card-back {
+    background:
+        repeating-linear-gradient(45deg, #1a1a3e, #1a1a3e 8px, #161338 8px, #161338 16px),
+        linear-gradient(135deg, #0d0d1a, #1a1a3e);
+    border: 2px solid rgba(212, 168, 67, 0.35);
+    transform: rotateY(180deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.5),
+        inset 0 0 30px rgba(212, 168, 67, 0.05);
+}
+.char-card-back::after {
+    content: '⚔';
+    font-size: 48px;
+    color: rgba(212, 168, 67, 0.25);
+    text-shadow: 0 0 20px rgba(212, 168, 67, 0.15);
+}
+.char-card-back::before {
+    content: '';
+    position: absolute;
+    width: 60px; height: 60px;
+    border: 2px solid rgba(212, 168, 67, 0.2);
+    border-radius: 50%;
+}
+
+/* 卡牌悬浮效果 */
+.char-card:not(.flipped):not(.disabled):hover .char-card-inner {
+    transform: translateY(-6px) scale(1.04);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 24px rgba(212, 168, 67, 0.2);
+}
+.char-card:not(.flipped):not(.disabled):active .char-card-inner {
+    transform: translateY(-2px) scale(0.98);
+}
+
+/* 卡牌选中/禁用状态 */
+.char-card.selected {
+    pointer-events: none;
+}
+.char-card.selected .char-card-front {
+    border-color: #4ade80;
+    box-shadow: 0 0 24px rgba(74, 222, 128, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+.char-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 22px; height: 22px;
+    background: #4ade80;
+    color: #000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+    z-index: 10;
+}
+.char-card.disabled {
+    opacity: 0.35;
+    pointer-events: none;
+    filter: grayscale(0.6);
+}
+.char-card.selectable-glow {
+    animation: charCardGlow 1.5s ease-in-out infinite;
+}
+@keyframes charCardGlow {
+    0%, 100% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(212, 168, 67, 0.2); }
+    50% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 28px rgba(212, 168, 67, 0.5), 0 0 48px rgba(212, 168, 67, 0.2); }
+}
+.char-card.selectable-glow:hover {
+    animation: none;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4), 0 0 36px rgba(212, 168, 67, 0.6);
+}
+
+/* ====== 网格平铺区域 ====== */
+.char-grid-area {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+}
+.char-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    max-width: 900px;
+    padding: 16px;
+}
+.char-grid .char-card {
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.char-grid .char-card.grid-deal-anim {
+    opacity: 0;
+    transform: scale(0.3) rotate(var(--deal-rotate, 0deg)) translate(var(--deal-x, 0px), var(--deal-y, 0px));
+}
+.char-grid .char-card.grid-deal-anim.dealt {
+    opacity: 1;
+    transform: scale(1) rotate(0deg) translate(0, 0);
+}
+
+/* ====== 选择信息展示 ====== */
+.char-selection-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, rgba(212, 168, 67, 0.08), rgba(15, 52, 96, 0.6));
+    border-top: 1px solid rgba(212, 168, 67, 0.2);
+    width: 100%;
+}
+.char-selected-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 120px;
+}
+.char-selected-display .select-label {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 16px;
+    color: var(--gold-light);
+}
+.char-selected-display.player-a-turn .select-label {
+    color: var(--red-light);
+    text-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+    animation: selectLabelPulse 1s ease infinite;
+}
+.char-selected-display.player-b-turn .select-label {
+    color: var(--blue-light);
+    text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+    animation: selectLabelPulse 1s ease infinite;
+}
+@keyframes selectLabelPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+.char-selected-display .selected-char-card {
+    width: 90px;
+    height: 128px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px dashed rgba(212, 168, 67, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.25);
+    transition: all 0.4s ease;
+}
+.char-selected-display .selected-char-card.filled {
+    border-style: solid;
+    border-color: var(--gold);
+    background: linear-gradient(145deg, #2a1f4e, #1a1a3e);
+}
+.char-vs-badge {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 28px;
+    color: var(--gold);
+    text-shadow: 0 0 12px rgba(212, 168, 67, 0.4);
+    animation: vsBadgeFloat 2s ease-in-out infinite;
+}
+@keyframes vsBadgeFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-4px) scale(1.08); }
+}
+
+/* ====== 滚动阶段 ====== */
+.char-scroll-area.hidden { display: none !important; }
+
+/* 响应式适配 */
+@media (max-width: 700px) {
+    .char-card { width: 85px; height: 120px; }
+    .char-card-front .card-emoji { font-size: 32px; }
+    .char-card-front .card-char-name { font-size: 14px; }
+    .char-card-front .card-hp-badge { font-size: 9px; }
+    .char-card-front .card-sig-art { font-size: 8px; }
+    .char-grid { gap: 10px; padding: 10px; }
+    .char-selection-info { gap: 14px; padding: 10px 14px; }
+    .char-selected-display .selected-char-card { width: 70px; height: 100px; }
+    .char-vs-badge { font-size: 22px; }
+}
+@media (max-width: 500px) {
+    .char-card { width: 72px; height: 102px; }
+    .char-card-front .card-emoji { font-size: 26px; }
+    .char-card-front .card-char-name { font-size: 12px; }
+    .char-card-front .card-hp-badge,
+    .char-card-front .card-sig-art { font-size: 8px; display: none; }
+    .char-grid { gap: 8px; padding: 8px; }
 }

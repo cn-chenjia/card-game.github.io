@@ -282,21 +282,23 @@
         var valueLabel = card.type === 'attack' ? '伤害' : '防御';
         var rarityName = RARITY_NAMES[card.rarity] || card.rarity;
         var desc = card.desc || '';
+        var valueColor = card.type === 'attack' ? '#e74c3c' : '#3498db';
         var skillHtml = '';
         if (card.skill) {
-            skillHtml = '<div style="margin-top:8px;padding:6px 10px;background:rgba(156,39,176,0.2);border:1px solid rgba(156,39,176,0.5);border-radius:6px;font-size:11px;color:#ce93d8;">' +
-                card.skill.icon + ' <strong>' + card.skill.name + '</strong>：' + card.skill.desc + '</div>';
+            skillHtml = '<div style="margin-top:12px;padding:10px 16px;background:rgba(156,39,176,0.2);border:1px solid rgba(156,39,176,0.5);border-radius:8px;font-size:14px;color:#ce93d8;line-height:1.6;">' +
+                '<span style="font-size:18px;">' + card.skill.icon + '</span> <strong style="font-size:15px;">' + card.skill.name + '</strong>：<br/>' + card.skill.desc + '</div>';
         }
         $('card-preview').innerHTML =
-            '<div class="weapon-card rarity-' + card.rarity + '" style="transform:scale(1.4);margin:40px auto;max-width:320px;">' +
-            '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
-            '<span class="card-icon">' + card.icon + '</span>' +
-            '<span class="card-name">' + card.name + '</span>' +
-            '<span class="card-value">' + valueLabel + ':' + card.value + '</span>' +
-            '<span class="card-price">💰' + card.price + ' · ' + rarityName + '</span></div>' +
-            '<div style="margin-top:30px;padding:10px 16px;max-width:340px;text-align:center;">' +
-            '<div style="font-size:13px;color:var(--text-dim);margin-bottom:6px;">' + desc + '</div>' +
+            '<div class="weapon-card rarity-' + card.rarity + '" style="transform:scale(2.4);margin:20px auto;min-width:220px;min-height:310px;">' +
+            '<span class="card-type ' + card.type + '" style="font-size:14px;padding:3px 8px;border-radius:4px;">' + typeLabel + '</span>' +
+            '<span class="card-icon" style="font-size:52px;margin:6px 0;">' + card.icon + '</span>' +
+            '<span class="card-name" style="font-size:18px;font-weight:800;">' + card.name + '</span>' +
+            '<span class="card-value" style="font-size:26px;font-weight:900;color:' + valueColor + ';text-shadow:0 0 10px ' + valueColor + '66;margin:4px 0;display:block;">⚔ ' + valueLabel + ' <strong>' + card.value + '</strong></span>' +
+            '<span class="card-price" style="font-size:13px;font-weight:600;">💰' + card.price + ' · ' + rarityName + '</span></div>' +
+            '<div style="margin-top:24px;padding:14px 20px;max-width:400px;text-align:center;">' +
+            (desc ? '<div style="font-size:15px;color:var(--text-dim);margin-bottom:10px;line-height:1.5;border-bottom:1px solid rgba(212,168,67,0.2);padding-bottom:10px;">' + desc + '</div>' : '') +
             skillHtml +
+            '<div style="margin-top:16px;font-size:12px;color:rgba(255,255,255,0.25);">点击任意位置关闭</div>' +
             '</div>';
         $('card-preview-overlay').classList.remove('hidden');
     }
@@ -711,11 +713,12 @@
         ctx.restore();
     }
 
-    function spinWheel(canvasId, items, targetIndex, callback) {
+    function spinWheel(canvasId, items, targetIndex, callback, angleOffset) {
         if (wheelSpinning) return; wheelSpinning = true; playSound('spin');
         var n = items.length;
         var arc = (2 * Math.PI) / n;
-        var targetAngle = (2 * Math.PI) - (targetIndex * arc + arc / 2) + Math.PI / 2;
+        var offset = angleOffset || 0;
+        var targetAngle = (2 * Math.PI) - (targetIndex * arc + arc / 2) + Math.PI / 2 + offset;
         var fullRotations = Math.PI * 2 * randomInt(8, 14);
         var totalRot = fullRotations + targetAngle - (wheelAngle % (Math.PI * 2));
         if (totalRot < fullRotations) totalRot += Math.PI * 2;
@@ -758,102 +761,317 @@
         $('btn-sound').addEventListener('click', function () { game.soundEnabled = !game.soundEnabled; game.voiceEnabled = game.soundEnabled; $('btn-sound').textContent = game.soundEnabled ? '🔊 音效：开' : '🔇 音效：关'; if (game.soundEnabled) playSound('click'); });
     }
 
+    var charSelectState = {
+        phase: 'scrolling',
+        selectedA: null,
+        selectedB: null,
+        cardElements: []
+    };
+
     function startCharacterSelect() {
         try {
         game.phase = 'character-select'; game.currentPlayer = 'A'; game.usedCharIds = [];
         vsAnimationShown = false;
-        showScreen('screen-character'); $('char-result').classList.add('hidden'); $('btn-spin-char').disabled = false;
-        $('char-select-title').textContent = '角色抽取';
-        updateCharSelectUI();
-        var ci = CHARACTERS.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
-        wheelAngle = 0; drawWheel('character-wheel', ci); speak('请玩家A点击转盘抽取角色');
+        charSelectState = { phase: 'scrolling', selectedA: null, selectedB: null, cardElements: [] };
+        showScreen('screen-character');
+        $('char-select-title').textContent = '⚔️ 侠客卡牌';
+        $('char-result-old').classList.add('hidden');
+        $('char-grid-area').classList.add('hidden');
+        $('char-selection-info').classList.add('hidden');
+        $('char-scroll-area').classList.remove('hidden');
+        buildScrollingCards();
+        showFlipButton();
+        speak('侠客卡牌巡礼中');
         clearCountdown();
-        if (!isOnlineMode || canIOperate(game.currentPlayer)) {
-            showCountdown(10, function () {
-                if (game.phase === 'character-select' && !$('btn-spin-char').disabled) {
-                    $('btn-spin-char').click();
-                }
-            });
-        }
+        setTimeout(function () {
+            var btn = document.getElementById('btn-flip-cards');
+            if (btn) btn.click();
+        }, 10000);
         } catch (e) { handleError('startCharacterSelect', e); }
     }
 
-    function updateCharSelectUI() {
-        var isMyTurn = !isOnlineMode || canIOperate(game.currentPlayer);
-        var hintPrefix = isOnlineMode ? (isMyTurn ? '🎯 轮到你' : '⏳ 等待') + ' - ' : '';
-        var currentPlayerLabel = playerLabel(game.currentPlayer);
-        var charWheelEl = document.querySelector('.wheel-container.char-wheel');
-        var charResultShown = !$('char-result').classList.contains('hidden');
+    function showFlipButton() {
+        var existing = document.getElementById('btn-flip-cards');
+        if (existing) existing.remove();
+        var btn = document.createElement('button');
+        btn.id = 'btn-flip-cards';
+        btn.className = 'btn btn-primary btn-large';
+        btn.textContent = '🎴 翻面选卡 (10s)';
+        btn.style.cssText = 'position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:20;animation:fadeInUp 0.4s ease;';
+        var countdown = 10;
+        var timer = setInterval(function () {
+            countdown--;
+            if (countdown <= 0) { clearInterval(timer); return; }
+            if (btn && btn.parentNode) btn.textContent = '🎴 翻面选卡 (' + countdown + 's)';
+        }, 1000);
+        btn.addEventListener('click', function () {
+            clearInterval(timer);
+            playSound('click');
+            startFlipAndShuffle();
+        });
+        $('char-card-stage').appendChild(btn);
+    }
 
-        if (charResultShown) {
-            $('btn-spin-char').style.display = 'none';
-            $('btn-char-confirm').style.display = 'none';
-            $('char-select-hint').textContent = hintPrefix + currentPlayerLabel + '抽取到了角色，2秒后自动确认...';
-            if (charWheelEl) { charWheelEl.style.opacity = '0.3'; charWheelEl.style.pointerEvents = 'none'; }
+    function hideFlipButton() {
+        var btn = document.getElementById('btn-flip-cards');
+        if (btn) { btn.remove(); }
+    }
+
+    function buildScrollingCards() {
+        var topRow = $('char-scroll-top');
+        var bottomRow = $('char-scroll-bottom');
+        topRow.innerHTML = ''; bottomRow.innerHTML = '';
+        charSelectState.cardElements = [];
+        var shuffled = CHARACTERS.slice().sort(function () { return Math.random() - 0.5; });
+        var mid = Math.ceil(shuffled.length / 2);
+        var topChars = shuffled.slice(0, mid);
+        var bottomChars = shuffled.slice(mid);
+
+        topChars.forEach(function (c) { topRow.appendChild(createCharCardEl(c)); });
+        bottomChars.forEach(function (c) { bottomRow.appendChild(createCharCardEl(c)); });
+
+        var cloneCount = 3;
+        for (var c = 0; c < cloneCount; c++) {
+            topChars.forEach(function (ch) { topRow.appendChild(createCharCardEl(ch, true)); });
+            bottomChars.forEach(function (ch) { bottomRow.appendChild(createCharCardEl(ch, true)); });
+        }
+    }
+
+    function createCharCardEl(charData, isClone) {
+        var card = document.createElement('div');
+        card.className = 'char-card' + (isClone ? ' clone-card' : '');
+        card.dataset.charId = charData.id;
+        if (!isClone) charSelectState.cardElements.push(card);
+
+        card.innerHTML =
+            '<div class="char-card-inner">' +
+            '<div class="char-card-front">' +
+            '<div class="card-rarity-bar"></div>' +
+            '<div class="card-emoji">' + charData.emoji + '</div>' +
+            '<div class="card-char-name">' + charData.name + '</div>' +
+            '<div class="card-hp-badge">❤️ ' + charData.hp + ' HP</div>' +
+            '<div class="card-sig-art">' + charData.signatureArt.icon + ' ' + charData.signatureArt.name + '</div>' +
+            '</div>' +
+            '<div class="char-card-back"></div>' +
+            '</div>';
+
+        return card;
+    }
+
+    function startFlipAndShuffle() {
+        hideFlipButton();
+        $('char-select-hint').textContent = '🔄 卡牌翻面中...';
+        var scrollArea = $('char-scroll-area');
+        scrollArea.classList.add('scrolling-paused');
+
+        var topCards = document.querySelectorAll('#char-scroll-top .char-card');
+        var bottomCards = document.querySelectorAll('#char-scroll-bottom .char-card');
+
+        topCards.forEach(function (card, idx) {
+            setTimeout(function () {
+                card.classList.add('flipped');
+                playSound('click');
+            }, idx * 60);
+        });
+
+        bottomCards.forEach(function (card, idx) {
+            setTimeout(function () {
+                card.classList.add('flipped');
+                playSound('click');
+            }, topCards.length * 60 + idx * 60);
+        });
+
+        var totalCards = topCards.length + bottomCards.length;
+        var totalFlipTime = totalCards * 60 + 1200;
+        setTimeout(function () {
+            transitionToGrid();
+        }, totalFlipTime);
+    }
+
+    function transitionToGrid() {
+        $('char-select-hint').textContent = '🎴 请选择你的侠客！';
+        $('char-scroll-area').classList.add('hidden');
+
+        var grid = $('char-grid');
+        grid.innerHTML = '';
+        $('char-grid-area').classList.remove('hidden');
+
+        var shuffledForGrid = CHARACTERS.slice().sort(function () { return Math.random() - 0.5; });
+
+        shuffledForGrid.forEach(function (c, idx) {
+            var card = createCharCardEl(c);
+            card.classList.add('flipped', 'grid-deal-anim');
+            card.style.setProperty('--deal-rotate', ((Math.random() - 0.5) * 60) + 'deg');
+            card.style.setProperty('--deal-x', ((Math.random() - 0.5) * 400) + 'px');
+            card.style.setProperty('--deal-y', ((Math.random() - 0.5) * 300) + 'px');
+            grid.appendChild(card);
+
+            setTimeout(function () {
+                card.classList.add('dealt');
+            }, idx * 70);
+        });
+
+        setTimeout(function () {
+            enableCardSelection();
+        }, shuffledForGrid.length * 70 + 400);
+    }
+
+    function enableCardSelection() {
+        charSelectState.phase = 'select-A';
+        $('char-selection-info').classList.remove('hidden');
+        updateSelectionUI();
+        bindCardClickEvents();
+        if (!isOnlineMode) {
+            speak('请玩家A选择一张侠客卡牌');
+        } else if (canIOperate('A')) {
+            speak('请选择你的侠客卡牌');
+            highlightSelectableCards();
         } else {
-            if (isMyTurn) {
-                $('char-select-hint').textContent = hintPrefix + '请' + currentPlayerLabel + '点击转盘抽取角色';
-                $('btn-spin-char').style.display = '';
-                $('btn-char-confirm').style.display = 'none';
-                if (charWheelEl) { charWheelEl.style.opacity = '1'; charWheelEl.style.pointerEvents = 'auto'; }
+            $('char-select-hint').textContent = '⏳ 等待房主选择...';
+        }
+    }
+
+    function updateSelectionUI() {
+        var dispA = $('char-selected-a');
+        var dispB = $('char-selected-b');
+        dispA.classList.remove('player-a-turn', 'player-b-turn');
+        dispB.classList.remove('player-a-turn', 'player-b-turn');
+
+        if (charSelectState.phase === 'select-A') {
+            $('char-select-hint').textContent = isOnlineMode && !canIOperate('A') ? '⏳ 等待房主(A)选择...' : '🔴 玩家A 请选择你的侠客';
+            dispA.classList.add('player-a-turn');
+        } else if (charSelectState.phase === 'select-B') {
+            $('char-select-hint').textContent = isOnlineMode && !canIOperate('B') ? '⏳ 等待访客(B)选择...' : '🔵 玩家B 请选择你的侠客';
+            dispB.classList.add('player-b-turn');
+        } else if (charSelectState.phase === 'done') {
+            $('char-select-hint').textContent = '✨ 选择完成！进入对战...';
+        }
+    }
+
+    function bindCardClickEvents() {
+        var cards = document.querySelectorAll('.char-grid .char-card');
+        cards.forEach(function (card) {
+            card.removeEventListener('click', handleCardClick);
+            card.addEventListener('click', handleCardClick);
+        });
+    }
+
+    function handleCardClick(e) {
+        var card = e.currentTarget;
+        if (charSelectState.phase !== 'select-A' && charSelectState.phase !== 'select-B') return;
+        if (card.classList.contains('disabled') || card.classList.contains('selected')) return;
+
+        if (isOnlineMode) {
+            if (charSelectState.phase === 'select-A' && !canIOperate('A')) return;
+            if (charSelectState.phase === 'select-B' && !canIOperate('B')) return;
+        }
+
+        var charId = card.dataset.charId;
+        var ch = CHARACTERS.find(function (c) { return c.id === charId; });
+        if (!ch) return;
+
+        playSound('pk');
+        card.classList.add('selected');
+        card.classList.remove('selectable-glow');
+
+        card.classList.remove('flipped');
+        setTimeout(function () { card.classList.add('flipped'); }, 50);
+
+        if (charSelectState.phase === 'select-A') {
+            charSelectState.selectedA = ch;
+            game.playerA.char = ch; game.playerA.hp = ch.hp; game.playerA.maxHp = ch.maxHp;
+            game.usedCharIds.push(ch.id);
+            showSelectedChar('char-selected-a', ch);
+
+            if (!isOnlineMode) {
+                charSelectState.phase = 'select-B';
+                disableOtherCards();
+                updateSelectionUI();
+                setTimeout(function () {
+                    var remaining = document.querySelectorAll('.char-grid .char-card:not(.selected)');
+                    remaining.forEach(function (c) { c.classList.remove('disabled'); c.classList.add('selectable-glow'); });
+                    updateSelectionUI();
+                    speak('玩家A选择了' + ch.name + '，请玩家B选择');
+                }, 900);
             } else {
-                $('char-select-hint').textContent = hintPrefix + currentPlayerLabel + '正在抽取角色...';
-                $('btn-spin-char').style.display = 'none';
-                $('btn-char-confirm').style.display = 'none';
-                if (charWheelEl) { charWheelEl.style.opacity = '0.3'; charWheelEl.style.pointerEvents = 'none'; }
+                charSelectState.phase = 'select-B';
+                disableAllCards();
+                updateSelectionUI();
+                speak('你选择了' + ch.name);
+                notifyPeer('char-spin-result', { charId: charId, phase: 'select-B' });
             }
+        } else if (charSelectState.phase === 'select-B') {
+            charSelectState.selectedB = ch;
+            game.playerB.char = ch; game.playerB.hp = ch.hp; game.playerB.maxHp = ch.maxHp;
+            game.usedCharIds.push(ch.id);
+            showSelectedChar('char-selected-b', ch);
+
+            charSelectState.phase = 'done';
+            disableAllCards();
+            updateSelectionUI();
+            speak('你选择了' + ch.name);
+
+            if (!isOnlineMode) {
+                setTimeout(function () { clearCountdown(); showVSAnimation(); }, 1200);
+            } else {
+                notifyPeer('char-spin-result', { charId: charId, phase: 'done' });
+                setTimeout(function () { clearCountdown(); showVSAnimation(); }, 800);
+            }
+        }
+    }
+
+    function showSelectedChar(containerId, ch) {
+        var container = document.querySelector('#' + containerId + ' .selected-char-card');
+        container.className = 'selected-char-card filled';
+        container.innerHTML =
+            '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(145deg,#2a1f4e,#1a1a3e);border-radius:8px;">' +
+            '<span style="font-size:28px;">' + ch.emoji + '</span>' +
+            '<span style="font-family:\'Ma Shan Zheng\',cursive;font-size:13px;color:var(--gold-light);margin-top:2px;">' + ch.name + '</span>' +
+            '</div>';
+    }
+
+    function disableOtherCards() {
+        var cards = document.querySelectorAll('.char-grid .char-card');
+        cards.forEach(function (c) {
+            if (!c.classList.contains('selected')) c.classList.add('disabled');
+        });
+    }
+
+    function disableAllCards() {
+        var cards = document.querySelectorAll('.char-grid .char-card');
+        cards.forEach(function (c) { c.classList.add('disabled'); c.classList.remove('selectable-glow'); });
+    }
+
+    function highlightSelectableCards() {
+        var cards = document.querySelectorAll('.char-grid .char-card:not(.selected):not(.disabled)');
+        cards.forEach(function (c) { c.classList.add('selectable-glow'); });
+    }
+
+    function updateCharSelectUI() {
+        if (charSelectState.phase === 'scrolling') {
+            $('char-select-hint').textContent = '⚔️ 侠客卡牌巡礼中...';
+        } else if (charSelectState.phase === 'flipping') {
+            $('char-select-hint').textContent = '🔄 翻面洗牌...';
+        } else if (charSelectState.phase === 'select-A') {
+            $('char-select-hint').textContent = '🔴 玩家A 请选择你的侠客';
+        } else if (charSelectState.phase === 'select-B') {
+            $('char-select-hint').textContent = '🔵 玩家B 请选择你的侠客';
+        } else if (charSelectState.phase === 'done') {
+            $('char-select-hint').textContent = '✨ 选择完成！';
         }
     }
 
     function initCharacterSelect() {
-        $('btn-spin-char').addEventListener('click', function () {
-            if (wheelSpinning) return;
-            if (isOnlineMode && !canIOperate(game.currentPlayer)) return;
-            clearCountdown();
-            $('btn-spin-char').disabled = true;
-            var ac = CHARACTERS.filter(function (c) { return game.usedCharIds.indexOf(c.id) === -1; });
-            var ci = ac.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
-            var targetIdx = randomInt(0, ac.length - 1);
-            var selectedCharId = ac[targetIdx].id;
-            spinWheel('character-wheel', ci, targetIdx, function (sel) {
-                if (!isOnlineMode || canIOperate(game.currentPlayer)) {
-                    var ch = CHARACTERS.find(function (c) { return c.id === sel.id; });
-                    var p = game.currentPlayer === 'A' ? game.playerA : game.playerB;
-                    p.char = ch; p.hp = ch.hp; p.maxHp = ch.maxHp; game.usedCharIds.push(ch.id);
-                    $('char-info-display').innerHTML = '<div class="char-emoji">' + ch.emoji + '</div><div class="char-name">' + ch.name + '</div><div class="char-stat">血量：' + ch.hp + '点（' + (ch.hp * 10) + '伤害值）</div><div class="char-ability">特殊能力：' + generateAbilityDesc(ch) + '</div>';
-                    $('char-result').classList.remove('hidden');
-                    speak(playerLabel(game.currentPlayer) + '抽到了' + ch.name);
-                    notifyPeer('char-spin-result', { charId: selectedCharId });
-                    updateCharSelectUI();
-                    setTimeout(function () { autoConfirmChar(); }, 2000);
-                }
-            });
-            if (isOnlineMode) notifyPeer('char-spin-start', {});
-        });
         $('btn-char-confirm').addEventListener('click', function () {
             playSound('click');
             if (isOnlineMode && !canIOperate(game.currentPlayer)) return;
-            autoConfirmChar();
         });
     }
 
     function autoConfirmChar() {
-        if (game.currentPlayer === 'A') {
-            game.currentPlayer = 'B'; $('char-result').classList.add('hidden'); $('btn-spin-char').disabled = false;
-            var ac = CHARACTERS.filter(function (c) { return game.usedCharIds.indexOf(c.id) === -1; });
-            var ci = ac.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
-            wheelAngle = 0; drawWheel('character-wheel', ci); speak('请玩家B点击转盘抽取角色');
-            updateCharSelectUI();
-            clearCountdown();
-            if (!isOnlineMode || canIOperate(game.currentPlayer)) {
-                showCountdown(10, function () {
-                    if (game.phase === 'character-select' && !$('btn-spin-char').disabled) {
-                        $('btn-spin-char').click();
-                    }
-                });
-            }
-            notifyPeer('char-confirm', { from: 'A' });
-        } else { clearCountdown(); showVSAnimation(); notifyPeer('char-confirm', { from: 'B' }); }
+        if (charSelectState.phase === 'done' && game.playerA.char && game.playerB.char) {
+            clearCountdown(); showVSAnimation(); notifyPeer('char-confirm', { from: game.currentPlayer });
+        }
     }
 
     function showVSAnimation() {
@@ -1226,17 +1444,152 @@
             notifyPeer('weapon-draw-complete', syncData);
         }
 
-        console.log('[ Weapon ] 显示完成弹窗');
+        console.log('[ Weapon ] 显示完成弹窗(2秒自动消失)');
         showModal('<h3>🎲 武器抽取完成</h3>' +
             '<p style="font-size:14px;color:var(--text-light);margin:8px 0;">玩家A获得 ' + game.playerA.roundCards.length + ' 张：' + (al || '无') + '</p>' +
             '<p style="font-size:14px;color:var(--text-light);margin:8px 0;">玩家B获得 ' + game.playerB.roundCards.length + ' 张：' + (bl || '无') + '</p>' +
-            '<p style="color:var(--gold-light);font-size:13px;margin-top:12px;">⏳ 3秒后投掷骰子...</p>');
+            '<p style="color:var(--gold-light);font-size:13px;margin-top:12px;">⏳ 2秒后进入整理阶段...</p>');
             
         setTimeout(function () {
-            console.log('[ Weapon ] 3秒后进入骰子阶段');
+            console.log('[ Weapon ] 2秒后进入整理阶段');
             hideModal();
+            startOrganizePhase();
+        }, 2000);
+    }
+
+    function startOrganizePhase() {
+        console.log('[ Organize ] 📋 进入整理阶段');
+        
+        clearTableCards();
+        game.phase = 'organize';
+        
+        var tableArea = $('table-cards-area');
+        if (tableArea) {
+            tableArea.innerHTML = '';
+        }
+        
+        $('weapon-draw-area').classList.add('hidden');
+        
+        var organizeArea = $('organize-phase-area');
+        if (organizeArea) {
+            organizeArea.classList.remove('hidden');
+        }
+        
+        var readyBtn = $('btn-ready');
+        if (readyBtn) {
+            readyBtn.disabled = false;
+            readyBtn.textContent = '✅ 准备就绪';
+            readyBtn.classList.remove('ready-clicked');
+            organizeReadyState = { A: false, B: false };
+            readyBtn.onclick = onReadyClick;
+        }
+        
+        $('action-hint').textContent = '⏱️ 整理阶段 - 请准备卡牌';
+        
+        var panelA = document.getElementById('panel-a');
+        var panelB = document.getElementById('panel-b');
+        panelA.classList.remove('inactive-panel');
+        panelA.classList.add('active-panel', 'organize-active');
+        panelB.classList.remove('inactive-panel');
+        panelB.classList.add('active-panel', 'organize-active');
+        
+        hideAllOps(['btn-a-sell', 'btn-a-buy', 'btn-a-synthesis', 'btn-a-cultivation', 'btn-b-sell', 'btn-b-buy', 'btn-b-synthesis', 'btn-b-cultivation']);
+        
+        showOp('A', 'sell');
+        showOp('A', 'buy');
+        showOp('A', 'synthesis');
+        showOp('A', 'cultivation');
+        showOp('B', 'sell');
+        showOp('B', 'buy');
+        showOp('B', 'synthesis');
+        showOp('B', 'cultivation');
+        
+        updateLibraryDisplay();
+        updatePlayerInfo();
+        
+        showCountdown(600, function () {
+            console.log('[ Organize ] ⏰ 倒计时结束，进入骰子阶段');
+            exitOrganizePhase();
             startDicePhase();
-        }, 3000);
+        });
+    }
+
+    var organizeReadyState = { A: false, B: false };
+
+    function onReadyClick() {
+        var btn = $('btn-ready');
+        if (!btn || btn.disabled && btn.classList.contains('ready-clicked')) return;
+
+        playSound('click');
+        var currentPid = game.currentPlayer;
+        organizeReadyState[currentPid] = true;
+
+        var otherReady = organizeReadyState[currentPid === 'A' ? 'B' : 'A'];
+
+        if (otherReady) {
+            btn.textContent = '✅ 双方已准备';
+            btn.classList.add('ready-clicked');
+            btn.disabled = true;
+            console.log('[ Organize ] 双方都已准备，立即开始！');
+            $('action-hint').textContent = '✅ 双方都已准备！即将开始...';
+
+            clearCountdown();
+
+            setTimeout(function () {
+                exitOrganizePhase();
+                startDicePhase();
+            }, 800);
+        } else {
+            var otherPid = currentPid === 'A' ? 'B' : 'A';
+            if (!isOnlineMode) {
+                game.currentPlayer = otherPid;
+                btn.textContent = '⏳ ' + playerLabel(currentPid) + ' 已准备，请' + playerLabel(otherPid) + ' 点击';
+                btn.disabled = false;
+                btn.classList.remove('ready-clicked');
+                $('action-hint').textContent = '⏳ ' + playerLabel(currentPid) + ' 已准备，等待' + playerLabel(otherPid) + ' 准备...';
+
+                var panelA = document.getElementById('panel-a');
+                var panelB = document.getElementById('panel-b');
+                if (otherPid === 'B') {
+                    panelA.classList.remove('active-panel', 'organize-active');
+                    panelA.classList.add('inactive-panel');
+                    panelB.classList.remove('inactive-panel');
+                    panelB.classList.add('active-panel', 'organize-active');
+                } else {
+                    panelB.classList.remove('active-panel', 'organize-active');
+                    panelB.classList.add('inactive-panel');
+                    panelA.classList.remove('inactive-panel');
+                    panelA.classList.add('active-panel', 'organize-active');
+                }
+            } else {
+                btn.textContent = '✅ 已准备';
+                btn.classList.add('ready-clicked');
+                btn.disabled = true;
+                $('action-hint').textContent = '⏱️ ' + playerLabel(currentPid) + ' 已准备，等待对方...';
+                notifyPeer('organize-ready', { from: currentPid });
+            }
+
+            if (countdownSeconds > 65) {
+                clearCountdown();
+                showCountdown(60, function () {
+                    exitOrganizePhase();
+                    startDicePhase();
+                });
+            }
+        }
+    }
+
+    function exitOrganizePhase() {
+        var organizeArea = $('organize-phase-area');
+        if (organizeArea) {
+            organizeArea.classList.add('hidden');
+        }
+        var panelA = document.getElementById('panel-a');
+        var panelB = document.getElementById('panel-b');
+        if (panelA) panelA.classList.remove('organize-active');
+        if (panelB) panelB.classList.remove('organize-active');
+        hideAllOps();
+        clearCountdown();
     }
 
     function startDicePhase() {
@@ -1267,9 +1620,13 @@
                 console.log('[ Dice ] 等待房主投骰子');
             }
         } else {
-            $('dice-hint').textContent = '请点击下方按钮投掷骰子';
-            $('btn-roll-dice').style.display = 'block';
-            $('btn-roll-dice').disabled = false;
+            console.log('[ Dice ] 单机模式 - 自动投掷骰子');
+            $('dice-hint').textContent = '正在自动投掷骰子...';
+            $('action-hint').textContent = '🎯 正在投掷骰子...';
+            setTimeout(function () { 
+                console.log('[ Dice ] 单机模式开始投骰子');
+                doRollDice(); 
+            }, 500);
         }
     }
 
@@ -2163,7 +2520,7 @@
         ['A', 'B'].forEach(function (pid) {
             var player = getPlayer(pid);
             player.gold += 1500;
-            for (var i = 0; i < 2; i++) {
+            for (var i = 0; i < 5; i++) {
                 var card = randomWeapon();
                 player.library.push(card);
                 if (pid === 'A') rewardCardsA.push(card);
@@ -2189,7 +2546,7 @@
             '<p>玩家B（' + game.playerB.char.name + '）剩余血量：' + game.playerB.hp.toFixed(1) + '/' + game.playerB.maxHp + '</p>' +
             '<div style="margin:10px 0;padding:10px;background:rgba(212,168,67,0.15);border:1px solid var(--gold);border-radius:8px;">' +
             '<div style="color:var(--gold-light);font-size:15px;font-weight:700;">🎁 轮次奖励</div>' +
-            '<div style="color:var(--text-light);font-size:13px;margin:4px 0;">💰 每位玩家获得 500 金币</div>' +
+            '<div style="color:var(--text-light);font-size:13px;margin:4px 0;">💰 每位玩家获得 1500 金币</div>' +
             '<div style="color:var(--text-light);font-size:13px;">玩家A获得卡牌：' + rewardInfoA + '</div>' +
             '<div style="color:var(--text-light);font-size:13px;">玩家B获得卡牌：' + rewardInfoB + '</div>' +
             '</div>' +
@@ -2346,7 +2703,7 @@
         } catch (e) { handleError('showSellModal', e); }
     }
 
-    function showBuyModal(pid) {
+    function showBuyModal(pid, defaultTab) {
         try {
         var player = getPlayer(pid);
         var html = '<div class="modal-close-btn" id="btn-close-buy-x">✕</div><h3>🛒 购买</h3>' +
@@ -2409,7 +2766,7 @@
                         showCardPreview(newCard);
                         setTimeout(function () {
                             $('card-preview-overlay').classList.add('hidden');
-                            showBuyModal(pid);
+                            showBuyModal(pid, 'cards');
                         }, 1500);
                     });
                 });
@@ -2512,7 +2869,7 @@
                                 showCardPreview(newCard);
                                 setTimeout(function () {
                                     $('card-preview-overlay').classList.add('hidden');
-                                    showBuyModal(pid);
+                                    showBuyModal(pid, 'rare-wheel');
                                 }, 1500);
                             }
                         }
@@ -2559,7 +2916,7 @@
                         showCardPreview(newCard);
                         setTimeout(function () {
                             $('card-preview-overlay').classList.add('hidden');
-                            showBuyModal(pid);
+                            showBuyModal(pid, 'black-market');
                         }, 1500);
                     });
                 });
@@ -2572,7 +2929,7 @@
             });
         });
 
-        renderBuyTab('cards');
+        renderBuyTab(defaultTab || 'cards');
         $('btn-close-buy-x').addEventListener('click', function () { try { hideModal(); refreshCurrentCardSelect(); } catch (e) { handleError('showBuyModal-close', e); } });
         } catch (e) { handleError('showBuyModal', e); }
     }
@@ -2649,8 +3006,7 @@
             rematchRequested: false, peerRematchRequested: false
         };
         wheelAngle = 0; cardUidCounter = 0;
-        $('char-result').classList.add('hidden');
-        $('btn-spin-char').disabled = false;
+        $('char-result-old').classList.add('hidden');
         hideModal();
         console.log('[ rematch ] 调用 startCharacterSelect()');
         startCharacterSelect();
@@ -3278,19 +3634,28 @@
                 applyBattleInit(payload);
                 break;
             case 'char-spin-result':
-                applyCharSpinResult(payload.charId);
+                applyCharSpinResult(payload.charId, payload.phase);
                 break;
             case 'char-confirm':
                 if (from === 'A') {
                     game.currentPlayer = 'B';
-                    $('char-result').classList.add('hidden');
-                    $('btn-spin-char').disabled = false;
-                    var ac2 = CHARACTERS.filter(function (c) { return game.usedCharIds.indexOf(c.id) === -1; });
-                    var ci2 = ac2.map(function (c) { return { name: c.name, id: c.id, icon: c.emoji }; });
-                    wheelAngle = 0; drawWheel('character-wheel', ci2);
                     updateCharSelectUI();
                 } else {
                     showVSAnimation();
+                }
+                break;
+            case 'organize-ready':
+                var readyFrom = payload.from;
+                organizeReadyState[readyFrom] = true;
+                var btn = $('btn-ready');
+                if (btn) {
+                    $('action-hint').textContent = '⏱️ 对方 ' + playerLabel(readyFrom) + ' 已准备';
+                    if (organizeReadyState.A && organizeReadyState.B) {
+                        btn.textContent = '✅ 双方已准备';
+                        btn.disabled = true;
+                        clearCountdown();
+                        setTimeout(function () { exitOrganizePhase(); startDicePhase(); }, 800);
+                    }
                 }
                 break;
             case 'weapon-spin':
@@ -3363,17 +3728,35 @@
         } catch (e) { handleError('handlePeerAction', e); }
     }
 
-    function applyCharSpinResult(charId) {
+    function applyCharSpinResult(charId, phase) {
         var ch = CHARACTERS.find(function (c) { return c.id === charId; });
         if (!ch) return;
-        var targetPlayer = game.currentPlayer === 'A' ? game.playerA : game.playerB;
-        targetPlayer.char = ch; targetPlayer.hp = ch.hp; targetPlayer.maxHp = ch.maxHp;
-        game.usedCharIds.push(ch.id);
-        $('char-info-display').innerHTML = '<div class="char-emoji">' + ch.emoji + '</div><div class="char-name">' + ch.name + '</div><div class="char-stat">血量：' + ch.hp + '点（' + (ch.hp * 10) + '伤害值）</div><div class="char-ability">特殊能力：' + generateAbilityDesc(ch) + '</div>';
-        $('char-result').classList.remove('hidden');
+        if (phase === 'select-B' && !charSelectState.selectedA) {
+            charSelectState.selectedA = ch;
+            game.playerA.char = ch; game.playerA.hp = ch.hp; game.playerA.maxHp = ch.maxHp;
+            game.usedCharIds.push(ch.id);
+            showSelectedChar('char-selected-a', ch);
+            charSelectState.phase = 'select-B';
+            updateSelectionUI();
+            speak('房主选择了' + ch.name);
+            if (canIOperate('B')) {
+                var remaining = document.querySelectorAll('.char-grid .char-card:not(.selected)');
+                remaining.forEach(function (c) { c.classList.remove('disabled'); c.classList.add('selectable-glow'); });
+                updateSelectionUI();
+                speak('请选择你的侠客卡牌');
+            }
+        } else if (phase === 'done' && !charSelectState.selectedB) {
+            charSelectState.selectedB = ch;
+            game.playerB.char = ch; game.playerB.hp = ch.hp; game.playerB.maxHp = ch.maxHp;
+            game.usedCharIds.push(ch.id);
+            showSelectedChar('char-selected-b', ch);
+            charSelectState.phase = 'done';
+            disableAllCards();
+            updateSelectionUI();
+            speak('对方选择了' + ch.name);
+            setTimeout(function () { clearCountdown(); showVSAnimation(); }, 800);
+        }
         playSound('result');
-        updateCharSelectUI();
-        setTimeout(function () { autoConfirmChar(); }, 2000);
     }
 
     function applyWeaponSpinResult(weaponData, pid) {

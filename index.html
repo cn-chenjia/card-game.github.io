@@ -73,22 +73,35 @@
         <div id="screen-character" class="screen">
             <div class="screen-header">
                 <h2 id="char-select-title">角色抽取</h2>
-                <p id="char-select-hint" class="hint-text">请玩家A点击转盘抽取角色</p>
+                <p id="char-select-hint" class="hint-text">侠客卡牌即将登场...</p>
             </div>
-            <div class="char-select-layout">
-                <div class="char-select-left">
-                    <div class="wheel-container char-wheel">
-                        <canvas id="character-wheel" width="560" height="560"></canvas>
-                        <div class="wheel-pointer"></div>
-                        <button class="btn btn-primary btn-wheel" id="btn-spin-char">转动转盘</button>
+
+            <div id="char-card-stage" class="char-card-stage">
+                <div id="char-scroll-area" class="char-scroll-area">
+                    <div id="char-scroll-top" class="char-scroll-row char-scroll-top"></div>
+                    <div id="char-scroll-bottom" class="char-scroll-row char-scroll-bottom"></div>
+                </div>
+
+                <div id="char-grid-area" class="char-grid-area hidden">
+                    <div id="char-grid" class="char-grid"></div>
+                </div>
+
+                <div id="char-selection-info" class="char-selection-info hidden">
+                    <div id="char-selected-a" class="char-selected-display">
+                        <span class="select-label">玩家A</span>
+                        <div class="selected-char-card"></div>
+                    </div>
+                    <div id="char-vs-badge" class="char-vs-badge">⚔️</div>
+                    <div id="char-selected-b" class="char-selected-display">
+                        <span class="select-label">玩家B</span>
+                        <div class="selected-char-card"></div>
                     </div>
                 </div>
-                <div class="char-select-right">
-                    <div id="char-result" class="result-panel hidden">
-                        <div class="char-info-card" id="char-info-display"></div>
-                        <button class="btn btn-primary" id="btn-char-confirm">确认角色</button>
-                    </div>
-                </div>
+            </div>
+
+            <div id="char-result-old" class="result-panel hidden">
+                <div class="char-info-card" id="char-info-display"></div>
+                <button class="btn btn-primary" id="btn-char-confirm">确认角色</button>
             </div>
         </div>
 
@@ -180,6 +193,12 @@
 
                         <div id="table-cards-area" class="table-cards-area">
                             <div class="table-cards-empty">牌桌</div>
+                        </div>
+
+                        <div id="organize-phase-area" class="organize-phase-area hidden">
+                            <div class="organize-hint">📋 请整理各自卡牌（出售/购买/合成/修炼）</div>
+                            <button class="btn btn-primary btn-large" id="btn-ready">✅ 准备就绪</button>
+                            <div class="organize-ops-hint">双方可进行：出售 / 购买 / 合成 / 修炼</div>
                         </div>
 
                         <div id="weapon-draw-area" class="battle-section hidden">
