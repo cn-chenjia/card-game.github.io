@@ -72,6 +72,10 @@
 
         <div id="screen-character" class="screen">
             <div class="screen-header">
+                <div id="char-online-status-bar" class="online-status-bar hidden">
+                    <span class="room-id-display-inline">🏠 房间: <strong id="char-room-id"></strong></span>
+                    <span class="peer-status-inline" id="char-peer-status"><span class="peer-status-dot-small"></span><span id="char-peer-text">未连接</span></span>
+                </div>
                 <h2 id="char-select-title">角色抽取</h2>
                 <p id="char-select-hint" class="hint-text">侠客卡牌即将登场...</p>
             </div>
@@ -384,5 +388,10 @@
     </div>
 
     <script src="game.js"></script>
+
+    <footer style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 12px;font-size:11px;color:#666;background:rgba(0,0,0,0.3);z-index:1000;pointer-events:none;line-height:1.5;">
+        <div>© 2026 星辰工作室 · 作者：人生似茶</div>
+        <div>📧 Mr.chenj@outlook.com</div>
+    </footer>
 </body>
 </html>
