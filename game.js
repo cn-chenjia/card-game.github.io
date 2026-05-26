@@ -17,34 +17,47 @@
         };
     }
 
+    function renderEmoji(val, isThumbnail) {
+        if (val && /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(val)) {
+            if (isThumbnail) {
+                return '<img src="' + val + '" alt="" class="thumbnail-img">';
+            }
+            return '<img src="' + val + '" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;">';
+        }
+        return val;
+    }
+    function isImageEmoji(val) {
+        return val && /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(val);
+    }
+
     var CHARACTERS = [
-        { id: 'guojing', name: '郭靖', emoji: '🗡️', hp: 5, maxHp: 5, atkBonus: 0.15, defBonus: 0.10, signatureArt: { name: '降龙十八掌', icon: '🐉' } },
-        { id: 'huangyaoshi', name: '黄药师', emoji: '🎵', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '碧海潮生曲', icon: '🎵' } },
-        { id: 'hongqigong', name: '洪七公', emoji: '🏏', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0, signatureArt: { name: '打狗棒法', icon: '🏏' } },
-        { id: 'duanyu', name: '段誉', emoji: '🌸', hp: 3, maxHp: 3, atkBonus: 0, defBonus: 0.25, signatureArt: { name: '凌波微步', icon: '✨' } },
-        { id: 'xuzhu', name: '虚竹', emoji: '📿', hp: 4, maxHp: 4, atkBonus: 0.10, defBonus: 0.15, signatureArt: { name: '天山六阳掌', icon: '☀️' } },
-        { id: 'qiaofeng', name: '乔峰', emoji: '🐉', hp: 6, maxHp: 6, atkBonus: 0.22, defBonus: 0, signatureArt: { name: '降龙十八掌', icon: '🐉' } },
-        { id: 'yangguo', name: '杨过', emoji: '⚔️', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '玄铁重剑', icon: '⚔️' } },
-        { id: 'zhangwuji', name: '张无忌', emoji: '☯️', hp: 5, maxHp: 5, atkBonus: 0.12, defBonus: 0.13, signatureArt: { name: '九阳神功', icon: '☀️' } },
-        { id: 'linghuchong', name: '令狐冲', emoji: '🍶', hp: 4, maxHp: 4, atkBonus: 0.18, defBonus: 0.07, signatureArt: { name: '独孤九剑', icon: '🗡️' } },
-        { id: 'renwoxing', name: '任我行', emoji: '🌀', hp: 5, maxHp: 5, atkBonus: 0.19, defBonus: 0.03, signatureArt: { name: '吸星大法', icon: '🌀' } },
-        { id: 'dongfangbubai', name: '东方不败', emoji: '🌹', hp: 3, maxHp: 3, atkBonus: 0.25, defBonus: 0, signatureArt: { name: '葵花宝典', icon: '🌹' } },
-        { id: 'niefeng', name: '聂风', emoji: '🌪️', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0.12, signatureArt: { name: '魔刀', icon: '⚔️' } },
-        { id: 'bujingyun', name: '步惊云', emoji: '☁️', hp: 4, maxHp: 4, atkBonus: 0.24, defBonus: 0.06, signatureArt: { name: '绝世好剑', icon: '⚔️' } },
-        { id: 'wuming', name: '无名', emoji: '⚡', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '英雄剑', icon: '🗡️' } },
-        { id: 'xiongba', name: '雄霸', emoji: '👑', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '三分归元气', icon: '🌀' } },
-        { id: 'zhaomin', name: '赵敏', emoji: '🦊', hp: 4, maxHp: 4, atkBonus: 0.15, defBonus: 0.12, signatureArt: { name: '九阴白骨爪', icon: '🦴' } },
-        { id: 'zhouzhiruo', name: '周芷若', emoji: '🌙', hp: 4, maxHp: 4, atkBonus: 0.19, defBonus: 0.06, signatureArt: { name: '九阴真经', icon: '📖' } },
-        { id: 'yangxiao', name: '杨逍', emoji: '⚡', hp: 4, maxHp: 4, atkBonus: 0.17, defBonus: 0.08, signatureArt: { name: '乾坤大挪移', icon: '🌀' } },
-        { id: 'zhangsanfeng', name: '张三丰', emoji: '☯️', hp: 6, maxHp: 6, atkBonus: 0.16, defBonus: 0.18, signatureArt: { name: '太极拳', icon: '☯️' } },
-        { id: 'lixunhuan', name: '李寻欢', emoji: '🔪', hp: 4, maxHp: 4, atkBonus: 0.26, defBonus: 0.04, signatureArt: { name: '小李飞刀', icon: '🔪' } },
-        { id: 'afei', name: '阿飞', emoji: '⚡', hp: 4, maxHp: 4, atkBonus: 0.23, defBonus: 0.05, signatureArt: { name: '快剑', icon: '⚡' } },
-        { id: 'shangguanjinhong', name: '上官金虹', emoji: '💰', hp: 5, maxHp: 5, atkBonus: 0.21, defBonus: 0.09, signatureArt: { name: '龙凤双环', icon: '💫' } },
-        { id: 'shipotian', name: '石破天', emoji: '📖', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.15, signatureArt: { name: '太玄经', icon: '📖' } },
-        { id: 'dingdang', name: '丁当', emoji: '💕', hp: 4, maxHp: 4, atkBonus: 0.14, defBonus: 0.12, signatureArt: { name: '叮当响', icon: '🔔' } },
-        { id: 'xiaoshiyilang', name: '萧十一郎', emoji: '🗡️', hp: 5, maxHp: 5, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '割鹿刀', icon: '⚔️' } },
-        { id: 'shenbijun', name: '沈璧君', emoji: '🌸', hp: 4, maxHp: 4, atkBonus: 0.12, defBonus: 0.15, signatureArt: { name: '洗妆剑法', icon: '🗡️' } },
-        { id: 'lianchengbi', name: '连城璧', emoji: '✨', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '天外飞仙', icon: '⚡' } }
+        { id: 'guojing', name: '郭靖', emoji: 'resources/rules/郭靖.png', hp: 5, maxHp: 5, atkBonus: 0.15, defBonus: 0.10, signatureArt: { name: '降龙十八掌', icon: '🐉' } },
+        { id: 'huangyaoshi', name: '黄药师', emoji: 'resources/rules/黄药师.png', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '碧海潮生曲', icon: '🎵' } },
+        { id: 'hongqigong', name: '洪七公', emoji: 'resources/rules/洪七公.png', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0, signatureArt: { name: '打狗棒法', icon: '🏏' } },
+        { id: 'duanyu', name: '段誉', emoji: 'resources/rules/段誉.png', hp: 3, maxHp: 3, atkBonus: 0, defBonus: 0.25, signatureArt: { name: '凌波微步', icon: '✨' } },
+        { id: 'xuzhu', name: '虚竹', emoji: 'resources/rules/虚竹.png', hp: 4, maxHp: 4, atkBonus: 0.10, defBonus: 0.15, signatureArt: { name: '天山六阳掌', icon: '☀️' } },
+        { id: 'qiaofeng', name: '乔峰', emoji: 'resources/rules/乔峰.png', hp: 6, maxHp: 6, atkBonus: 0.22, defBonus: 0, signatureArt: { name: '降龙十八掌', icon: '🐉' } },
+        { id: 'yangguo', name: '杨过', emoji: 'resources/rules/杨过.png', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '玄铁重剑', icon: '⚔️' } },
+        { id: 'zhangwuji', name: '张无忌', emoji: 'resources/rules/张无忌.png', hp: 5, maxHp: 5, atkBonus: 0.12, defBonus: 0.13, signatureArt: { name: '九阳神功', icon: '☀️' } },
+        { id: 'linghuchong', name: '令狐冲', emoji: 'resources/rules/令狐冲.png', hp: 4, maxHp: 4, atkBonus: 0.18, defBonus: 0.07, signatureArt: { name: '独孤九剑', icon: '🗡️' } },
+        { id: 'renwoxing', name: '任我行', emoji: 'resources/rules/任我行.png', hp: 5, maxHp: 5, atkBonus: 0.19, defBonus: 0.03, signatureArt: { name: '吸星大法', icon: '🌀' } },
+        { id: 'dongfangbubai', name: '东方不败', emoji: 'resources/rules/东方不败.png', hp: 3, maxHp: 3, atkBonus: 0.25, defBonus: 0, signatureArt: { name: '葵花宝典', icon: '🌹' } },
+        { id: 'niefeng', name: '聂风', emoji: 'resources/rules/聂风.png', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0.12, signatureArt: { name: '魔刀', icon: '⚔️' } },
+        { id: 'bujingyun', name: '步惊云', emoji: 'resources/rules/步惊云.png', hp: 4, maxHp: 4, atkBonus: 0.24, defBonus: 0.06, signatureArt: { name: '绝世好剑', icon: '⚔️' } },
+        { id: 'wuming', name: '无名', emoji: 'resources/rules/无名.png', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '英雄剑', icon: '🗡️' } },
+        { id: 'xiongba', name: '雄霸', emoji: 'resources/rules/雄霸.png', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '三分归元气', icon: '🌀' } },
+        { id: 'zhaomin', name: '赵敏', emoji: 'resources/rules/赵敏.png', hp: 4, maxHp: 4, atkBonus: 0.15, defBonus: 0.12, signatureArt: { name: '九阴白骨爪', icon: '🦴' } },
+        { id: 'zhouzhiruo', name: '周芷若', emoji: 'resources/rules/周芷若.png', hp: 4, maxHp: 4, atkBonus: 0.19, defBonus: 0.06, signatureArt: { name: '九阴真经', icon: '📖' } },
+        { id: 'yangxiao', name: '杨逍', emoji: 'resources/rules/杨逍.png', hp: 4, maxHp: 4, atkBonus: 0.17, defBonus: 0.08, signatureArt: { name: '乾坤大挪移', icon: '🌀' } },
+        { id: 'zhangsanfeng', name: '张三丰', emoji: 'resources/rules/张三丰.png', hp: 6, maxHp: 6, atkBonus: 0.16, defBonus: 0.18, signatureArt: { name: '太极拳', icon: '☯️' } },
+        { id: 'lixunhuan', name: '李寻欢', emoji: 'resources/rules/李寻欢.png', hp: 4, maxHp: 4, atkBonus: 0.26, defBonus: 0.04, signatureArt: { name: '小李飞刀', icon: '🔪' } },
+        { id: 'afei', name: '阿飞', emoji: 'resources/rules/阿飞.png', hp: 4, maxHp: 4, atkBonus: 0.23, defBonus: 0.05, signatureArt: { name: '快剑', icon: '⚡' } },
+        { id: 'shangguanjinhong', name: '上官金虹', emoji: 'resources/rules/上官金虹.png', hp: 5, maxHp: 5, atkBonus: 0.21, defBonus: 0.09, signatureArt: { name: '龙凤双环', icon: '💫' } },
+        { id: 'shipotian', name: '石破天', emoji: 'resources/rules/石破天.png', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.15, signatureArt: { name: '太玄经', icon: '📖' } },
+        { id: 'dingdang', name: '丁当', emoji: 'resources/rules/丁当.png', hp: 4, maxHp: 4, atkBonus: 0.14, defBonus: 0.12, signatureArt: { name: '叮当响', icon: '🔔' } },
+        { id: 'xiaoshiyilang', name: '萧十一郎', emoji: 'resources/rules/萧十一郎.png', hp: 5, maxHp: 5, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '割鹿刀', icon: '⚔️' } },
+        { id: 'shenbijun', name: '沈璧君', emoji: 'resources/rules/沈璧君.png', hp: 4, maxHp: 4, atkBonus: 0.12, defBonus: 0.15, signatureArt: { name: '洗妆剑法', icon: '🗡️' } },
+        { id: 'lianchengbi', name: '连城璧', emoji: 'resources/rules/连城璧.png', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '天外飞仙', icon: '⚡' } }
     ];
 
     var EPIC_SKILLS = [
@@ -435,7 +448,7 @@
     function updatePlayerInfo() {
         var a = game.playerA, b = game.playerB;
         if (a.char) {
-            $('player-a-avatar').textContent = a.char.emoji;
+            $('player-a-avatar').innerHTML = renderEmoji(a.char.emoji);
             $('player-a-char').textContent = a.char.name;
             $('player-a-hp-text').textContent = a.hp.toFixed(1) + '/' + a.maxHp;
             $('player-a-hp-bar').style.width = (a.hp / a.maxHp * 100) + '%';
@@ -443,7 +456,7 @@
             $('player-a-ability').textContent = aAbility;
         }
         if (b.char) {
-            $('player-b-avatar').textContent = b.char.emoji;
+            $('player-b-avatar').innerHTML = renderEmoji(b.char.emoji);
             $('player-b-char').textContent = b.char.name;
             $('player-b-hp-text').textContent = b.hp.toFixed(1) + '/' + b.maxHp;
             $('player-b-hp-bar').style.width = (b.hp / b.maxHp * 100) + '%';
@@ -829,9 +842,12 @@
         topRow.innerHTML = ''; bottomRow.innerHTML = '';
         charSelectState.cardElements = [];
         var shuffled = CHARACTERS.slice().sort(function () { return Math.random() - 0.5; });
-        var mid = Math.ceil(shuffled.length / 2);
-        var topChars = shuffled.slice(0, mid);
-        var bottomChars = shuffled.slice(mid);
+        var topChars = [];
+        var bottomChars = [];
+        shuffled.forEach(function (c, i) {
+            if (i % 2 === 0) topChars.push(c);
+            else bottomChars.push(c);
+        });
 
         topChars.forEach(function (c) { topRow.appendChild(createCharCardEl(c)); });
         bottomChars.forEach(function (c) { bottomRow.appendChild(createCharCardEl(c)); });
@@ -849,11 +865,12 @@
         card.dataset.charId = charData.id;
         if (!isClone) charSelectState.cardElements.push(card);
 
+        var bgImageStyle = isImageEmoji(charData.emoji) ? ' style="background-image:url(' + charData.emoji + ')" class="char-card-front has-bg-image"' : ' class="char-card-front"';
         card.innerHTML =
             '<div class="char-card-inner">' +
-            '<div class="char-card-front">' +
+            '<div' + bgImageStyle + '>' +
             '<div class="card-rarity-bar"></div>' +
-            '<div class="card-emoji">' + charData.emoji + '</div>' +
+            '<div class="card-emoji">' + renderEmoji(charData.emoji, true) + '</div>' +
             '<div class="card-char-name">' + charData.name + '</div>' +
             '<div class="card-hp-badge">❤️ ' + charData.hp + ' HP</div>' +
             '<div class="card-sig-art">' + charData.signatureArt.icon + ' ' + charData.signatureArt.name + '</div>' +
@@ -1076,11 +1093,13 @@
 
         var overlay = document.createElement('div');
         overlay.className = 'card-spotlight-overlay';
+        var spotClass = isImageEmoji(charData.emoji) ? 'card-spotlight-card has-bg-image' : 'card-spotlight-card';
+        var spotStyle = isImageEmoji(charData.emoji) ? ' style="background-image:url(' + charData.emoji + ')"' : '';
         overlay.innerHTML =
             '<div class="card-spotlight-content">' +
-            '<div class="card-spotlight-card">' +
+            '<div class="' + spotClass + '"' + spotStyle + '>' +
             '<div class="card-rarity-bar"></div>' +
-            '<div class="card-emoji">' + charData.emoji + '</div>' +
+            '<div class="card-emoji">' + renderEmoji(charData.emoji) + '</div>' +
             '<div class="card-char-name">' + charData.name + '</div>' +
             '<div class="card-hp-badge">❤️ ' + charData.hp + ' HP</div>' +
             '<div class="card-sig-art">' + charData.signatureArt.icon + ' ' + charData.signatureArt.name + '</div>' +
@@ -1103,11 +1122,19 @@
     function showSelectedChar(containerId, ch) {
         var container = document.querySelector('#' + containerId + ' .selected-char-card');
         container.className = 'selected-char-card filled';
-        container.innerHTML =
-            '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(145deg,#2a1f4e,#1a1a3e);border-radius:8px;">' +
-            '<span style="font-size:28px;">' + ch.emoji + '</span>' +
-            '<span style="font-family:\'Ma Shan Zheng\',cursive;font-size:13px;color:var(--gold-light);margin-top:2px;">' + ch.name + '</span>' +
-            '</div>';
+        if (isImageEmoji(ch.emoji)) {
+            container.innerHTML =
+                '<div style="display:flex;flex-direction:column;align-items:center;width:100%;height:100%;background-image:url(' + ch.emoji + ');background-size:cover;background-position:top center;border-radius:8px;position:relative;">' +
+                '<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(15,23,41,0.7) 0%,rgba(15,23,41,0.2) 40%,transparent 55%,rgba(15,23,41,0.75) 100%);border-radius:8px;"></div>' +
+                '<span style="font-family:\'Ma Shan Zheng\',cursive;font-size:13px;color:#ffd700;margin-top:4px;position:relative;z-index:1;text-shadow:0 1px 5px rgba(0,0,0,0.95);letter-spacing:1px;">' + ch.name + '</span>' +
+                '</div>';
+        } else {
+            container.innerHTML =
+                '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(145deg,#2a1f4e,#1a1a3e);border-radius:8px;">' +
+                '<span style="font-size:28px;">' + renderEmoji(ch.emoji) + '</span>' +
+                '<span style="font-family:\'Ma Shan Zheng\',cursive;font-size:13px;color:var(--gold-light);margin-top:2px;">' + ch.name + '</span>' +
+                '</div>';
+        }
     }
 
     function disableOtherCards() {
@@ -1178,14 +1205,14 @@
 
         $('vs-container').innerHTML =
             '<div class="vs-fighter vs-left">' +
-            '<div class="vs-emoji">' + a.char.emoji + '</div>' +
+            '<div class="vs-emoji">' + renderEmoji(a.char.emoji) + '</div>' +
             '<div class="vs-name">' + a.char.name + '</div>' +
             '<div class="vs-player">玩家A</div>' +
             '<div class="vs-hp">' + generateAbilityDesc(a.char) + '</div>' +
             '</div>' +
             '<div class="vs-text">VS</div>' +
             '<div class="vs-fighter vs-right">' +
-            '<div class="vs-emoji">' + b.char.emoji + '</div>' +
+            '<div class="vs-emoji">' + renderEmoji(b.char.emoji) + '</div>' +
             '<div class="vs-name">' + b.char.name + '</div>' +
             '<div class="vs-player">玩家B</div>' +
             '<div class="vs-hp">' + generateAbilityDesc(b.char) + '</div>' +
@@ -2731,7 +2758,7 @@
         } else {
             var wp = getPlayer(winner);
             $('gameover-title').textContent = '游戏结束！';
-            $('winner-display').innerHTML = '<div class="winner-char">' + wp.char.emoji + ' ' + wp.char.name + '</div><div class="winner-player">' + playerLabel(winner) + ' 获胜！🎉</div>';
+            $('winner-display').innerHTML = '<div class="winner-char">' + renderEmoji(wp.char.emoji) + ' ' + wp.char.name + '</div><div class="winner-player">' + playerLabel(winner) + ' 获胜！🎉</div>';
             speak('游戏结束，' + playerLabel(winner) + wp.char.name + '获胜');
         }
         $('game-stats').innerHTML =

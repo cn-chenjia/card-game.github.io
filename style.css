@@ -251,8 +251,9 @@ body {
 .player-avatar {
     width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--gold);
     display: flex; align-items: center; justify-content: center; font-size: 24px;
-    background: rgba(0, 0, 0, 0.3); flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.3); flex-shrink: 0; overflow: hidden;
 }
+.player-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .panel-a .player-avatar { border-color: var(--red-light); }
 .panel-b .player-avatar { border-color: var(--blue-light); }
 .player-details { min-width: 0; flex: 1; }
@@ -684,7 +685,8 @@ body {
 }
 .vs-fighter.vs-left { animation-delay: 0.2s; }
 .vs-fighter.vs-right { animation-delay: 0.4s; }
-.vs-fighter .vs-emoji { font-size: 64px; }
+.vs-fighter .vs-emoji { font-size: 64px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+.vs-fighter .vs-emoji img { width: 80px; height: 80px; object-fit: contain; border-radius: 8px; }
 .vs-fighter .vs-name { font-family: 'Ma Shan Zheng', cursive; font-size: 28px; color: var(--gold-light); }
 .vs-fighter .vs-player { font-size: 14px; color: var(--text-dim); }
 .vs-fighter .vs-hp { font-size: 12px; color: var(--text-dim); }
@@ -716,7 +718,8 @@ body {
 .gameover-content { text-align: center; padding: 20px; animation: fadeInUp 0.6s ease; }
 .gameover-title { font-family: 'Ma Shan Zheng', cursive; font-size: 36px; color: var(--gold-light); margin-bottom: 20px; }
 .winner-display { margin: 20px 0; }
-.winner-display .winner-char { font-family: 'Ma Shan Zheng', cursive; font-size: 48px; color: var(--gold); margin-bottom: 8px; }
+.winner-display .winner-char { font-family: 'Ma Shan Zheng', cursive; font-size: 48px; color: var(--gold); margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.winner-display .winner-char img { width: 56px; height: 56px; object-fit: contain; border-radius: 8px; vertical-align: middle; }
 .winner-display .winner-player { font-size: 20px; color: var(--text-light); }
 .game-stats {
     background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(212, 168, 67, 0.2);
@@ -1438,7 +1441,8 @@ body {
     .dice { width: 60px; height: 60px; }
     .dice-face { font-size: 26px; }
     .damage-display .damage-number { font-size: 40px; }
-    .vs-fighter .vs-emoji { font-size: 52px; }
+    .vs-fighter .vs-emoji { font-size: 52px; width: 64px; height: 64px; }
+    .vs-fighter .vs-emoji img { width: 64px; height: 64px; }
     .vs-fighter .vs-name { font-size: 24px; }
     .vs-text { font-size: 56px; }
 }
@@ -1484,7 +1488,8 @@ body {
     .battle-log { padding: 4px 8px; margin-bottom: 4px; }
     .battle-log-list { max-height: 80px; }
     .battle-log-title { font-size: 12px; margin-bottom: 2px; }
-    .vs-fighter .vs-emoji { font-size: 44px; }
+    .vs-fighter .vs-emoji { font-size: 44px; width: 54px; height: 54px; }
+    .vs-fighter .vs-emoji img { width: 54px; height: 54px; }
     .vs-fighter .vs-name { font-size: 20px; }
     .vs-text { font-size: 48px; }
     .vs-container { gap: 16px; padding: 12px; }
@@ -1537,7 +1542,8 @@ body {
     .battle-log { padding: 3px 6px; margin-bottom: 2px; }
     .battle-log-list { max-height: 60px; }
     .battle-log-title { font-size: 11px; }
-    .vs-fighter .vs-emoji { font-size: 36px; }
+    .vs-fighter .vs-emoji { font-size: 36px; width: 46px; height: 46px; }
+    .vs-fighter .vs-emoji img { width: 46px; height: 46px; }
     .vs-fighter .vs-name { font-size: 18px; }
     .vs-text { font-size: 40px; }
     .vs-container { gap: 12px; padding: 8px; }
@@ -1628,7 +1634,8 @@ body {
     .battle-log { padding: 2px 4px; margin-bottom: 1px; }
     .battle-log-list { max-height: 50px; }
     .battle-log-title { font-size: 10px; }
-    .vs-fighter .vs-emoji { font-size: 30px; }
+    .vs-fighter .vs-emoji { font-size: 30px; width: 38px; height: 38px; }
+    .vs-fighter .vs-emoji img { width: 38px; height: 38px; }
     .vs-fighter .vs-name { font-size: 16px; }
     .vs-text { font-size: 34px; }
     .vs-container { gap: 10px; padding: 6px; }
@@ -1979,11 +1986,11 @@ body {
 }
 .char-scroll-top {
     top: 28%;
-    animation: scrollRight 25s linear infinite;
+    animation: scrollRight 38s linear infinite;
 }
 .char-scroll-bottom {
     bottom: 28%;
-    animation: scrollLeft 30s linear infinite;
+    animation: scrollLeft 45s linear infinite;
 }
 @keyframes scrollRight {
     0% { transform: translateX(-100%); }
@@ -2065,6 +2072,139 @@ body {
     margin-bottom: 4px;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
     z-index: 1;
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.char-card-front .card-emoji .thumbnail-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: inherit;
+}
+.card-spotlight-card.has-bg-image {
+    background-size: cover !important;
+    background-position: center top !important;
+    background-repeat: no-repeat;
+}
+.card-spotlight-card.has-bg-image::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        linear-gradient(180deg, rgba(15,23,41,0.7) 0%, rgba(15,23,41,0.2) 35%, transparent 50%),
+        linear-gradient(180deg, transparent 55%, rgba(15,23,41,0.7) 85%, rgba(10,14,28,0.9) 100%);
+    border-radius: 12px;
+    z-index: 0;
+}
+.card-spotlight-card.has-bg-image .card-emoji { display: none !important; }
+.card-spotlight-card.has-bg-image .card-rarity-bar {
+    position: absolute !important;
+    top: 4px; left: 12px; right: 12px;
+    z-index: 2;
+}
+.card-spotlight-card.has-bg-image .card-char-name {
+    position: absolute !important;
+    top: 10px;
+    left: 16px;
+    right: 16px;
+    margin: 0 !important;
+    font-size: 24px !important;
+    text-align: center;
+    color: #ffd700 !important;
+    letter-spacing: 4px;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.95), 0 0 14px rgba(0,0,0,0.5);
+    z-index: 2;
+}
+.card-spotlight-card.has-bg-image .card-hp-badge {
+    position: absolute !important;
+    bottom: 34px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0 !important;
+    font-size: 14px !important;
+    padding: 3px 16px;
+    background: rgba(0,0,0,0.65);
+    border-radius: 12px;
+    white-space: nowrap;
+    z-index: 2;
+}
+.card-spotlight-card.has-bg-image .card-sig-art {
+    position: absolute !important;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0 !important;
+    font-size: 13px !important;
+    padding: 3px 14px;
+    background: rgba(212,168,67,0.25);
+    border: 1px solid rgba(212,168,67,0.4);
+    border-radius: 8px;
+    white-space: nowrap;
+    z-index: 2;
+}
+.char-card-front.has-bg-image {
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+.char-card-front.has-bg-image::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        linear-gradient(180deg, rgba(15,23,41,0.7) 0%, rgba(15,23,41,0.3) 35%, transparent 50%),
+        linear-gradient(180deg, transparent 55%, rgba(15,23,41,0.75) 85%, rgba(10,14,28,0.92) 100%);
+    border-radius: 12px;
+    z-index: 0;
+}
+.char-card-front.has-bg-image .card-emoji {
+    display: none;
+}
+.char-card-front.has-bg-image .card-char-name {
+    position: absolute;
+    top: 4px;
+    left: 8px;
+    right: 8px;
+    margin: 0;
+    font-size: 16px;
+    color: #ffd700;
+    text-align: center;
+    text-shadow: 0 1px 5px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.6);
+    z-index: 2;
+    letter-spacing: 2px;
+}
+.char-card-front.has-bg-image .card-hp-badge {
+    position: absolute;
+    bottom: 26px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    font-size: 10px;
+    padding: 2px 10px;
+    background: rgba(0,0,0,0.65);
+    border-radius: 10px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    z-index: 2;
+    white-space: nowrap;
+}
+.char-card-front.has-bg-image .card-sig-art {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    font-size: 9px;
+    padding: 2px 8px;
+    background: rgba(212,168,67,0.25);
+    border: 1px solid rgba(212,168,67,0.4);
+    border-radius: 6px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    z-index: 2;
+    white-space: nowrap;
 }
 .char-card-front .card-char-name {
     font-family: 'Ma Shan Zheng', cursive;
@@ -2452,7 +2592,7 @@ body {
 /* 响应式适配 */
 @media (max-width: 700px) {
     .char-card { width: 85px; height: 120px; }
-    .char-card-front .card-emoji { font-size: 32px; }
+    .char-card-front .card-emoji { font-size: 32px; width: 56px; height: 56px; border-radius: 8px; }
     .char-card-front .card-char-name { font-size: 14px; }
     .char-card-front .card-hp-badge { font-size: 9px; }
     .char-card-front .card-sig-art { font-size: 8px; }
@@ -2463,7 +2603,7 @@ body {
 }
 @media (max-width: 500px) {
     .char-card { width: 72px; height: 102px; }
-    .char-card-front .card-emoji { font-size: 26px; }
+    .char-card-front .card-emoji { font-size: 26px; width: 48px; height: 48px; border-radius: 6px; }
     .char-card-front .card-char-name { font-size: 12px; }
     .char-card-front .card-hp-badge,
     .char-card-front .card-sig-art { font-size: 8px; display: none; }
