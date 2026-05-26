@@ -29,6 +29,8 @@ var Multiplayer = (function () {
     var lastHeartbeatTime = 0;
     var HEARTBEAT_INTERVAL = 5000;
     var HEARTBEAT_TIMEOUT = 8000;
+    var backgroundHeartbeatTimer = null;
+    var isPageVisible = true;
 
     var reconnectTimer = null;
     var reconnectAttempts = 0;
@@ -142,12 +144,49 @@ var Multiplayer = (function () {
     function startHeartbeat() {
         stopHeartbeat();
         lastHeartbeatTime = Date.now();
+        isPageVisible = !document.hidden;
         heartbeatInterval = setInterval(function () {
             if (isConnectedFlag && conn && conn.open) {
                 send('system:heartbeat', { time: Date.now() });
                 checkHeartbeatTimeout();
             }
         }, HEARTBEAT_INTERVAL);
+
+        if (typeof document !== 'undefined' && document.addEventListener) {
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
+    }
+
+    function handleVisibilityChange() {
+        isPageVisible = !document.hidden;
+        if (isPageVisible) {
+            stopBackgroundHeartbeat();
+            console.log('[联机] 页面回到前台，恢复正常心跳');
+            send('system:heartbeat', { time: Date.now() });
+        } else {
+            console.log('[联机] 页面切到后台，切换到后台心跳模式');
+            startBackgroundHeartbeat();
+        }
+    }
+
+    function startBackgroundHeartbeat() {
+        stopBackgroundHeartbeat();
+        (function loop() {
+            if (!isPageVisible) return;
+            backgroundHeartbeatTimer = setTimeout(function () {
+                if (isConnectedFlag && conn && conn.open) {
+                    send('system:heartbeat', { time: Date.now() });
+                }
+                loop();
+            }, HEARTBEAT_INTERVAL);
+        })();
+    }
+
+    function stopBackgroundHeartbeat() {
+        if (backgroundHeartbeatTimer) {
+            clearTimeout(backgroundHeartbeatTimer);
+            backgroundHeartbeatTimer = null;
+        }
     }
 
     function stopHeartbeat() {
@@ -159,12 +198,17 @@ var Multiplayer = (function () {
             clearTimeout(heartbeatTimeout);
             heartbeatTimeout = null;
         }
+        stopBackgroundHeartbeat();
+        if (typeof document !== 'undefined' && document.removeEventListener) {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        }
     }
 
     function checkHeartbeatTimeout() {
         if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
         var elapsed = Date.now() - lastHeartbeatTime;
-        if (elapsed > HEARTBEAT_TIMEOUT * 3) {
+        var effectiveTimeout = isPageVisible ? HEARTBEAT_TIMEOUT : (HEARTBEAT_TIMEOUT * 4);
+        if (elapsed > effectiveTimeout * 3) {
             console.warn('[联机] 心跳严重超时 (' + Math.round(elapsed / 1000) + 's)，触发重连');
             emit('peer-timeout');
             if (!isReconnecting && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
@@ -175,15 +219,16 @@ var Multiplayer = (function () {
         heartbeatTimeout = setTimeout(function () {
             if (isConnectedFlag && !isReconnecting) {
                 var currentElapsed = Date.now() - lastHeartbeatTime;
-                if (currentElapsed > HEARTBEAT_TIMEOUT) {
-                    console.warn('[联机] 心跳超时 (' + Math.round(currentElapsed / 1000) + 's)，对方可能已掉线');
+                var currentEffectiveTimeout = isPageVisible ? HEARTBEAT_TIMEOUT : (HEARTBEAT_TIMEOUT * 4);
+                if (currentElapsed > currentEffectiveTimeout) {
+                    console.warn('[联机] 心跳超时 (' + Math.round(currentElapsed / 1000) + 's)，对方可能已掉线' + (isPageVisible ? '' : '（当前页面在后台，已放宽超时限制）'));
                     emit('peer-timeout');
                     if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                         attemptPeerReconnect();
                     }
                 }
             }
-        }, HEARTBEAT_TIMEOUT);
+        }, effectiveTimeout);
     }
 
     function onPeerHeartbeat(time) {
