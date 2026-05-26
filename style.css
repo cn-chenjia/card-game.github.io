@@ -2132,6 +2132,8 @@ body {
 .char-card.selected {
     pointer-events: none;
     transform: none !important;
+    opacity: 1 !important;
+    filter: brightness(1.1) !important;
 }
 .char-card.selected .char-card-inner {
     transform: none !important;
@@ -2143,7 +2145,8 @@ body {
     backface-visibility: visible !important;
     -webkit-backface-visibility: visible !important;
     border-color: #4ade80;
-    box-shadow: 0 0 24px rgba(74, 222, 128, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.7), 0 0 60px rgba(74, 222, 128, 0.3), 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+    filter: brightness(1.15) !important;
 }
 .char-card.selected .char-card-back {
     display: none !important;
