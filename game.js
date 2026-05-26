@@ -396,7 +396,13 @@
         if (el) {
             el.style.display = 'block';
             el.disabled = !!opts.disabled;
-            if (opts.text !== undefined) el.textContent = opts.text;
+            if (opts.text !== undefined) {
+                if (opts.html) {
+                    el.innerHTML = opts.text;
+                } else {
+                    el.textContent = opts.text;
+                }
+            }
             if (btnId === 'spin-weapon') {
                 var autoContainer = $('auto-spin-' + pPrefix(pid).toLowerCase()).closest('.auto-spin-container') || $('auto-spin-' + pPrefix(pid).toLowerCase()).parentElement;
                 if (autoContainer) autoContainer.style.display = 'flex';
@@ -867,22 +873,23 @@
         var topCards = document.querySelectorAll('#char-scroll-top .char-card');
         var bottomCards = document.querySelectorAll('#char-scroll-bottom .char-card');
 
+        var flipDelay = 80;
         topCards.forEach(function (card, idx) {
             setTimeout(function () {
                 card.classList.add('flipped');
                 playSound('click');
-            }, idx * 60);
+            }, idx * flipDelay);
         });
 
         bottomCards.forEach(function (card, idx) {
             setTimeout(function () {
                 card.classList.add('flipped');
                 playSound('click');
-            }, topCards.length * 60 + idx * 60);
+            }, (topCards.length * flipDelay) + (idx * flipDelay));
         });
 
         var totalCards = topCards.length + bottomCards.length;
-        var totalFlipTime = totalCards * 60 + 1200;
+        var totalFlipTime = totalCards * flipDelay + 1200;
         setTimeout(function () {
             transitionToGrid();
         }, totalFlipTime);
@@ -900,13 +907,14 @@
 
         shuffledForGrid.forEach(function (c, idx) {
             var card = createCharCardEl(c);
-            card.classList.add('flipped', 'grid-deal-anim');
+            card.classList.add('grid-deal-anim');
             card.style.setProperty('--deal-rotate', ((Math.random() - 0.5) * 60) + 'deg');
             card.style.setProperty('--deal-x', ((Math.random() - 0.5) * 400) + 'px');
             card.style.setProperty('--deal-y', ((Math.random() - 0.5) * 300) + 'px');
             grid.appendChild(card);
 
             setTimeout(function () {
+                card.classList.add('flipped');
                 card.classList.add('dealt');
             }, idx * 70);
         });
@@ -971,53 +979,89 @@
         if (!ch) return;
 
         playSound('pk');
-        card.classList.add('selected');
         card.classList.remove('selectable-glow');
 
-        card.classList.remove('flipped');
-        setTimeout(function () { card.classList.add('flipped'); }, 50);
+        showCardSpotlight(card, ch, function () {
+            card.classList.add('selected', 'flipped');
+            card.style.transform = 'none';
+            var inner = card.querySelector('.char-card-inner');
+            if (inner) {
+                inner.style.transform = 'rotateY(180deg)';
+                inner.style.webkitTransform = 'rotateY(180deg)';
+            }
 
-        if (charSelectState.phase === 'select-A') {
-            charSelectState.selectedA = ch;
-            game.playerA.char = ch; game.playerA.hp = ch.hp; game.playerA.maxHp = ch.maxHp;
-            game.usedCharIds.push(ch.id);
-            showSelectedChar('char-selected-a', ch);
+            if (charSelectState.phase === 'select-A') {
+                charSelectState.selectedA = ch;
+                game.playerA.char = ch; game.playerA.hp = ch.hp; game.playerA.maxHp = ch.maxHp;
+                game.usedCharIds.push(ch.id);
+                showSelectedChar('char-selected-a', ch);
 
-            if (!isOnlineMode) {
-                charSelectState.phase = 'select-B';
-                disableOtherCards();
-                updateSelectionUI();
-                setTimeout(function () {
-                    var remaining = document.querySelectorAll('.char-grid .char-card:not(.selected)');
-                    remaining.forEach(function (c) { c.classList.remove('disabled'); c.classList.add('selectable-glow'); });
+                if (!isOnlineMode) {
+                    charSelectState.phase = 'select-B';
+                    disableOtherCards();
                     updateSelectionUI();
-                    speak('玩家A选择了' + ch.name + '，请玩家B选择');
-                }, 900);
-            } else {
-                charSelectState.phase = 'select-B';
+                    setTimeout(function () {
+                        var remaining = document.querySelectorAll('.char-grid .char-card:not(.selected)');
+                        remaining.forEach(function (c) { c.classList.remove('disabled'); c.classList.add('selectable-glow'); });
+                        updateSelectionUI();
+                        speak('玩家A选择了' + ch.name + '，请玩家B选择');
+                    }, 300);
+                } else {
+                    charSelectState.phase = 'select-B';
+                    disableAllCards();
+                    updateSelectionUI();
+                    speak('你选择了' + ch.name);
+                    notifyPeer('char-spin-result', { charId: charId, phase: 'select-B' });
+                }
+            } else if (charSelectState.phase === 'select-B') {
+                charSelectState.selectedB = ch;
+                game.playerB.char = ch; game.playerB.hp = ch.hp; game.playerB.maxHp = ch.maxHp;
+                game.usedCharIds.push(ch.id);
+                showSelectedChar('char-selected-b', ch);
+
+                charSelectState.phase = 'done';
                 disableAllCards();
                 updateSelectionUI();
                 speak('你选择了' + ch.name);
-                notifyPeer('char-spin-result', { charId: charId, phase: 'select-B' });
-            }
-        } else if (charSelectState.phase === 'select-B') {
-            charSelectState.selectedB = ch;
-            game.playerB.char = ch; game.playerB.hp = ch.hp; game.playerB.maxHp = ch.maxHp;
-            game.usedCharIds.push(ch.id);
-            showSelectedChar('char-selected-b', ch);
 
-            charSelectState.phase = 'done';
-            disableAllCards();
-            updateSelectionUI();
-            speak('你选择了' + ch.name);
-
-            if (!isOnlineMode) {
-                setTimeout(function () { clearCountdown(); showVSAnimation(); }, 1200);
-            } else {
-                notifyPeer('char-spin-result', { charId: charId, phase: 'done' });
-                setTimeout(function () { clearCountdown(); showVSAnimation(); }, 800);
+                if (!isOnlineMode) {
+                    setTimeout(function () { clearCountdown(); showVSAnimation(); }, 3000);
+                } else {
+                    notifyPeer('char-spin-result', { charId: charId, phase: 'done' });
+                    setTimeout(function () { clearCountdown(); showVSAnimation(); }, 3000);
+                }
             }
-        }
+        });
+    }
+
+    function showCardSpotlight(cardEl, charData, callback) {
+        var stage = $('char-grid-area');
+        if (!stage) { if (callback) callback(); return; }
+
+        var overlay = document.createElement('div');
+        overlay.className = 'card-spotlight-overlay';
+        overlay.innerHTML =
+            '<div class="card-spotlight-content">' +
+            '<div class="card-spotlight-card">' +
+            '<div class="card-rarity-bar"></div>' +
+            '<div class="card-emoji">' + charData.emoji + '</div>' +
+            '<div class="card-char-name">' + charData.name + '</div>' +
+            '<div class="card-hp-badge">❤️ ' + charData.hp + ' HP</div>' +
+            '<div class="card-sig-art">' + charData.signatureArt.icon + ' ' + charData.signatureArt.name + '</div>' +
+            '</div>' +
+            '<div class="card-spotlight-name">✨ ' + charData.name + ' ✨</div>' +
+            '</div>';
+
+        document.body.appendChild(overlay);
+        playSound('rare');
+
+        setTimeout(function () {
+            overlay.classList.add('spotlight-fadeout');
+            setTimeout(function () {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                if (callback) callback();
+            }, 400);
+        }, 2000);
     }
 
     function showSelectedChar(containerId, ch) {
@@ -1829,7 +1873,9 @@
         }
 
         if (defCards.length === 0) {
+            game.phase = 'defend-select';
             game.currentDefendCard = null;
+            game.selectedCardUid = null;
             setActivePlayer(game.phaseDefender);
             updateAttackProgress();
             hideAllOps();
@@ -1844,6 +1890,14 @@
             setOpsStatus(game.phaseDefender, '您没有防御卡牌，请选择操作');
             announcePlayerTurn(game.phaseDefender, '您没有防御卡牌，请选择是否跳过防御');
             showTradeOpsForNonActivePlayer(game.phaseAttacker);
+            clearCountdown();
+            if (!isOnlineMode || canIOperate(game.phaseDefender)) {
+                showCountdown(60, function () {
+                    if (game.phase !== 'defend-select') return;
+                    var skipBtn = opBtn(game.phaseDefender, 'skip-defend');
+                    if (skipBtn && skipBtn.style.display !== 'none') skipBtn.click();
+                });
+            }
             return;
         }
 
@@ -2472,16 +2526,27 @@
         var phaseLabel = game.isCounterPhase ? '反击' : '攻击';
         $('action-hint').textContent = phaseLabel + '阶段（已攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）';
 
-        showOp(game.phaseAttacker, 'continue-attack', { text: '⚔️ 继续攻击（' + (game.currentAttackIndex + 1) + '/' + maxAtk + '）' });
+        showOp(game.phaseAttacker, 'continue-attack', { text: '⚔️ 继续攻击（' + (game.currentAttackIndex + 1) + '/' + maxAtk + '）<span id="ca-countdown">(10s)</span>', html: true });
         showOp(game.phaseAttacker, 'end-attack');
+        showOp(game.phaseAttacker, 'sell');
+        showOp(game.phaseAttacker, 'buy');
+        showOp(game.phaseAttacker, 'synthesis');
+        showOp(game.phaseAttacker, 'cultivation');
         setOpsStatus(game.phaseAttacker, phaseLabel + ' ' + game.currentAttackIndex + '/' + maxAtk + ' 次');
 
         announcePlayerTurn(game.phaseAttacker, '已完成' + game.currentAttackIndex + '次攻击，是否继续');
         if (!isOnlineMode || canIOperate(game.phaseAttacker)) {
-            showCountdown(10, function () {
-                var btn = opBtn(game.phaseAttacker, 'continue-attack');
-                if (btn && btn.style.display !== 'none') btn.click();
-            });
+            var caCountdown = 10;
+            var caTimer = setInterval(function () {
+                caCountdown--;
+                var cdEl = document.getElementById('ca-countdown');
+                if (cdEl) cdEl.textContent = '(' + caCountdown + 's)';
+                if (caCountdown <= 0) {
+                    clearInterval(caTimer);
+                    var btn = opBtn(game.phaseAttacker, 'continue-attack');
+                    if (btn && btn.style.display !== 'none') btn.click();
+                }
+            }, 1000);
         }
     }
 
@@ -2551,8 +2616,24 @@
             '<div style="color:var(--text-light);font-size:13px;">玩家B获得卡牌：' + rewardInfoB + '</div>' +
             '</div>' +
             '<p style="color:var(--text-dim);font-size:12px;margin-top:8px;">未使用的卡牌将保留至下一轮</p>' +
-            '<button class="btn btn-primary modal-btn" id="btn-nr">开始第' + game.round + '轮</button>');
+            '<button class="btn btn-primary modal-btn" id="btn-nr">开始第' + game.round + '轮 <span id="nr-countdown">(10s)</span></button>');
         $('btn-nr').addEventListener('click', function () { try { hideModal(); startWeaponDrawPhase(); } catch (e) { handleError('nextRound-btn', e); } });
+        if (game.round >= 2) {
+            var nrCountdown = 10;
+            var nrTimer = setInterval(function () {
+                nrCountdown--;
+                var cdEl = document.getElementById('nr-countdown');
+                if (cdEl) cdEl.textContent = '(' + nrCountdown + 's)';
+                if (nrCountdown <= 0) {
+                    clearInterval(nrTimer);
+                    var btn = $('btn-nr');
+                    if (btn && btn.parentNode) btn.click();
+                }
+            }, 1000);
+        } else {
+            var cdEl = document.getElementById('nr-countdown');
+            if (cdEl) cdEl.textContent = '';
+        }
         } catch (e) { handleError('nextRound', e); }
     }
 
