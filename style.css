@@ -591,6 +591,7 @@ body {
     100% { transform: translateX(100%) translateY(100%); }
 }
 .weapon-card .card-icon { font-size: 24px; margin: 2px 0; }
+.card-icon > img { width: 1.6em !important; height: 1.6em !important; object-fit: contain; }
 .weapon-card .card-name { font-weight: 700; font-size: 11px; color: #fff; text-align: center; }
 .weapon-card .card-type { font-size: 8px; padding: 1px 3px; border-radius: 3px; color: #fff; }
 .weapon-card .card-type.attack { background: rgba(192, 57, 43, 0.8); }

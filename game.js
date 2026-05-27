@@ -31,33 +31,36 @@
     }
 
     var CHARACTERS = [
-        { id: 'guojing', name: '郭靖', emoji: 'resources/rules/郭靖.png', hp: 5, maxHp: 5, atkBonus: 0.15, defBonus: 0.10, signatureArt: { name: '降龙十八掌', icon: '🐉' } },
-        { id: 'huangyaoshi', name: '黄药师', emoji: 'resources/rules/黄药师.png', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '碧海潮生曲', icon: '🎵' } },
-        { id: 'hongqigong', name: '洪七公', emoji: 'resources/rules/洪七公.png', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0, signatureArt: { name: '打狗棒法', icon: '🏏' } },
-        { id: 'duanyu', name: '段誉', emoji: 'resources/rules/段誉.png', hp: 3, maxHp: 3, atkBonus: 0, defBonus: 0.25, signatureArt: { name: '凌波微步', icon: '✨' } },
-        { id: 'xuzhu', name: '虚竹', emoji: 'resources/rules/虚竹.png', hp: 4, maxHp: 4, atkBonus: 0.10, defBonus: 0.15, signatureArt: { name: '天山六阳掌', icon: '☀️' } },
-        { id: 'qiaofeng', name: '乔峰', emoji: 'resources/rules/乔峰.png', hp: 6, maxHp: 6, atkBonus: 0.22, defBonus: 0, signatureArt: { name: '降龙十八掌', icon: '🐉' } },
-        { id: 'yangguo', name: '杨过', emoji: 'resources/rules/杨过.png', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '玄铁重剑', icon: '⚔️' } },
-        { id: 'zhangwuji', name: '张无忌', emoji: 'resources/rules/张无忌.png', hp: 5, maxHp: 5, atkBonus: 0.12, defBonus: 0.13, signatureArt: { name: '九阳神功', icon: '☀️' } },
-        { id: 'linghuchong', name: '令狐冲', emoji: 'resources/rules/令狐冲.png', hp: 4, maxHp: 4, atkBonus: 0.18, defBonus: 0.07, signatureArt: { name: '独孤九剑', icon: '🗡️' } },
-        { id: 'renwoxing', name: '任我行', emoji: 'resources/rules/任我行.png', hp: 5, maxHp: 5, atkBonus: 0.19, defBonus: 0.03, signatureArt: { name: '吸星大法', icon: '🌀' } },
-        { id: 'dongfangbubai', name: '东方不败', emoji: 'resources/rules/东方不败.png', hp: 3, maxHp: 3, atkBonus: 0.25, defBonus: 0, signatureArt: { name: '葵花宝典', icon: '🌹' } },
-        { id: 'niefeng', name: '聂风', emoji: 'resources/rules/聂风.png', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0.12, signatureArt: { name: '魔刀', icon: '⚔️' } },
-        { id: 'bujingyun', name: '步惊云', emoji: 'resources/rules/步惊云.png', hp: 4, maxHp: 4, atkBonus: 0.24, defBonus: 0.06, signatureArt: { name: '绝世好剑', icon: '⚔️' } },
-        { id: 'wuming', name: '无名', emoji: 'resources/rules/无名.png', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '英雄剑', icon: '🗡️' } },
-        { id: 'xiongba', name: '雄霸', emoji: 'resources/rules/雄霸.png', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '三分归元气', icon: '🌀' } },
-        { id: 'zhaomin', name: '赵敏', emoji: 'resources/rules/赵敏.png', hp: 4, maxHp: 4, atkBonus: 0.15, defBonus: 0.12, signatureArt: { name: '九阴白骨爪', icon: '🦴' } },
-        { id: 'zhouzhiruo', name: '周芷若', emoji: 'resources/rules/周芷若.png', hp: 4, maxHp: 4, atkBonus: 0.19, defBonus: 0.06, signatureArt: { name: '九阴真经', icon: '📖' } },
-        { id: 'yangxiao', name: '杨逍', emoji: 'resources/rules/杨逍.png', hp: 4, maxHp: 4, atkBonus: 0.17, defBonus: 0.08, signatureArt: { name: '乾坤大挪移', icon: '🌀' } },
-        { id: 'zhangsanfeng', name: '张三丰', emoji: 'resources/rules/张三丰.png', hp: 6, maxHp: 6, atkBonus: 0.16, defBonus: 0.18, signatureArt: { name: '太极拳', icon: '☯️' } },
-        { id: 'lixunhuan', name: '李寻欢', emoji: 'resources/rules/李寻欢.png', hp: 4, maxHp: 4, atkBonus: 0.26, defBonus: 0.04, signatureArt: { name: '小李飞刀', icon: '🔪' } },
-        { id: 'afei', name: '阿飞', emoji: 'resources/rules/阿飞.png', hp: 4, maxHp: 4, atkBonus: 0.23, defBonus: 0.05, signatureArt: { name: '快剑', icon: '⚡' } },
-        { id: 'shangguanjinhong', name: '上官金虹', emoji: 'resources/rules/上官金虹.png', hp: 5, maxHp: 5, atkBonus: 0.21, defBonus: 0.09, signatureArt: { name: '龙凤双环', icon: '💫' } },
-        { id: 'shipotian', name: '石破天', emoji: 'resources/rules/石破天.png', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.15, signatureArt: { name: '太玄经', icon: '📖' } },
-        { id: 'dingdang', name: '丁当', emoji: 'resources/rules/丁当.png', hp: 4, maxHp: 4, atkBonus: 0.14, defBonus: 0.12, signatureArt: { name: '叮当响', icon: '🔔' } },
-        { id: 'xiaoshiyilang', name: '萧十一郎', emoji: 'resources/rules/萧十一郎.png', hp: 5, maxHp: 5, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '割鹿刀', icon: '⚔️' } },
-        { id: 'shenbijun', name: '沈璧君', emoji: 'resources/rules/沈璧君.png', hp: 4, maxHp: 4, atkBonus: 0.12, defBonus: 0.15, signatureArt: { name: '洗妆剑法', icon: '🗡️' } },
-        { id: 'lianchengbi', name: '连城璧', emoji: 'resources/rules/连城璧.png', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '天外飞仙', icon: '⚡' } }
+        { id: 'guojing', name: '郭靖', emoji: 'resources/rules/郭靖.jpeg', hp: 5, maxHp: 5, atkBonus: 0.15, defBonus: 0.10, signatureArt: { name: '降龙十八掌', icon: '🐉' } },
+        { id: 'huangyaoshi', name: '黄药师', emoji: 'resources/rules/黄药师.jpeg', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '碧海潮生曲', icon: '🎵' } },
+        { id: 'hongqigong', name: '洪七公', emoji: 'resources/rules/洪七公.jpeg', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0, signatureArt: { name: '打狗棒法', icon: '🏏' } },
+        { id: 'duanyu', name: '段誉', emoji: 'resources/rules/段誉.jpeg', hp: 3, maxHp: 3, atkBonus: 0, defBonus: 0.25, signatureArt: { name: '凌波微步', icon: '✨' } },
+        { id: 'xuzhu', name: '虚竹', emoji: 'resources/rules/虚竹.jpeg', hp: 4, maxHp: 4, atkBonus: 0.10, defBonus: 0.15, signatureArt: { name: '天山六阳掌', icon: '☀️' } },
+        { id: 'qiaofeng', name: '乔峰', emoji: 'resources/rules/乔峰.jpeg', hp: 6, maxHp: 6, atkBonus: 0.22, defBonus: 0, signatureArt: { name: '降龙十八掌', icon: '🐉' } },
+        { id: 'yangguo', name: '杨过', emoji: 'resources/rules/杨过.jpeg', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '玄铁重剑', icon: '⚔️' } },
+        { id: 'zhangwuji', name: '张无忌', emoji: 'resources/rules/张无忌.jpeg', hp: 5, maxHp: 5, atkBonus: 0.12, defBonus: 0.13, signatureArt: { name: '九阳神功', icon: '☀️' } },
+        { id: 'linghuchong', name: '令狐冲', emoji: 'resources/rules/令狐冲.jpeg', hp: 4, maxHp: 4, atkBonus: 0.18, defBonus: 0.07, signatureArt: { name: '独孤九剑', icon: '🗡️' } },
+        { id: 'renwoxing', name: '任我行', emoji: 'resources/rules/任我行.jpeg', hp: 5, maxHp: 5, atkBonus: 0.19, defBonus: 0.03, signatureArt: { name: '吸星大法', icon: '🌀' } },
+        { id: 'dongfangbubai', name: '东方不败', emoji: 'resources/rules/东方不败.jpeg', hp: 3, maxHp: 3, atkBonus: 0.25, defBonus: 0, signatureArt: { name: '葵花宝典', icon: '🌹' } },
+        { id: 'niefeng', name: '聂风', emoji: 'resources/rules/聂风.jpeg', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0.12, signatureArt: { name: '魔刀', icon: '⚔️' } },
+        { id: 'bujingyun', name: '步惊云', emoji: 'resources/rules/步惊云.jpeg', hp: 4, maxHp: 4, atkBonus: 0.24, defBonus: 0.06, signatureArt: { name: '绝世好剑', icon: '⚔️' } },
+        { id: 'wuming', name: '无名', emoji: 'resources/rules/无名.jpeg', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '英雄剑', icon: '🗡️' } },
+        { id: 'xiongba', name: '雄霸', emoji: 'resources/rules/雄霸.jpeg', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '三分归元气', icon: '🌀' } },
+        { id: 'zhaomin', name: '赵敏', emoji: 'resources/rules/赵敏.jpeg', hp: 4, maxHp: 4, atkBonus: 0.15, defBonus: 0.12, signatureArt: { name: '九阴白骨爪', icon: '🦴' } },
+        { id: 'zhouzhiruo', name: '周芷若', emoji: 'resources/rules/周芷若.jpeg', hp: 4, maxHp: 4, atkBonus: 0.19, defBonus: 0.06, signatureArt: { name: '九阴真经', icon: '📖' } },
+        { id: 'yangxiao', name: '杨逍', emoji: 'resources/rules/杨逍.jpeg', hp: 4, maxHp: 4, atkBonus: 0.17, defBonus: 0.08, signatureArt: { name: '乾坤大挪移', icon: '🌀' } },
+        { id: 'zhangsanfeng', name: '张三丰', emoji: 'resources/rules/张三丰.jpeg', hp: 6, maxHp: 6, atkBonus: 0.16, defBonus: 0.18, signatureArt: { name: '太极拳', icon: '☯️' } },
+        { id: 'lixunhuan', name: '李寻欢', emoji: 'resources/rules/李寻欢.jpeg', hp: 4, maxHp: 4, atkBonus: 0.26, defBonus: 0.04, signatureArt: { name: '小李飞刀', icon: '🔪' } },
+        { id: 'afei', name: '阿飞', emoji: 'resources/rules/阿飞.jpeg', hp: 4, maxHp: 4, atkBonus: 0.23, defBonus: 0.05, signatureArt: { name: '快剑', icon: '⚡' } },
+        { id: 'shangguanjinhong', name: '上官金虹', emoji: 'resources/rules/上官金虹.jpeg', hp: 5, maxHp: 5, atkBonus: 0.21, defBonus: 0.09, signatureArt: { name: '龙凤双环', icon: '💫' } },
+        { id: 'shipotian', name: '石破天', emoji: 'resources/rules/石破天.jpeg', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.15, signatureArt: { name: '太玄经', icon: '📖' } },
+        { id: 'dingdang', name: '丁当', emoji: 'resources/rules/丁当.jpeg', hp: 4, maxHp: 4, atkBonus: 0.14, defBonus: 0.12, signatureArt: { name: '叮当响', icon: '🔔' } },
+        { id: 'xiaoshiyilang', name: '萧十一郎', emoji: 'resources/rules/萧十一郎.jpeg', hp: 5, maxHp: 5, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '割鹿刀', icon: '⚔️' } },
+        { id: 'shenbijun', name: '沈璧君', emoji: 'resources/rules/沈璧君.jpeg', hp: 4, maxHp: 4, atkBonus: 0.12, defBonus: 0.15, signatureArt: { name: '洗妆剑法', icon: '🗡️' } },
+        { id: 'lianchengbi', name: '连城璧', emoji: 'resources/rules/连城璧.jpeg', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '天外飞仙', icon: '⚡' } },
+        { id: 'huangrong', name: '黄蓉', emoji: 'resources/rules/黄蓉.jpeg', hp: 4, maxHp: 4, atkBonus: 0.16, defBonus: 0.14, signatureArt: { name: '落英神剑掌', icon: '🌸' } },
+        { id: 'ouyangfeng', name: '欧阳锋', emoji: 'resources/rules/欧阳锋.jpeg', hp: 5, maxHp: 5, atkBonus: 0.24, defBonus: 0.04, signatureArt: { name: '蛤蟆功', icon: '🐸' } },
+        { id: 'xiaolongnv', name: '小龙女', emoji: 'resources/rules/小龙女.jpeg', hp: 4, maxHp: 4, atkBonus: 0.19, defBonus: 0.11, signatureArt: { name: '玉女剑法', icon: '🌙' } }
     ];
 
     var EPIC_SKILLS = [
@@ -74,42 +77,42 @@
         { id: 'tongluo', name: '铜锣', type: 'attack', rarity: 'common', price: 100, value: 8, icon: '🪘', desc: '威慑用的响铜乐器' },
         { id: 'liuxingchui', name: '流星锤', type: 'attack', rarity: 'common', price: 100, value: 7, icon: '⚙️', desc: '暗藏机括的链锤' },
         { id: 'bianzi', name: '鞭子', type: 'attack', rarity: 'common', price: 100, value: 8, icon: '🪢', desc: '软硬兼施的软兵器' },
-        { id: 'xuantiejian', name: '玄铁剑', type: 'attack', rarity: 'elite', price: 200, value: 18, icon: '⚔️', desc: '重剑无锋大巧不工' },
-        { id: 'dagoubang', name: '打狗棒', type: 'attack', rarity: 'elite', price: 200, value: 16, icon: '🏏', desc: '丐帮镇帮之宝' },
-        { id: 'bixuejian', name: '碧血剑', type: 'attack', rarity: 'elite', price: 200, value: 17, icon: '🔱', desc: '碧血染沙场之剑' },
+        { id: 'xuantiejian', name: '玄铁剑', type: 'attack', rarity: 'elite', price: 200, value: 18, icon: 'resources/equipments/玄铁剑.png', desc: '重剑无锋大巧不工' },
+        { id: 'dagoubang', name: '打狗棒', type: 'attack', rarity: 'elite', price: 200, value: 16, icon: 'resources/equipments/打狗棒.png', desc: '丐帮镇帮之宝' },
+        { id: 'bixuejian', name: '碧血剑', type: 'attack', rarity: 'elite', price: 200, value: 17, icon: 'resources/equipments/碧血剑.png', desc: '碧血染沙场之剑' },
         { id: 'yuanyangdao', name: '鸳鸯刀', type: 'attack', rarity: 'elite', price: 200, value: 15, icon: '💫', desc: '雌雄双刀合璧' },
-        { id: 'zhugeliannu', name: '诸葛连弩', type: 'attack', rarity: 'elite', price: 200, value: 14, icon: '🏹', desc: '连珠箭法' },
+        { id: 'zhugeliannu', name: '诸葛连弩', type: 'attack', rarity: 'elite', price: 200, value: 14, icon: 'resources/equipments/诸葛连弩.png', desc: '连珠箭法' },
         { id: 'yitianjian', name: '倚天剑', type: 'attack', rarity: 'rare', price: 350, value: 28, icon: '⚔️', desc: '号称武林至尊' },
-        { id: 'tulongdao', name: '屠龙刀', type: 'attack', rarity: 'rare', price: 350, value: 25, icon: '🪓', desc: '号称武林至尊' },
+        { id: 'tulongdao', name: '屠龙刀', type: 'attack', rarity: 'rare', price: 350, value: 25, icon: 'resources/equipments/屠龙刀.png', desc: '号称武林至尊' },
         { id: 'tulong_steal', name: '屠龙刀·偷取', type: 'attack', rarity: 'epic', price: 500, value: 40, icon: '🐉', desc: '屠龙刀出谁与争锋', skill: EPIC_SKILLS[0] },
         { id: 'dagou_break', name: '打狗棒·破防', type: 'attack', rarity: 'epic', price: 500, value: 38, icon: '🏏', desc: '打狗棒法天下无敌', skill: EPIC_SKILLS[1] },
         { id: 'xuantie_reduce', name: '玄铁重剑·削弱', type: 'attack', rarity: 'epic', price: 500, value: 36, icon: '⚔️', desc: '重剑无锋大巧不工', skill: EPIC_SKILLS[2] },
         { id: 'bixue_replace', name: '碧血剑·降级', type: 'attack', rarity: 'epic', price: 500, value: 42, icon: '🔱', desc: '碧血染沙场威震江湖', skill: EPIC_SKILLS[3] },
-        { id: 'yuxiao_block', name: '玉箫·封技', type: 'attack', rarity: 'epic', price: 500, value: 37, icon: '🎵', desc: '玉箫吹奏乱人心智', skill: EPIC_SKILLS[4] },
-        { id: 'xueyindao', name: '雪饮刀', type: 'attack', rarity: 'legend', price: 800, value: 55, icon: '⚔️', desc: '聂风佩刀寒冰之气' },
-        { id: 'jueshihaojian', name: '绝世好剑', type: 'attack', rarity: 'legend', price: 800, value: 58, icon: '⚔️', desc: '步惊云佩剑天下第一' },
-        { id: 'yingxiongjian', name: '英雄剑', type: 'attack', rarity: 'rare', price: 350, value: 30, icon: '🗡️', desc: '无名佩剑武林神话' },
-        { id: 'shenghuoling', name: '圣火令', type: 'attack', rarity: 'rare', price: 350, value: 26, icon: '🔥', desc: '明教圣物至高无上' },
-        { id: 'xiaolifeidao', name: '小李飞刀', type: 'attack', rarity: 'legend', price: 800, value: 60, icon: '🔪', desc: '例不虚发天下第一暗器' },
-        { id: 'longfengshuanghuan', name: '龙凤双环', type: 'defend', rarity: 'rare', price: 350, value: 24, icon: '💫', desc: '上官金虹兵器攻防一体' },
-        { id: 'geludao', name: '割鹿刀', type: 'attack', rarity: 'legend', price: 800, value: 56, icon: '⚔️', desc: '天下第一神刀传说之兵' },
-        { id: 'buyi', name: '布衣', type: 'defend', rarity: 'common', price: 100, value: 8, icon: '👘', desc: '粗布麻衣遮体' },
-        { id: 'zhulian', name: '竹帘', type: 'defend', rarity: 'common', price: 100, value: 10, icon: '🎋', desc: '简易的竹制帘幕' },
-        { id: 'mianpao', name: '棉袍', type: 'defend', rarity: 'common', price: 100, value: 7, icon: '🧥', desc: '御寒的棉布长袍' },
-        { id: 'tengjia', name: '藤甲', type: 'defend', rarity: 'common', price: 100, value: 9, icon: '🛡️', desc: '藤条编织的轻甲' },
-        { id: 'doulì', name: '斗笠', type: 'defend', rarity: 'common', price: 100, value: 7, icon: '🎩', desc: '遮阳挡雨的竹笠' },
+        { id: 'yuxiao_block', name: '玉箫·封技', type: 'attack', rarity: 'epic', price: 500, value: 37, icon: 'resources/equipments/玉箫.png', desc: '玉箫吹奏乱人心智', skill: EPIC_SKILLS[4] },
+        { id: 'xueyindao', name: '雪饮刀', type: 'attack', rarity: 'legend', price: 800, value: 55, icon: 'resources/equipments/雪饮刀.png', desc: '聂风佩刀寒冰之气' },
+        { id: 'jueshihaojian', name: '绝世好剑', type: 'attack', rarity: 'legend', price: 800, value: 58, icon: 'resources/equipments/绝世好剑.png', desc: '步惊云佩剑天下第一' },
+        { id: 'yingxiongjian', name: '英雄剑', type: 'attack', rarity: 'rare', price: 350, value: 30, icon: 'resources/equipments/英雄剑.png', desc: '无名佩剑武林神话' },
+        { id: 'shenghuoling', name: '圣火令', type: 'attack', rarity: 'rare', price: 350, value: 26, icon: 'resources/equipments/圣火令.png', desc: '明教圣物至高无上' },
+        { id: 'xiaolifeidao', name: '小李飞刀', type: 'attack', rarity: 'legend', price: 800, value: 60, icon: 'resources/equipments/小李飞刀.jpeg', desc: '例不虚发天下第一暗器' },
+        { id: 'longfengshuanghuan', name: '龙凤双环', type: 'defend', rarity: 'rare', price: 350, value: 24, icon: 'resources/equipments/龙凤双环.png', desc: '上官金虹兵器攻防一体' },
+        { id: 'geludao', name: '割鹿刀', type: 'attack', rarity: 'legend', price: 800, value: 56, icon: 'resources/equipments/割鹿刀.png', desc: '天下第一神刀传说之兵' },
+        { id: 'buyi', name: '布衣', type: 'defend', rarity: 'common', price: 100, value: 8, icon: 'resources/equipments/布衣.png', desc: '粗布麻衣遮体' },
+        { id: 'zhulian', name: '竹帘', type: 'defend', rarity: 'common', price: 100, value: 10, icon: 'resources/equipments/竹帘.png', desc: '简易的竹制帘幕' },
+        { id: 'mianpao', name: '棉袍', type: 'defend', rarity: 'common', price: 100, value: 7, icon: 'resources/equipments/棉袍.png', desc: '御寒的棉布长袍' },
+        { id: 'tengjia', name: '藤甲', type: 'defend', rarity: 'common', price: 100, value: 9, icon: 'resources/equipments/藤甲.png', desc: '藤条编织的轻甲' },
+        { id: 'doulì', name: '斗笠', type: 'defend', rarity: 'common', price: 100, value: 7, icon: 'resources/equipments/斗笠.png', desc: '遮阳挡雨的竹笠' },
         { id: 'jinisiruanjia', name: '金丝软甲', type: 'defend', rarity: 'elite', price: 200, value: 18, icon: '⛓️', desc: '金丝编织的软猬甲' },
         { id: 'tajitu', name: '太极图', type: 'defend', rarity: 'elite', price: 200, value: 15, icon: '☯️', desc: '太极双鱼图案护身' },
-        { id: 'tieluohan', name: '铁罗汉', type: 'defend', rarity: 'elite', price: 200, value: 16, icon: '🗿', desc: '十八铜人阵法' },
+        { id: 'tieluohan', name: '铁罗汉', type: 'defend', rarity: 'elite', price: 200, value: 16, icon: 'resources/equipments/铁罗汉.png', desc: '十八铜人阵法' },
         { id: 'huxinjing', name: '护心镜', type: 'defend', rarity: 'elite', price: 200, value: 14, icon: '💎', desc: '保护心口的铜镜' },
-        { id: 'hunyuansan', name: '混元伞', type: 'defend', rarity: 'elite', price: 200, value: 13, icon: '☂️', desc: '周伯通的宝贝' },
+        { id: 'hunyuansan', name: '混元伞', type: 'defend', rarity: 'elite', price: 200, value: 13, icon: 'resources/equipments/混元伞.png', desc: '周伯通的宝贝' },
         { id: 'xuantiejia', name: '玄铁重甲', type: 'defend', rarity: 'rare', price: 350, value: 22, icon: '🛡️', desc: '玄铁打造的重型铠甲坚不可摧' },
-        { id: 'jinsibaojia', name: '金丝宝甲', type: 'defend', rarity: 'rare', price: 350, value: 24, icon: '✨', desc: '金丝银线编织刀枪不入' },
-        { id: 'tiancanbaojia', name: '天蚕宝甲', type: 'defend', rarity: 'epic', price: 500, value: 35, icon: '🦋', desc: '天蚕丝织就水火不侵' },
+        { id: 'jinsibaojia', name: '金丝宝甲', type: 'defend', rarity: 'rare', price: 350, value: 24, icon: 'resources/equipments/金丝宝甲.png', desc: '金丝银线编织刀枪不入' },
+        { id: 'tiancanbaojia', name: '天蚕宝甲', type: 'defend', rarity: 'epic', price: 500, value: 35, icon: 'resources/equipments/天蚕宝甲.png', desc: '天蚕丝织就水火不侵' },
         { id: 'linlinjia', name: '鳞鳞甲', type: 'defend', rarity: 'epic', price: 500, value: 33, icon: '🐉', desc: '龙鳞镶嵌的战甲威武霸气' },
-        { id: 'bujuejinshen', name: '不灭金身', type: 'defend', rarity: 'epic', price: 500, value: 38, icon: '🏆', desc: '金刚不坏之体万法不侵' },
+        { id: 'bujuejinshen', name: '不灭金身', type: 'defend', rarity: 'epic', price: 500, value: 38, icon: 'resources/equipments/不灭金身.png', desc: '金刚不坏之体万法不侵' },
         { id: 'tiancanshenjia', name: '天蚕神甲', type: 'defend', rarity: 'legend', price: 800, value: 52, icon: '🦋', desc: '天下第一宝甲刀剑难伤' },
-        { id: 'ruanweijia', name: '软猬甲', type: 'defend', rarity: 'legend', price: 800, value: 50, icon: '🦔', desc: '黄蓉宝甲内藏尖刺反伤敌人' },
+        { id: 'ruanweijia', name: '软猬甲', type: 'defend', rarity: 'legend', price: 800, value: 50, icon: 'resources/equipments/软猬甲.png', desc: '黄蓉宝甲内藏尖刺反伤敌人' },
         { id: 'hutishenggang', name: '护体神罡', type: 'defend', rarity: 'legend', price: 800, value: 54, icon: '💫', desc: '先天真气护体百邪不侵' }
     ];
 
@@ -152,22 +155,22 @@
     ];
 
     var BLACK_MARKET_WEAPONS = [
-        { id: 'bm_dragon_slayer', name: '屠龙者', type: 'attack', rarity: 'rare', price: 500, value: 32, icon: '🐉', desc: '屠龙勇士的荣耀之剑' },
-        { id: 'bm_shadow_blade', name: '影刃', type: 'attack', rarity: 'rare', price: 500, value: 30, icon: '🗡️', desc: '暗影中的致命一击' },
+        { id: 'bm_dragon_slayer', name: '屠龙者', type: 'attack', rarity: 'rare', price: 500, value: 32, icon: 'resources/equipments/屠龙者·荣耀之剑.png', desc: '屠龙勇士的荣耀之剑' },
+        { id: 'bm_shadow_blade', name: '影刃', type: 'attack', rarity: 'rare', price: 500, value: 30, icon: 'resources/equipments/影刃.png', desc: '暗影中的致命一击' },
         { id: 'bm_frost_armor', name: '寒冰甲', type: 'defend', rarity: 'rare', price: 500, value: 28, icon: '❄️', desc: '冰封万里的防御' },
         { id: 'bm_phantom_shield', name: '幻影盾', type: 'defend', rarity: 'rare', price: 500, value: 26, icon: '🛡️', desc: '虚幻莫测的防护' },
-        { id: 'bm_inferno_sword', name: '烈焰剑', type: 'attack', rarity: 'epic', price: 700, value: 45, icon: '🔥', desc: '焚烧一切的火焰之剑' },
-        { id: 'bm_thunder_hammer', name: '雷神锤', type: 'attack', rarity: 'epic', price: 700, value: 43, icon: '⚡', desc: '雷霆万钧的神力' },
+        { id: 'bm_inferno_sword', name: '烈焰剑', type: 'attack', rarity: 'epic', price: 700, value: 45, icon: 'resources/equipments/烈焰剑.png', desc: '焚烧一切的火焰之剑' },
+        { id: 'bm_thunder_hammer', name: '雷神锤', type: 'attack', rarity: 'epic', price: 700, value: 43, icon: 'resources/equipments/雷神锤.png', desc: '雷霆万钧的神力' },
         { id: 'bm_divine_protection', name: '神圣庇护', type: 'defend', rarity: 'epic', price: 700, value: 40, icon: '✨', desc: '神明赐予的守护' },
-        { id: 'bm_abyssal_guard', name: '深渊守卫', type: 'defend', rarity: 'epic', price: 700, value: 38, icon: '🌑', desc: '来自深渊的强大防护' },
-        { id: 'bm_void_blade', name: '虚空之刃', type: 'attack', rarity: 'epic', price: 750, value: 48, icon: '🌌', desc: '撕裂空间的虚空之力' },
+        { id: 'bm_abyssal_guard', name: '深渊守卫', type: 'defend', rarity: 'epic', price: 700, value: 38, icon: 'resources/equipments/深渊守卫.png', desc: '来自深渊的强大防护' },
+        { id: 'bm_void_blade', name: '虚空之刃', type: 'attack', rarity: 'epic', price: 750, value: 48, icon: 'resources/equipments/虚空之刃.png', desc: '撕裂空间的虚空之力' },
         { id: 'bm_time_dial', name: '时光之轮', type: 'defend', rarity: 'epic', price: 750, value: 42, icon: '⏰', desc: '时间停滞的绝对防御' },
-        { id: 'bm_soul_reaper', name: '死神镰刀', type: 'attack', rarity: 'epic', price: 750, value: 50, icon: '💀', desc: '收割灵魂的恐怖武器' },
-        { id: 'bm_angel_wings', name: '天使之翼', type: 'defend', rarity: 'epic', price: 750, value: 45, icon: '👼', desc: '神圣天使的庇护之翼' },
-        { id: 'bm_dragon_scale_armor', name: '龙鳞战甲', type: 'defend', rarity: 'legend', price: 900, value: 55, icon: '🐉', desc: '远古巨龙遗落的鳞甲坚不可摧' },
-        { id: 'bm_eternal_shield', name: '永恒之盾', type: 'defend', rarity: 'legend', price: 900, value: 58, icon: '🛡️', desc: '传说中永不破碎的神圣护盾' },
-        { id: 'bm_void_barrier', name: '虚空屏障', type: 'defend', rarity: 'epic', price: 750, value: 44, icon: '🌌', desc: '虚空之力构筑的绝对防御场' },
-        { id: 'bm_crystal_mirror', name: '水晶魔镜', type: 'defend', rarity: 'rare', price: 500, value: 30, icon: '🔮', desc: '反射一切攻击的神秘魔镜' }
+        { id: 'bm_soul_reaper', name: '死神镰刀', type: 'attack', rarity: 'epic', price: 750, value: 50, icon: 'resources/equipments/死神镰刀.png', desc: '收割灵魂的恐怖武器' },
+        { id: 'bm_angel_wings', name: '天使之翼', type: 'defend', rarity: 'epic', price: 750, value: 45, icon: 'resources/equipments/天使之翼.png', desc: '神圣天使的庇护之翼' },
+        { id: 'bm_dragon_scale_armor', name: '龙鳞战甲', type: 'defend', rarity: 'legend', price: 900, value: 55, icon: 'resources/equipments/龙鳞战甲.png', desc: '远古巨龙遗落的鳞甲坚不可摧' },
+        { id: 'bm_eternal_shield', name: '永恒之盾', type: 'defend', rarity: 'legend', price: 900, value: 58, icon: 'resources/equipments/永恒之盾.png', desc: '传说中永不破碎的神圣护盾' },
+        { id: 'bm_void_barrier', name: '虚空屏障', type: 'defend', rarity: 'epic', price: 750, value: 44, icon: 'resources/equipments/虚空屏障.png', desc: '虚空之力构筑的绝对防御场' },
+        { id: 'bm_crystal_mirror', name: '水晶魔镜', type: 'defend', rarity: 'rare', price: 500, value: 30, icon: 'resources/equipments/水晶魔镜.png', desc: '反射一切攻击的神秘魔镜' }
     ];
 
     var RARITY_NAMES = { common: '普通', elite: '精英', rare: '稀有', epic: '史诗', legend: '传说' };
@@ -304,7 +307,7 @@
         $('card-preview').innerHTML =
             '<div class="weapon-card rarity-' + card.rarity + '" style="transform:scale(1.7);margin:20px auto;min-width:220px;min-height:310px;">' +
             '<span class="card-type ' + card.type + '" style="font-size:14px;padding:3px 8px;border-radius:4px;">' + typeLabel + '</span>' +
-            '<span class="card-icon" style="font-size:52px;margin:6px 0;">' + card.icon + '</span>' +
+            '<span class="card-icon" style="font-size:52px;margin:6px 0;">' + renderEmoji(card.icon) + '</span>' +
             '<span class="card-name" style="font-size:18px;font-weight:800;">' + card.name + '</span>' +
             '<span class="card-value" style="font-size:26px;font-weight:900;color:' + valueColor + ';text-shadow:0 0 10px ' + valueColor + '66;margin:4px 0;display:block;">⚔ ' + valueLabel + ' <strong>' + card.value + '</strong></span>' +
             '<span class="card-price" style="font-size:13px;font-weight:600;">💰' + card.price + ' · ' + rarityName + '</span></div>' +
@@ -324,7 +327,7 @@
         var skillIcon = card.skill ? ' ' + card.skill.icon : '';
         return '<div class="' + cls + '" data-uid="' + card.uid + '">' +
             '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
-            '<span class="card-icon">' + card.icon + '</span>' +
+            '<span class="card-icon">' + renderEmoji(card.icon) + '</span>' +
             '<span class="card-name">' + card.name + skillIcon + '</span>' +
             '<span class="card-value">' + valueLabel + ':' + card.value + '</span>' +
             '<span class="card-price">💰' + card.price + '</span></div>';
@@ -334,7 +337,7 @@
         var extraCls = isNew ? ' library-new' : '';
         var skillIcon = card.skill ? card.skill.icon : '';
         return '<div class="weapon-card mini rarity-' + card.rarity + extraCls + '" data-uid="' + card.uid + '" title="' + card.name + ' ' + (card.type === 'attack' ? '伤害' : '防御') + ':' + card.value + (card.skill ? ' 技能:' + card.skill.name : '') + '">' +
-            '<span class="card-icon">' + card.icon + '</span><span class="card-value">' + card.value + '</span>' +
+'<span class="card-icon">' + renderEmoji(card.icon) + '</span><span class="card-value">' + card.value + '</span>' +
             (card.skill ? '<span class="card-skill-icon">' + skillIcon + '</span>' : '') +
             '</div>';
     }
@@ -591,7 +594,7 @@
                 '<div class="table-card-player">' + (entry.playerPid === 'A' ? 'A' : 'B') + '</div>' +
                 '<div class="weapon-card rarity-' + c.rarity + ' table-card">' +
                 '<span class="card-type ' + c.type + '">' + typeLabel + '</span>' +
-                '<span class="card-icon">' + c.icon + '</span>' +
+                '<span class="card-icon">' + renderEmoji(c.icon) + '</span>' +
                 '<span class="card-name">' + c.name + '</span>' +
                 '<span class="card-value">' + valueLabel + ':' + c.value + '</span>' +
                 '</div></div>';
@@ -1478,7 +1481,7 @@
                     }
                     $('drawn-cards').innerHTML = highlightTag + '<div class="' + cardCls + '" data-uid="' + drawn.uid + '">' +
                         '<span class="card-type ' + drawn.type + '">' + typeLabel + '</span>' +
-                        '<span class="card-icon">' + drawn.icon + '</span>' +
+                        '<span class="card-icon">' + renderEmoji(drawn.icon) + '</span>' +
                         '<span class="card-name">' + drawn.name + '</span>' +
                         '<span class="card-value">' + valueLabel + ':' + drawn.value + '</span>' +
                         '<span class="card-price">💰' + drawn.price + '</span></div>' + skillTag;
@@ -2178,9 +2181,9 @@
                 html += '<div class="battle-log-round"><div class="battle-log-round-title">' + groupLabel + '</div>';
                 currentGroup = groupLabel;
             }
-            var atkHtml = '<span class="battle-log-atk">' + entry.atkCard.icon + entry.atkCard.name + '(' + entry.atkWithBonus + ')</span>';
+            var atkHtml = '<span class="battle-log-atk">' + renderEmoji(entry.atkCard.icon) + entry.atkCard.name + '(' + entry.atkWithBonus + ')</span>';
             var defHtml = entry.defCard
-                ? '<span class="battle-log-def">' + entry.defCard.icon + entry.defCard.name + '(' + entry.defWithBonus + ')</span>'
+                ? '<span class="battle-log-def">' + renderEmoji(entry.defCard.icon) + entry.defCard.name + '(' + entry.defWithBonus + ')</span>'
                 : '<span class="battle-log-def" style="color:var(--text-dim)">无防御</span>';
             var dmgCls = entry.finalDamage > 0 ? '' : ' zero';
             html += '<div class="battle-log-pair">' +
@@ -2272,7 +2275,7 @@
             '<div class="card-play-player">' + playerLabel(playerPid) + '</div>' +
             '<div class="card-play-card weapon-card ' + rarityCls + '">' +
             '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
-            '<span class="card-icon">' + card.icon + '</span>' +
+            '<span class="card-icon">' + renderEmoji(card.icon) + '</span>' +
             '<span class="card-name">' + card.name + '</span>' +
             '<span class="card-value">' + valueLabel + ':' + card.value + '</span>' +
             '<span class="card-price">' + rarityName + '</span>' +
@@ -2367,7 +2370,7 @@
                     var stolenIdx = Math.floor(Math.random() * defender.library.length);
                     var stolenCard = defender.library.splice(stolenIdx, 1)[0];
                     attacker.library.push(stolenCard);
-                    resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">🤚 偷取技能触发！偷取了' + playerLabel(defenderPid) + '的 ' + stolenCard.icon + stolenCard.name + '！</div>';
+                    resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">🤚 偷取技能触发！偷取了' + playerLabel(defenderPid) + '的 ' + renderEmoji(stolenCard.icon) + stolenCard.name + '！</div>';
                     speak(skill.name + '触发，偷取了' + stolenCard.name);
                 } else {
                     resultHtml = '<div style="color:var(--text-dim);font-size:13px;margin:4px 0;">🤚 偷取技能触发！但对方没有卡牌可偷</div>';
@@ -2412,7 +2415,7 @@
                         var idx = defender.library.findIndex(function (c) { return c.uid === targetCard.uid; });
                         if (idx >= 0) {
                             defender.library[idx] = replacement;
-                            resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">🔄 降级技能触发！将对方 ' + targetCard.icon + targetCard.name + ' 替换为 ' + replacement.icon + replacement.name + '！</div>';
+                            resultHtml = '<div style="color:#ce93d8;font-size:13px;margin:4px 0;">🔄 降级技能触发！将对方 ' + renderEmoji(targetCard.icon) + targetCard.name + ' 替换为 ' + renderEmoji(replacement.icon) + replacement.name + '！</div>';
                             speak(skill.name + '触发，降级了' + targetCard.name);
                         }
                     }
@@ -2544,7 +2547,7 @@
         var phaseLabel = game.isCounterPhase ? '反击' : '攻击';
 
         var html = '<div style="font-size:14px;color:var(--text-dim);margin-bottom:6px;">' + phaseLabel + '进度：已攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次</div>' +
-            '<div style="font-size:14px;color:var(--text-dim);margin-bottom:8px;">' + atkCard.icon + atkCard.name + ' ' + atkWithBonus + ' vs ' + (defCard ? defCard.icon + defCard.name + ' ' + defWithBonus : '无防御') + '</div>' +
+            '<div style="font-size:14px;color:var(--text-dim);margin-bottom:8px;">' + renderEmoji(atkCard.icon) + atkCard.name + ' ' + atkWithBonus + ' vs ' + (defCard ? renderEmoji(defCard.icon) + defCard.name + ' ' + defWithBonus : '无防御') + '</div>' +
             abilityText +
             '<div class="damage-number">' + (finalDamage > 0 ? '-' + finalDamage : '0') + '</div>' +
             '<div class="damage-detail">攻击 ' + atkWithBonus + ' - 防御 ' + defWithBonus + ' = 伤害 ' + finalDamage + '</div>' +
@@ -2602,7 +2605,7 @@
         if (bonusCards.length === 0) return '';
 
         updatePlayerInfo();
-        var cardNames = bonusCards.map(function (c) { return c.icon + c.name; }).join('、');
+        var cardNames = bonusCards.map(function (c) { return renderEmoji(c.icon) + c.name; }).join('、');
         playSound('bonus');
 
         var bonusText = '<div style="margin-top:12px;padding:10px;background:rgba(212,168,67,0.15);border:1px solid var(--gold);border-radius:8px;">' +
@@ -2712,8 +2715,8 @@
             else endGame('draw'); return;
         }
 
-        var rewardInfoA = rewardCardsA.map(function (c) { return c.icon + c.name; }).join('、');
-        var rewardInfoB = rewardCardsB.map(function (c) { return c.icon + c.name; }).join('、');
+        var rewardInfoA = rewardCardsA.map(function (c) { return renderEmoji(c.icon) + c.name; }).join('、');
+        var rewardInfoB = rewardCardsB.map(function (c) { return renderEmoji(c.icon) + c.name; }).join('、');
 
         showModal('<h3>第' + (game.round - 1) + '轮结束</h3>' +
             '<p>玩家A（' + game.playerA.char.name + '）剩余血量：' + game.playerA.hp.toFixed(1) + '/' + game.playerA.maxHp + '</p>' +
@@ -2786,9 +2789,9 @@
                     html += '<div class="round-detail-group"><div class="round-detail-group-title">' + groupLabel + '</div>';
                     currentGroup = groupLabel;
                 }
-                var atkHtml = '<span style="color:var(--red-light)">' + entry.atkCard.icon + entry.atkCard.name + '(' + entry.atkWithBonus + ')</span>';
+                var atkHtml = '<span style="color:var(--red-light)">' + renderEmoji(entry.atkCard.icon) + entry.atkCard.name + '(' + entry.atkWithBonus + ')</span>';
                 var defHtml = entry.defCard
-                    ? '<span style="color:var(--blue-light)">' + entry.defCard.icon + entry.defCard.name + '(' + entry.defWithBonus + ')</span>'
+                    ? '<span style="color:var(--blue-light)">' + renderEmoji(entry.defCard.icon) + entry.defCard.name + '(' + entry.defWithBonus + ')</span>'
                     : '<span style="color:var(--text-dim)">无防御</span>';
                 var dmgCls = entry.finalDamage > 0 ? 'color:var(--gold-light)' : 'color:var(--text-dim)';
                 html += '<div class="round-detail-pair">' + atkHtml + ' <span style="color:var(--text-dim)">vs</span> ' + defHtml + ' <span style="' + dmgCls + ';margin-left:auto;font-weight:700">伤害' + entry.finalDamage + '</span></div>';
@@ -2857,7 +2860,7 @@
             var skillTag = card.skill ? ' ' + card.skill.icon : '';
             html += '<div class="sell-card-item" data-uid="' + card.uid + '">' +
                 '<div class="sell-card-info">' +
-                '<span class="sell-card-icon">' + card.icon + '</span>' +
+                '<span class="sell-card-icon">' + renderEmoji(card.icon) + '</span>' +
                 '<span class="sell-card-name">' + card.name + skillTag + '</span>' +
                 '<span class="sell-card-type ' + card.type + '">' + typeLabel + '</span>' +
                 '<span class="sell-card-value">' + valueLabel + ':' + card.value + '</span>' +
@@ -2921,7 +2924,7 @@
                     cardsHtml += '<div class="shop-card-item">' +
                         '<div class="weapon-card rarity-' + wp.rarity + ' shop-card">' +
                         '<span class="card-type ' + wp.type + '">' + typeLabel + '</span>' +
-                        '<span class="card-icon">' + wp.icon + '</span>' +
+                        '<span class="card-icon">' + renderEmoji(wp.icon) + '</span>' +
                         '<span class="card-name">' + wp.name + skillIcon + '</span>' +
                         '<span class="card-value">' + valueLabel + ':' + wp.value + '</span>' +
                         '<span class="card-price">💰' + wp.price + '</span>' +
@@ -3079,7 +3082,7 @@
                     bmHtml += '<div class="shop-card-item black-market-item">' +
                         '<div class="weapon-card rarity-' + wp.rarity + ' shop-card">' +
                         '<span class="card-type ' + wp.type + '">' + typeLabel + '</span>' +
-                        '<span class="card-icon">' + wp.icon + '</span>' +
+                        '<span class="card-icon">' + renderEmoji(wp.icon) + '</span>' +
                         '<span class="card-name">' + wp.name + '</span>' +
                         '<span class="card-value">' + valueLabel + ':' + wp.value + '</span>' +
                         '<span class="card-price">💰' + wp.price + '</span>' +
@@ -4458,7 +4461,7 @@
             availableCards.forEach(function(card) {
                 var isDisabled = card.uid === otherSlotUid ? ' disabled-card' : '';
                 html += '<div class="weapon-card rarity-' + card.rarity + ' selectable-card' + isDisabled + '" data-uid="' + card.uid + '">' +
-                    '<span class="card-icon">' + card.icon + '</span>' +
+                    '<span class="card-icon">' + renderEmoji(card.icon) + '</span>' +
                     '<span class="card-name">' + card.name + '</span>' +
                     '<span class="card-value">' + (card.type==='attack'?'伤害':'防御') + ':' + card.value + '</span>' +
                     '</div>';
@@ -4619,7 +4622,7 @@
                 '<div style="height:8px;"></div>' +
                 '<div class="weapon-card rarity-' + card.rarity + '" style="margin:16px auto;transform:scale(1.3);pointer-events:none;min-width:180px;">' +
                 '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
-                '<span class="card-icon" style="font-size:28px;">' + card.icon + '</span>' +
+                '<span class="card-icon" style="font-size:28px;">' + renderEmoji(card.icon) + '</span>' +
                 '<span class="card-name" style="font-size:15px;font-weight:bold;">' + card.name + '</span>' +
                 '<span class="card-value">' + valueLabel + ':' + card.value + '</span>' +
                 '<span class="card-price">💰' + card.price + ' · ' + RARITY_NAMES[card.rarity] + '</span>' +
@@ -4632,7 +4635,7 @@
             if (cardA && cardB) {
                 crushedText = '<div style="margin-top:14px;padding:12px;background:rgba(248,113,113,0.12);border-radius:8px;border:1px solid rgba(248,113,113,0.35);">' +
                     '<div style="color:#fca5a5;font-size:14px;margin-bottom:8px;font-weight:600;">💥 已粉碎的卡牌：</div>' +
-                    '<div style="color:var(--text-light);font-size:13px;line-height:1.6;">' + cardA.icon + ' ' + cardA.name + '(' + RARITY_NAMES[cardA.rarity] + ')<br>' + cardB.icon + ' ' + cardB.name + '(' + RARITY_NAMES[cardB.rarity] + ')' + '</div>' +
+                    '<div style="color:var(--text-light);font-size:13px;line-height:1.6;">' + renderEmoji(cardA.icon) + ' ' + cardA.name + '(' + RARITY_NAMES[cardA.rarity] + ')<br>' + renderEmoji(cardB.icon) + ' ' + cardB.name + '(' + RARITY_NAMES[cardB.rarity] + ')' + '</div>' +
                     '</div>';
             }
             resultHtml = '<div style="text-align:center;padding:20px;">' +
@@ -4804,7 +4807,7 @@
 
         eligibleCards.forEach(function(card) {
             html += '<div class="weapon-card rarity-' + card.rarity + ' selectable-card" data-uid="' + card.uid + '">' +
-                '<span class="card-icon">' + card.icon + '</span>' +
+                '<span class="card-icon">' + renderEmoji(card.icon) + '</span>' +
                 '<span class="card-name">' + card.name + '</span>' +
                 '<span class="card-value">' + (card.type==='attack'?'伤害':'防御') + ':' + card.value + '</span>' +
                 '</div>';
@@ -4912,8 +4915,8 @@
             materialText = '<div style="margin-top:14px;padding:10px;background:rgba(251,191,36,0.1);border-radius:8px;border:1px solid rgba(251,191,36,0.3);">' +
                 '<div style="color:#fcd34d;font-size:13px;margin-bottom:6px;">💎 已消耗的材料：</div>' +
                 '<div style="color:var(--text-light);font-size:12px;">' + 
-                card1.icon + card1.name + '(' + RARITY_NAMES[card1.rarity] + ') / ' + 
-                card2.icon + card2.name + '(' + RARITY_NAMES[card2.rarity] + ')' + '</div>' +
+                renderEmoji(card1.icon) + card1.name + '(' + RARITY_NAMES[card1.rarity] + ') / ' +
+                renderEmoji(card2.icon) + card2.name + '(' + RARITY_NAMES[card2.rarity] + ')' + '</div>' +
                 '</div>';
         }
 
