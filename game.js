@@ -72,17 +72,17 @@
     ];
 
     var WEAPONS = [
-        { id: 'qinggaingjian', name: '青钢剑', type: 'attack', rarity: 'common', price: 100, value: 10, icon: '🗡️', desc: '最基本的江湖佩剑' },
-        { id: 'panguanbi', name: '判官笔', type: 'attack', rarity: 'common', price: 100, value: 9, icon: '🖊️', desc: '文人墨客的防身利器' },
-        { id: 'tongluo', name: '铜锣', type: 'attack', rarity: 'common', price: 100, value: 8, icon: '🪘', desc: '威慑用的响铜乐器' },
-        { id: 'liuxingchui', name: '流星锤', type: 'attack', rarity: 'common', price: 100, value: 7, icon: '⚙️', desc: '暗藏机括的链锤' },
+        { id: 'qinggaingjian', name: '青钢剑', type: 'attack', rarity: 'common', price: 100, value: 10, icon: 'resources/equipments/青钢剑.png', desc: '最基本的江湖佩剑' },
+        { id: 'panguanbi', name: '判官笔', type: 'attack', rarity: 'common', price: 100, value: 9, icon: 'resources/equipments/判官笔.png', desc: '文人墨客的防身利器' },
+        { id: 'tongluo', name: '铜锣', type: 'attack', rarity: 'common', price: 100, value: 8, icon: 'resources/equipments/铜锣.png', desc: '威慑用的响铜乐器' },
+        { id: 'liuxingchui', name: '流星锤', type: 'attack', rarity: 'common', price: 100, value: 7, icon: 'resources/equipments/流星锤.png', desc: '暗藏机括的链锤' },
         { id: 'bianzi', name: '鞭子', type: 'attack', rarity: 'common', price: 100, value: 8, icon: 'resources/equipments/软鞭.png', desc: '软硬兼施的软兵器' },
         { id: 'xuantiejian', name: '玄铁剑', type: 'attack', rarity: 'elite', price: 200, value: 18, icon: 'resources/equipments/玄铁剑.png', desc: '重剑无锋大巧不工' },
         { id: 'dagoubang', name: '打狗棒', type: 'attack', rarity: 'elite', price: 200, value: 16, icon: 'resources/equipments/打狗棒.png', desc: '丐帮镇帮之宝' },
         { id: 'bixuejian', name: '碧血剑', type: 'attack', rarity: 'elite', price: 200, value: 17, icon: 'resources/equipments/碧血剑.png', desc: '碧血染沙场之剑' },
-        { id: 'yuanyangdao', name: '鸳鸯刀', type: 'attack', rarity: 'elite', price: 200, value: 15, icon: '💫', desc: '雌雄双刀合璧' },
+        { id: 'yuanyangdao', name: '鸳鸯刀', type: 'attack', rarity: 'elite', price: 200, value: 15, icon: 'resources/equipments/鸳鸯刀.png', desc: '雌雄双刀合璧' },
         { id: 'zhugeliannu', name: '诸葛连弩', type: 'attack', rarity: 'elite', price: 200, value: 14, icon: 'resources/equipments/诸葛连弩.png', desc: '连珠箭法' },
-        { id: 'yitianjian', name: '倚天剑', type: 'attack', rarity: 'rare', price: 350, value: 28, icon: '⚔️', desc: '号称武林至尊' },
+        { id: 'yitianjian', name: '倚天剑', type: 'attack', rarity: 'rare', price: 350, value: 28, icon: 'resources/equipments/倚天剑.png', desc: '号称武林至尊' },
         { id: 'tulongdao', name: '屠龙刀', type: 'attack', rarity: 'rare', price: 350, value: 25, icon: 'resources/equipments/屠龙刀.png', desc: '号称武林至尊' },
         { id: 'tulong_steal', name: '屠龙刀·偷取', type: 'attack', rarity: 'epic', price: 500, value: 40, icon: 'resources/equipments/屠龙刀.png', desc: '屠龙刀出谁与争锋', skill: EPIC_SKILLS[0] },
         { id: 'dagou_break', name: '打狗棒·破防', type: 'attack', rarity: 'epic', price: 500, value: 38, icon: 'resources/equipments/打狗棒.png', desc: '打狗棒法天下无敌', skill: EPIC_SKILLS[1] },
@@ -113,7 +113,7 @@
         { id: 'bujuejinshen', name: '不灭金身', type: 'defend', rarity: 'epic', price: 500, value: 38, icon: 'resources/equipments/不灭金身.png', desc: '金刚不坏之体万法不侵' },
         { id: 'tiancanshenjia', name: '天蚕神甲', type: 'defend', rarity: 'legend', price: 800, value: 52, icon: 'resources/equipments/天蚕宝甲.png', desc: '天下第一宝甲刀剑难伤' },
         { id: 'ruanweijia', name: '软猬甲', type: 'defend', rarity: 'legend', price: 800, value: 50, icon: 'resources/equipments/软猬甲.png', desc: '黄蓉宝甲内藏尖刺反伤敌人' },
-        { id: 'hutishenggang', name: '护体神罡', type: 'defend', rarity: 'legend', price: 800, value: 54, icon: '💫', desc: '先天真气护体百邪不侵' }
+        { id: 'hutishenggang', name: '护体神罡', type: 'defend', rarity: 'legend', price: 800, value: 54, icon: 'resources/equipments/护体神罡.png', desc: '先天真气护体百邪不侵' }
     ];
 
     var MARTIAL_ARTS = [
@@ -157,14 +157,14 @@
     var BLACK_MARKET_WEAPONS = [
         { id: 'bm_dragon_slayer', name: '屠龙者', type: 'attack', rarity: 'rare', price: 500, value: 32, icon: 'resources/equipments/屠龙者·荣耀之剑.png', desc: '屠龙勇士的荣耀之剑' },
         { id: 'bm_shadow_blade', name: '影刃', type: 'attack', rarity: 'rare', price: 500, value: 30, icon: 'resources/equipments/影刃.png', desc: '暗影中的致命一击' },
-        { id: 'bm_frost_armor', name: '寒冰甲', type: 'defend', rarity: 'rare', price: 500, value: 28, icon: '❄️', desc: '冰封万里的防御' },
-        { id: 'bm_phantom_shield', name: '幻影盾', type: 'defend', rarity: 'rare', price: 500, value: 26, icon: '🛡️', desc: '虚幻莫测的防护' },
+        { id: 'bm_frost_armor', name: '寒冰甲', type: 'defend', rarity: 'rare', price: 500, value: 28, icon: 'resources/equipments/寒冰甲.png', desc: '冰封万里的防御' },
+        { id: 'bm_phantom_shield', name: '幻影盾', type: 'defend', rarity: 'rare', price: 500, value: 26, icon: 'resources/equipments/幻影盾.png', desc: '虚幻莫测的防护' },
         { id: 'bm_inferno_sword', name: '烈焰剑', type: 'attack', rarity: 'epic', price: 700, value: 45, icon: 'resources/equipments/烈焰剑.png', desc: '焚烧一切的火焰之剑' },
         { id: 'bm_thunder_hammer', name: '雷神锤', type: 'attack', rarity: 'epic', price: 700, value: 43, icon: 'resources/equipments/雷神锤.png', desc: '雷霆万钧的神力' },
-        { id: 'bm_divine_protection', name: '神圣庇护', type: 'defend', rarity: 'epic', price: 700, value: 40, icon: '✨', desc: '神明赐予的守护' },
+        { id: 'bm_divine_protection', name: '神圣庇护', type: 'defend', rarity: 'epic', price: 700, value: 40, icon: 'resources/equipments/神圣庇护.png', desc: '神明赐予的守护' },
         { id: 'bm_abyssal_guard', name: '深渊守卫', type: 'defend', rarity: 'epic', price: 700, value: 38, icon: 'resources/equipments/深渊守卫.png', desc: '来自深渊的强大防护' },
         { id: 'bm_void_blade', name: '虚空之刃', type: 'attack', rarity: 'epic', price: 750, value: 48, icon: 'resources/equipments/虚空之刃.png', desc: '撕裂空间的虚空之力' },
-        { id: 'bm_time_dial', name: '时光之轮', type: 'defend', rarity: 'epic', price: 750, value: 42, icon: '⏰', desc: '时间停滞的绝对防御' },
+        { id: 'bm_time_dial', name: '时光之轮', type: 'defend', rarity: 'epic', price: 750, value: 42, icon: 'resources/equipments/时光之轮.png', desc: '时间停滞的绝对防御' },
         { id: 'bm_soul_reaper', name: '死神镰刀', type: 'attack', rarity: 'epic', price: 750, value: 50, icon: 'resources/equipments/死神镰刀.png', desc: '收割灵魂的恐怖武器' },
         { id: 'bm_angel_wings', name: '天使之翼', type: 'defend', rarity: 'epic', price: 750, value: 45, icon: 'resources/equipments/天使之翼.png', desc: '神圣天使的庇护之翼' },
         { id: 'bm_dragon_scale_armor', name: '龙鳞战甲', type: 'defend', rarity: 'legend', price: 900, value: 55, icon: 'resources/equipments/龙鳞战甲.png', desc: '远古巨龙遗落的鳞甲坚不可摧' },
