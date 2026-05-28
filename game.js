@@ -218,10 +218,49 @@
     };
 
     var audioCtx = null;
+    var bgMusic = null;
+    var bgMusicPlaying = false;
 
     function getAudioCtx() {
         if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
         return audioCtx;
+    }
+
+    function playBgMusic() {
+        if (bgMusicPlaying) return;
+        try {
+            bgMusic = new Audio('resources/music/偷功.flac');
+            bgMusic.loop = true;
+            bgMusic.volume = 0.4;
+            bgMusic.play().then(function() {
+                bgMusicPlaying = true;
+                console.log('[音乐] ✅ 背景音乐开始播放');
+            }).catch(function(e) {
+                console.warn('[音乐] ⚠️ 自动播放被阻止:', e);
+            });
+        } catch (e) {
+            console.error('[音乐] ❌ 播放失败:', e);
+        }
+    }
+
+    function stopBgMusic() {
+        if (!bgMusicPlaying || !bgMusic) return;
+        try {
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            bgMusicPlaying = false;
+            console.log('[音乐] ⏹️ 背景音乐已停止');
+        } catch (e) {
+            console.error('[音乐] ⚠️ 停止失败:', e);
+        }
+    }
+
+    function toggleBgMusic(shouldPlay) {
+        if (shouldPlay && !bgMusicPlaying) {
+            playBgMusic();
+        } else if (!shouldPlay && bgMusicPlaying) {
+            stopBgMusic();
+        }
     }
 
     function playSound(type) {
@@ -838,7 +877,13 @@
     function initStartScreen() {
         $('btn-dual').addEventListener('click', function () { playSound('click'); game.mode = 'dual'; isOnlineMode = false; startCharacterSelect(); });
         $('btn-online').addEventListener('click', function () { playSound('click'); initLobby(); showScreen('screen-lobby'); });
-        $('btn-sound').addEventListener('click', function () { game.soundEnabled = !game.soundEnabled; game.voiceEnabled = game.soundEnabled; $('btn-sound').textContent = game.soundEnabled ? '🔊 音效：开' : '🔇 音效：关'; if (game.soundEnabled) playSound('click'); });
+        $('btn-sound').addEventListener('click', function () {
+            game.soundEnabled = !game.soundEnabled;
+            game.voiceEnabled = game.soundEnabled;
+            $('btn-sound').textContent = game.soundEnabled ? '🔊 音效：开' : '🔇 音效：关';
+            if (game.soundEnabled) playSound('click');
+            toggleBgMusic(game.soundEnabled);
+        });
     }
 
     var charSelectState = {
@@ -862,6 +907,7 @@
         buildScrollingCards();
         showFlipButton();
         speak('侠客卡牌巡礼中');
+        if (game.soundEnabled) playBgMusic();
         clearCountdown();
         setTimeout(function () {
             var btn = document.getElementById('btn-flip-cards');
@@ -955,14 +1001,12 @@
         topCards.forEach(function (card, idx) {
             setTimeout(function () {
                 card.classList.add('flipped');
-                playSound('click');
             }, idx * flipDelay);
         });
 
         bottomCards.forEach(function (card, idx) {
             setTimeout(function () {
                 card.classList.add('flipped');
-                playSound('click');
             }, (topCards.length * flipDelay) + (idx * flipDelay));
         });
 
@@ -1246,6 +1290,7 @@
 
     function showVSAnimation() {
         console.log('[ VS ] showVSAnimation 被调用');
+        stopBgMusic();
 
         if (vsAnimationShown) {
             console.warn('[ VS ] VS动画已经显示过，跳过重复调用');
