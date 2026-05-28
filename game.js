@@ -113,7 +113,7 @@
         { id: 'bujuejinshen', name: '不灭金身', type: 'defend', rarity: 'epic', price: 500, value: 38, icon: 'resources/equipments/不灭金身.png', desc: '金刚不坏之体万法不侵' },
         { id: 'tiancanshenjia', name: '天蚕神甲', type: 'defend', rarity: 'legend', price: 800, value: 52, icon: 'resources/equipments/天蚕宝甲.png', desc: '天下第一宝甲刀剑难伤' },
         { id: 'ruanweijia', name: '软猬甲', type: 'defend', rarity: 'legend', price: 800, value: 50, icon: 'resources/equipments/软猬甲.png', desc: '黄蓉宝甲内藏尖刺反伤敌人' },
-        { id: 'hutishenggang', name: '护体神罡', type: 'defend', rarity: 'legend', price: 800, value: 54, icon: 'resources/equipments/护体神罡.png', desc: '先天真气护体百邪不侵' }
+        { id: 'hutishenggang', name: '护体神罡', type: 'defend', rarity: 'legend', price: 800, value: 54, icon: 'resources/equipments/护体罡气.png', desc: '先天真气护体百邪不侵' }
     ];
 
     var MARTIAL_ARTS = [
@@ -355,24 +355,24 @@
         var valueLabel = card.type === 'attack' ? '伤害' : '防御';
         var rarityName = RARITY_NAMES[card.rarity] || card.rarity;
         var desc = card.desc || '';
-        var valueColor = card.type === 'attack' ? '#e74c3c' : '#3498db';
+        var valueColor = card.type === 'attack' ? (card.rarity === 'legendary' ? '#ffffff' : '#e74c3c') : (card.rarity === 'legendary' ? '#ffffff' : '#3498db');
         var skillHtml = '';
         if (card.skill) {
-            skillHtml = '<div style="margin-top:12px;padding:10px 16px;background:rgba(156,39,176,0.2);border:1px solid rgba(156,39,176,0.5);border-radius:8px;font-size:14px;color:#ce93d8;line-height:1.6;">' +
-                '<span style="font-size:18px;">' + card.skill.icon + '</span> <strong style="font-size:15px;">' + card.skill.name + '</strong>：<br/>' + card.skill.desc + '</div>';
+            skillHtml = '<div style="margin-top:16px;padding:10px 16px;background:rgba(156,39,176,0.2);border:1px solid rgba(156,39,176,0.5);border-radius:8px;font-size:13px;color:#ce93d8;line-height:1.6;">' +
+                '<span style="font-size:16px;">' + card.skill.icon + '</span> <strong style="font-size:14px;">' + card.skill.name + '</strong>：<br/>' + card.skill.desc + '</div>';
         }
-        var iconFontSize = isImageEmoji(card.icon) ? '80px' : '64px';
+        var iconFontSize = isImageEmoji(card.icon) ? '70px' : '56px';
         $('card-preview').innerHTML =
-            '<div class="weapon-card rarity-' + card.rarity + '" style="transform:scale(1.7);margin:20px auto;min-width:220px;min-height:310px;">' +
-            '<span class="card-type ' + card.type + '" style="font-size:14px;padding:3px 8px;border-radius:4px;">' + typeLabel + '</span>' +
-            '<span class="card-icon" style="font-size:' + iconFontSize + ';margin:6px 0;">' + renderEmoji(card.icon).replace(/<img /, '<img style="width:2.8em!important;height:2.8em!important;object-fit:contain;" ') + '</span>' +
-            '<span class="card-name" style="font-size:18px;font-weight:800;">' + card.name + '</span>' +
-            '<span class="card-value" style="font-size:26px;font-weight:900;color:' + valueColor + ';text-shadow:0 0 10px ' + valueColor + '66;margin:4px 0;display:block;">⚔ ' + valueLabel + ' <strong>' + card.value + '</strong></span>' +
-            '<span class="card-price" style="font-size:13px;font-weight:600;">💰' + card.price + ' · ' + rarityName + '</span></div>' +
-            '<div style="margin-top:24px;padding:14px 20px;max-width:400px;text-align:center;">' +
-            (desc ? '<div style="font-size:15px;color:var(--text-dim);margin-bottom:10px;line-height:1.5;border-bottom:1px solid rgba(212,168,67,0.2);padding-bottom:10px;">' + desc + '</div>' : '') +
+            '<div class="weapon-card rarity-' + card.rarity + '" style="transform:scale(1.7);margin:20px auto;min-width:220px;min-height:340px;padding-bottom:15px;">' +
+            '<span class="card-type ' + card.type + '" style="font-size:12px;padding:2px 6px;border-radius:4px;">' + typeLabel + '</span>' +
+            '<span class="card-icon" style="font-size:' + iconFontSize + ';margin:2px 0;display:block;">' + renderEmoji(card.icon).replace(/<img /, '<img style="width:2.2em!important;height:2.2em!important;object-fit:contain;" ') + '</span>' +
+            '<span class="card-name" style="font-size:15px;font-weight:800;display:block;margin-top:6px;' + (card.rarity === 'legendary' ? 'color:#ffffff;text-shadow:0 1px 4px rgba(0,0,0,0.8);' : '') + '">' + card.name + '</span>' +
+            '<span class="card-value" style="font-size:18px;font-weight:900;color:' + valueColor + ';text-shadow:0 0 8px ' + valueColor + '66;margin:2px 0;display:block;">⚔ ' + valueLabel + ' <strong>' + card.value + '</strong></span>' +
+            '<span class="card-price" style="font-size:11px;font-weight:600;display:block;margin-top:4px;' + (card.rarity === 'legendary' ? 'color:#ffe082;text-shadow:0 1px 3px rgba(0,0,0,0.6);' : '') + '">💰' + card.price + ' · ' + rarityName + '</span></div>' +
+            '<div style="margin-top:28px;padding:14px 20px;max-width:400px;text-align:center;">' +
+            (desc ? '<div style="font-size:14px;color:var(--text-dim);margin-bottom:12px;line-height:1.5;border-bottom:1px solid rgba(212,168,67,0.2);padding-bottom:10px;">' + desc + '</div>' : '') +
             skillHtml +
-            '<div style="margin-top:16px;font-size:12px;color:rgba(255,255,255,0.25);">点击任意位置关闭</div>' +
+            '<div style="margin-top:18px;font-size:12px;color:rgba(255,255,255,0.25);">点击任意位置关闭</div>' +
             '</div>';
         $('card-preview-overlay').classList.remove('hidden');
     }
@@ -1271,7 +1271,7 @@
             '<div class="vs-player">玩家A</div>' +
             '<div class="vs-hp">' + generateAbilityDesc(a.char) + '</div>' +
             '</div>' +
-            '<div class="vs-text">VS</div>' +
+            '<div class="vs-text">PK</div>' +
             '<div class="vs-fighter vs-right">' +
             '<div class="vs-emoji">' + renderEmoji(b.char.emoji) + '</div>' +
             '<div class="vs-name">' + b.char.name + '</div>' +
