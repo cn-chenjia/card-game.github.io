@@ -22,7 +22,7 @@
             if (isThumbnail) {
                 return '<img src="' + val + '" alt="" class="thumbnail-img">';
             }
-            return '<img src="' + val + '" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;">';
+            return '<img src="' + val + '" alt="" style="width:1.6em;height:1.6em;object-fit:contain;border-radius:inherit;">';
         }
         return val;
     }
@@ -31,36 +31,36 @@
     }
 
     var CHARACTERS = [
-        { id: 'guojing', name: '郭靖', emoji: 'resources/rules/郭靖.jpeg', hp: 5, maxHp: 5, atkBonus: 0.15, defBonus: 0.10, signatureArt: { name: '降龙十八掌', icon: '🐉' } },
-        { id: 'huangyaoshi', name: '黄药师', emoji: 'resources/rules/黄药师.jpeg', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '碧海潮生曲', icon: '🎵' } },
-        { id: 'hongqigong', name: '洪七公', emoji: 'resources/rules/洪七公.jpeg', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0, signatureArt: { name: '打狗棒法', icon: '🏏' } },
-        { id: 'duanyu', name: '段誉', emoji: 'resources/rules/段誉.jpeg', hp: 3, maxHp: 3, atkBonus: 0, defBonus: 0.25, signatureArt: { name: '凌波微步', icon: '✨' } },
-        { id: 'xuzhu', name: '虚竹', emoji: 'resources/rules/虚竹.jpeg', hp: 4, maxHp: 4, atkBonus: 0.10, defBonus: 0.15, signatureArt: { name: '天山六阳掌', icon: '☀️' } },
-        { id: 'qiaofeng', name: '乔峰', emoji: 'resources/rules/乔峰.jpeg', hp: 6, maxHp: 6, atkBonus: 0.22, defBonus: 0, signatureArt: { name: '降龙十八掌', icon: '🐉' } },
-        { id: 'yangguo', name: '杨过', emoji: 'resources/rules/杨过.jpeg', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '玄铁重剑', icon: '⚔️' } },
-        { id: 'zhangwuji', name: '张无忌', emoji: 'resources/rules/张无忌.jpeg', hp: 5, maxHp: 5, atkBonus: 0.12, defBonus: 0.13, signatureArt: { name: '九阳神功', icon: '☀️' } },
-        { id: 'linghuchong', name: '令狐冲', emoji: 'resources/rules/令狐冲.jpeg', hp: 4, maxHp: 4, atkBonus: 0.18, defBonus: 0.07, signatureArt: { name: '独孤九剑', icon: '🗡️' } },
-        { id: 'renwoxing', name: '任我行', emoji: 'resources/rules/任我行.jpeg', hp: 5, maxHp: 5, atkBonus: 0.19, defBonus: 0.03, signatureArt: { name: '吸星大法', icon: '🌀' } },
-        { id: 'dongfangbubai', name: '东方不败', emoji: 'resources/rules/东方不败.jpeg', hp: 3, maxHp: 3, atkBonus: 0.25, defBonus: 0, signatureArt: { name: '葵花宝典', icon: '🌹' } },
-        { id: 'niefeng', name: '聂风', emoji: 'resources/rules/聂风.jpeg', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0.12, signatureArt: { name: '魔刀', icon: '⚔️' } },
-        { id: 'bujingyun', name: '步惊云', emoji: 'resources/rules/步惊云.jpeg', hp: 4, maxHp: 4, atkBonus: 0.24, defBonus: 0.06, signatureArt: { name: '绝世好剑', icon: '⚔️' } },
-        { id: 'wuming', name: '无名', emoji: 'resources/rules/无名.jpeg', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '英雄剑', icon: '🗡️' } },
-        { id: 'xiongba', name: '雄霸', emoji: 'resources/rules/雄霸.jpeg', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '三分归元气', icon: '🌀' } },
-        { id: 'zhaomin', name: '赵敏', emoji: 'resources/rules/赵敏.jpeg', hp: 4, maxHp: 4, atkBonus: 0.15, defBonus: 0.12, signatureArt: { name: '九阴白骨爪', icon: '🦴' } },
-        { id: 'zhouzhiruo', name: '周芷若', emoji: 'resources/rules/周芷若.jpeg', hp: 4, maxHp: 4, atkBonus: 0.19, defBonus: 0.06, signatureArt: { name: '九阴真经', icon: '📖' } },
-        { id: 'yangxiao', name: '杨逍', emoji: 'resources/rules/杨逍.jpeg', hp: 4, maxHp: 4, atkBonus: 0.17, defBonus: 0.08, signatureArt: { name: '乾坤大挪移', icon: '🌀' } },
-        { id: 'zhangsanfeng', name: '张三丰', emoji: 'resources/rules/张三丰.jpeg', hp: 6, maxHp: 6, atkBonus: 0.16, defBonus: 0.18, signatureArt: { name: '太极拳', icon: '☯️' } },
-        { id: 'lixunhuan', name: '李寻欢', emoji: 'resources/rules/李寻欢.jpeg', hp: 4, maxHp: 4, atkBonus: 0.26, defBonus: 0.04, signatureArt: { name: '小李飞刀', icon: '🔪' } },
-        { id: 'afei', name: '阿飞', emoji: 'resources/rules/阿飞.jpeg', hp: 4, maxHp: 4, atkBonus: 0.23, defBonus: 0.05, signatureArt: { name: '快剑', icon: '⚡' } },
-        { id: 'shangguanjinhong', name: '上官金虹', emoji: 'resources/rules/上官金虹.jpeg', hp: 5, maxHp: 5, atkBonus: 0.21, defBonus: 0.09, signatureArt: { name: '龙凤双环', icon: '💫' } },
-        { id: 'shipotian', name: '石破天', emoji: 'resources/rules/石破天.jpeg', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.15, signatureArt: { name: '太玄经', icon: '📖' } },
-        { id: 'dingdang', name: '丁当', emoji: 'resources/rules/丁当.jpeg', hp: 4, maxHp: 4, atkBonus: 0.14, defBonus: 0.12, signatureArt: { name: '叮当响', icon: '🔔' } },
-        { id: 'xiaoshiyilang', name: '萧十一郎', emoji: 'resources/rules/萧十一郎.jpeg', hp: 5, maxHp: 5, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '割鹿刀', icon: '⚔️' } },
-        { id: 'shenbijun', name: '沈璧君', emoji: 'resources/rules/沈璧君.jpeg', hp: 4, maxHp: 4, atkBonus: 0.12, defBonus: 0.15, signatureArt: { name: '洗妆剑法', icon: '🗡️' } },
-        { id: 'lianchengbi', name: '连城璧', emoji: 'resources/rules/连城璧.jpeg', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '天外飞仙', icon: '⚡' } },
-        { id: 'huangrong', name: '黄蓉', emoji: 'resources/rules/黄蓉.jpeg', hp: 4, maxHp: 4, atkBonus: 0.16, defBonus: 0.14, signatureArt: { name: '落英神剑掌', icon: '🌸' } },
-        { id: 'ouyangfeng', name: '欧阳锋', emoji: 'resources/rules/欧阳锋.jpeg', hp: 5, maxHp: 5, atkBonus: 0.24, defBonus: 0.04, signatureArt: { name: '蛤蟆功', icon: '🐸' } },
-        { id: 'xiaolongnv', name: '小龙女', emoji: 'resources/rules/小龙女.jpeg', hp: 4, maxHp: 4, atkBonus: 0.19, defBonus: 0.11, signatureArt: { name: '玉女剑法', icon: '🌙' } }
+        { id: 'guojing', name: '郭靖', emoji: 'resources/rules/郭靖.jpeg', hp: 5, maxHp: 5, atkBonus: 0.15, defBonus: 0.10, signatureArt: { name: '降龙十八掌', icon: '🐉' }, voiceLine: '心怀天下，侠之大者' },
+        { id: 'huangyaoshi', name: '黄药师', emoji: 'resources/rules/黄药师.jpeg', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '碧海潮生曲', icon: '🎵' }, voiceLine: '东邪孤傲，不羁凡尘' },
+        { id: 'hongqigong', name: '洪七公', emoji: 'resources/rules/洪七公.jpeg', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0, signatureArt: { name: '打狗棒法', icon: '🏏' }, voiceLine: '丐帮之主，侠义坦荡' },
+        { id: 'duanyu', name: '段誉', emoji: 'resources/rules/段誉.jpeg', hp: 3, maxHp: 3, atkBonus: 0, defBonus: 0.25, signatureArt: { name: '凌波微步', icon: '✨' }, voiceLine: '温润痴情，翩翩公子' },
+        { id: 'xuzhu', name: '虚竹', emoji: 'resources/rules/虚竹.jpeg', hp: 4, maxHp: 4, atkBonus: 0.10, defBonus: 0.15, signatureArt: { name: '天山六阳掌', icon: '☀️' }, voiceLine: '质朴纯粹，身怀绝学' },
+        { id: 'qiaofeng', name: '乔峰', emoji: 'resources/rules/乔峰.jpeg', hp: 6, maxHp: 6, atkBonus: 0.22, defBonus: 0, signatureArt: { name: '降龙十八掌', icon: '🐉' }, voiceLine: '豪情盖世，顶天立地' },
+        { id: 'yangguo', name: '杨过', emoji: 'resources/rules/杨过.jpeg', hp: 4, maxHp: 4, atkBonus: 0.20, defBonus: 0.05, signatureArt: { name: '玄铁重剑', icon: '⚔️' }, voiceLine: '白衣绝尘，情深不渝' },
+        { id: 'zhangwuji', name: '张无忌', emoji: 'resources/rules/张无忌.jpeg', hp: 5, maxHp: 5, atkBonus: 0.12, defBonus: 0.13, signatureArt: { name: '九阳神功', icon: '☀️' }, voiceLine: '仁厚包容，与世无争' },
+        { id: 'linghuchong', name: '令狐冲', emoji: 'resources/rules/令狐冲.jpeg', hp: 4, maxHp: 4, atkBonus: 0.18, defBonus: 0.07, signatureArt: { name: '独孤九剑', icon: '🗡️' }, voiceLine: '潇洒随性，笑傲江湖' },
+        { id: 'renwoxing', name: '任我行', emoji: 'resources/rules/任我行.jpeg', hp: 5, maxHp: 5, atkBonus: 0.19, defBonus: 0.03, signatureArt: { name: '吸星大法', icon: '🌀' }, voiceLine: '雄才大略，霸气冲天' },
+        { id: 'dongfangbubai', name: '东方不败', emoji: 'resources/rules/东方不败.jpeg', hp: 3, maxHp: 3, atkBonus: 0.25, defBonus: 0, signatureArt: { name: '葵花宝典', icon: '🌹' }, voiceLine: '傲视天下，绝代枭雄' },
+        { id: 'niefeng', name: '聂风', emoji: 'resources/rules/聂风.jpeg', hp: 5, maxHp: 5, atkBonus: 0.18, defBonus: 0.12, signatureArt: { name: '魔刀', icon: '⚔️' }, voiceLine: '风神飘逸，心善仁厚' },
+        { id: 'bujingyun', name: '步惊云', emoji: 'resources/rules/步惊云.jpeg', hp: 4, maxHp: 4, atkBonus: 0.24, defBonus: 0.06, signatureArt: { name: '绝世好剑', icon: '⚔️' }, voiceLine: '冷面战神，一往无前' },
+        { id: 'wuming', name: '无名', emoji: 'resources/rules/无名.jpeg', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '英雄剑', icon: '🗡️' }, voiceLine: '天剑隐世，大道无形' },
+        { id: 'xiongba', name: '雄霸', emoji: 'resources/rules/雄霸.jpeg', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '三分归元气', icon: '🌀' }, voiceLine: '雄霸天下，气吞山河' },
+        { id: 'zhaomin', name: '赵敏', emoji: 'resources/rules/赵敏.jpeg', hp: 4, maxHp: 4, atkBonus: 0.15, defBonus: 0.12, signatureArt: { name: '九阴白骨爪', icon: '🦴' }, voiceLine: '敢爱敢恨，率性而为' },
+        { id: 'zhouzhiruo', name: '周芷若', emoji: 'resources/rules/周芷若.jpeg', hp: 4, maxHp: 4, atkBonus: 0.19, defBonus: 0.06, signatureArt: { name: '九阴真经', icon: '📖' }, voiceLine: '温婉外表，心事浮沉' },
+        { id: 'yangxiao', name: '杨逍', emoji: 'resources/rules/杨逍.jpeg', hp: 4, maxHp: 4, atkBonus: 0.17, defBonus: 0.08, signatureArt: { name: '乾坤大挪移', icon: '🌀' }, voiceLine: '风流傲骨，洒脱不羁' },
+        { id: 'zhangsanfeng', name: '张三丰', emoji: 'resources/rules/张三丰.jpeg', hp: 6, maxHp: 6, atkBonus: 0.16, defBonus: 0.18, signatureArt: { name: '太极拳', icon: '☯️' }, voiceLine: '武当始祖，道骨仙风' },
+        { id: 'lixunhuan', name: '李寻欢', emoji: 'resources/rules/李寻欢.jpeg', hp: 4, maxHp: 4, atkBonus: 0.26, defBonus: 0.04, signatureArt: { name: '小李飞刀', icon: '🔪' }, voiceLine: '飞刀出手，例无虚发' },
+        { id: 'afei', name: '阿飞', emoji: 'resources/rules/阿飞.jpeg', hp: 4, maxHp: 4, atkBonus: 0.23, defBonus: 0.05, signatureArt: { name: '快剑', icon: '⚡' }, voiceLine: '快剑少年，赤子之心' },
+        { id: 'shangguanjinhong', name: '上官金虹', emoji: 'resources/rules/上官金虹.jpeg', hp: 5, maxHp: 5, atkBonus: 0.21, defBonus: 0.09, signatureArt: { name: '龙凤双环', icon: '💫' }, voiceLine: '金环称霸，野心滔天' },
+        { id: 'shipotian', name: '石破天', emoji: 'resources/rules/石破天.jpeg', hp: 6, maxHp: 6, atkBonus: 0.20, defBonus: 0.15, signatureArt: { name: '太玄经', icon: '📖' }, voiceLine: '纯真质朴，内力通天' },
+        { id: 'dingdang', name: '丁当', emoji: 'resources/rules/丁当.jpeg', hp: 4, maxHp: 4, atkBonus: 0.14, defBonus: 0.12, signatureArt: { name: '叮当响', icon: '🔔' }, voiceLine: '娇俏灵动，活泼率真' },
+        { id: 'xiaoshiyilang', name: '萧十一郎', emoji: 'resources/rules/萧十一郎.jpeg', hp: 5, maxHp: 5, atkBonus: 0.20, defBonus: 0.10, signatureArt: { name: '割鹿刀', icon: '⚔️' }, voiceLine: '浪迹江湖，孤勇前行' },
+        { id: 'shenbijun', name: '沈璧君', emoji: 'resources/rules/沈璧君.jpeg', hp: 4, maxHp: 4, atkBonus: 0.12, defBonus: 0.15, signatureArt: { name: '洗妆剑法', icon: '🗡️' }, voiceLine: '温婉娴静，一往情深' },
+        { id: 'lianchengbi', name: '连城璧', emoji: 'resources/rules/连城璧.jpeg', hp: 5, maxHp: 5, atkBonus: 0.22, defBonus: 0.08, signatureArt: { name: '天外飞仙', icon: '⚡' }, voiceLine: '名门翘楚，执念难破' },
+        { id: 'huangrong', name: '黄蓉', emoji: 'resources/rules/黄蓉.jpeg', hp: 4, maxHp: 4, atkBonus: 0.16, defBonus: 0.14, signatureArt: { name: '落英神剑掌', icon: '🌸' }, voiceLine: '慧黠灵动，巧智无双' },
+        { id: 'ouyangfeng', name: '欧阳锋', emoji: 'resources/rules/欧阳锋.jpeg', hp: 5, maxHp: 5, atkBonus: 0.24, defBonus: 0.04, signatureArt: { name: '蛤蟆功', icon: '🐸' }, voiceLine: '西毒枭雄，武痴狂傲' },
+        { id: 'xiaolongnv', name: '小龙女', emoji: 'resources/rules/小龙女.jpeg', hp: 4, maxHp: 4, atkBonus: 0.19, defBonus: 0.11, signatureArt: { name: '玉女剑法', icon: '🌙' }, voiceLine: '白衣绝尘，情深不渝' }
     ];
 
     var EPIC_SKILLS = [
@@ -76,7 +76,7 @@
         { id: 'panguanbi', name: '判官笔', type: 'attack', rarity: 'common', price: 100, value: 9, icon: '🖊️', desc: '文人墨客的防身利器' },
         { id: 'tongluo', name: '铜锣', type: 'attack', rarity: 'common', price: 100, value: 8, icon: '🪘', desc: '威慑用的响铜乐器' },
         { id: 'liuxingchui', name: '流星锤', type: 'attack', rarity: 'common', price: 100, value: 7, icon: '⚙️', desc: '暗藏机括的链锤' },
-        { id: 'bianzi', name: '鞭子', type: 'attack', rarity: 'common', price: 100, value: 8, icon: '🪢', desc: '软硬兼施的软兵器' },
+        { id: 'bianzi', name: '鞭子', type: 'attack', rarity: 'common', price: 100, value: 8, icon: 'resources/equipments/软鞭.png', desc: '软硬兼施的软兵器' },
         { id: 'xuantiejian', name: '玄铁剑', type: 'attack', rarity: 'elite', price: 200, value: 18, icon: 'resources/equipments/玄铁剑.png', desc: '重剑无锋大巧不工' },
         { id: 'dagoubang', name: '打狗棒', type: 'attack', rarity: 'elite', price: 200, value: 16, icon: 'resources/equipments/打狗棒.png', desc: '丐帮镇帮之宝' },
         { id: 'bixuejian', name: '碧血剑', type: 'attack', rarity: 'elite', price: 200, value: 17, icon: 'resources/equipments/碧血剑.png', desc: '碧血染沙场之剑' },
@@ -84,16 +84,16 @@
         { id: 'zhugeliannu', name: '诸葛连弩', type: 'attack', rarity: 'elite', price: 200, value: 14, icon: 'resources/equipments/诸葛连弩.png', desc: '连珠箭法' },
         { id: 'yitianjian', name: '倚天剑', type: 'attack', rarity: 'rare', price: 350, value: 28, icon: '⚔️', desc: '号称武林至尊' },
         { id: 'tulongdao', name: '屠龙刀', type: 'attack', rarity: 'rare', price: 350, value: 25, icon: 'resources/equipments/屠龙刀.png', desc: '号称武林至尊' },
-        { id: 'tulong_steal', name: '屠龙刀·偷取', type: 'attack', rarity: 'epic', price: 500, value: 40, icon: '🐉', desc: '屠龙刀出谁与争锋', skill: EPIC_SKILLS[0] },
-        { id: 'dagou_break', name: '打狗棒·破防', type: 'attack', rarity: 'epic', price: 500, value: 38, icon: '🏏', desc: '打狗棒法天下无敌', skill: EPIC_SKILLS[1] },
-        { id: 'xuantie_reduce', name: '玄铁重剑·削弱', type: 'attack', rarity: 'epic', price: 500, value: 36, icon: '⚔️', desc: '重剑无锋大巧不工', skill: EPIC_SKILLS[2] },
-        { id: 'bixue_replace', name: '碧血剑·降级', type: 'attack', rarity: 'epic', price: 500, value: 42, icon: '🔱', desc: '碧血染沙场威震江湖', skill: EPIC_SKILLS[3] },
+        { id: 'tulong_steal', name: '屠龙刀·偷取', type: 'attack', rarity: 'epic', price: 500, value: 40, icon: 'resources/equipments/屠龙刀.png', desc: '屠龙刀出谁与争锋', skill: EPIC_SKILLS[0] },
+        { id: 'dagou_break', name: '打狗棒·破防', type: 'attack', rarity: 'epic', price: 500, value: 38, icon: 'resources/equipments/打狗棒.png', desc: '打狗棒法天下无敌', skill: EPIC_SKILLS[1] },
+        { id: 'xuantie_reduce', name: '玄铁重剑·削弱', type: 'attack', rarity: 'epic', price: 500, value: 36, icon: 'resources/equipments/玄铁剑.png', desc: '重剑无锋大巧不工', skill: EPIC_SKILLS[2] },
+        { id: 'bixue_replace', name: '碧血剑·降级', type: 'attack', rarity: 'epic', price: 500, value: 42, icon: 'resources/equipments/碧血剑.png', desc: '碧血染沙场威震江湖', skill: EPIC_SKILLS[3] },
         { id: 'yuxiao_block', name: '玉箫·封技', type: 'attack', rarity: 'epic', price: 500, value: 37, icon: 'resources/equipments/玉箫.png', desc: '玉箫吹奏乱人心智', skill: EPIC_SKILLS[4] },
         { id: 'xueyindao', name: '雪饮刀', type: 'attack', rarity: 'legend', price: 800, value: 55, icon: 'resources/equipments/雪饮刀.png', desc: '聂风佩刀寒冰之气' },
         { id: 'jueshihaojian', name: '绝世好剑', type: 'attack', rarity: 'legend', price: 800, value: 58, icon: 'resources/equipments/绝世好剑.png', desc: '步惊云佩剑天下第一' },
         { id: 'yingxiongjian', name: '英雄剑', type: 'attack', rarity: 'rare', price: 350, value: 30, icon: 'resources/equipments/英雄剑.png', desc: '无名佩剑武林神话' },
         { id: 'shenghuoling', name: '圣火令', type: 'attack', rarity: 'rare', price: 350, value: 26, icon: 'resources/equipments/圣火令.png', desc: '明教圣物至高无上' },
-        { id: 'xiaolifeidao', name: '小李飞刀', type: 'attack', rarity: 'legend', price: 800, value: 60, icon: 'resources/equipments/小李飞刀.jpeg', desc: '例不虚发天下第一暗器' },
+        { id: 'xiaolifeidao', name: '小李飞刀', type: 'attack', rarity: 'legend', price: 800, value: 60, icon: 'resources/equipments/小李飞刀.png', desc: '例不虚发天下第一暗器' },
         { id: 'longfengshuanghuan', name: '龙凤双环', type: 'defend', rarity: 'rare', price: 350, value: 24, icon: 'resources/equipments/龙凤双环.png', desc: '上官金虹兵器攻防一体' },
         { id: 'geludao', name: '割鹿刀', type: 'attack', rarity: 'legend', price: 800, value: 56, icon: 'resources/equipments/割鹿刀.png', desc: '天下第一神刀传说之兵' },
         { id: 'buyi', name: '布衣', type: 'defend', rarity: 'common', price: 100, value: 8, icon: 'resources/equipments/布衣.png', desc: '粗布麻衣遮体' },
@@ -101,17 +101,17 @@
         { id: 'mianpao', name: '棉袍', type: 'defend', rarity: 'common', price: 100, value: 7, icon: 'resources/equipments/棉袍.png', desc: '御寒的棉布长袍' },
         { id: 'tengjia', name: '藤甲', type: 'defend', rarity: 'common', price: 100, value: 9, icon: 'resources/equipments/藤甲.png', desc: '藤条编织的轻甲' },
         { id: 'doulì', name: '斗笠', type: 'defend', rarity: 'common', price: 100, value: 7, icon: 'resources/equipments/斗笠.png', desc: '遮阳挡雨的竹笠' },
-        { id: 'jinisiruanjia', name: '金丝软甲', type: 'defend', rarity: 'elite', price: 200, value: 18, icon: '⛓️', desc: '金丝编织的软猬甲' },
-        { id: 'tajitu', name: '太极图', type: 'defend', rarity: 'elite', price: 200, value: 15, icon: '☯️', desc: '太极双鱼图案护身' },
+        { id: 'jinisiruanjia', name: '金丝软甲', type: 'defend', rarity: 'elite', price: 200, value: 18, icon: 'resources/equipments/金丝软甲.png', desc: '金丝编织的软猬甲' },
+        { id: 'tajitu', name: '太极图', type: 'defend', rarity: 'elite', price: 200, value: 15, icon: 'resources/equipments/太极图.png', desc: '太极双鱼图案护身' },
         { id: 'tieluohan', name: '铁罗汉', type: 'defend', rarity: 'elite', price: 200, value: 16, icon: 'resources/equipments/铁罗汉.png', desc: '十八铜人阵法' },
-        { id: 'huxinjing', name: '护心镜', type: 'defend', rarity: 'elite', price: 200, value: 14, icon: '💎', desc: '保护心口的铜镜' },
+        { id: 'huxinjing', name: '护心镜', type: 'defend', rarity: 'elite', price: 200, value: 14, icon: 'resources/equipments/护心镜.png', desc: '保护心口的铜镜' },
         { id: 'hunyuansan', name: '混元伞', type: 'defend', rarity: 'elite', price: 200, value: 13, icon: 'resources/equipments/混元伞.png', desc: '周伯通的宝贝' },
-        { id: 'xuantiejia', name: '玄铁重甲', type: 'defend', rarity: 'rare', price: 350, value: 22, icon: '🛡️', desc: '玄铁打造的重型铠甲坚不可摧' },
+        { id: 'xuantiejia', name: '玄铁重甲', type: 'defend', rarity: 'rare', price: 350, value: 22, icon: 'resources/equipments/玄铁重甲.png', desc: '玄铁打造的重型铠甲坚不可摧' },
         { id: 'jinsibaojia', name: '金丝宝甲', type: 'defend', rarity: 'rare', price: 350, value: 24, icon: 'resources/equipments/金丝宝甲.png', desc: '金丝银线编织刀枪不入' },
         { id: 'tiancanbaojia', name: '天蚕宝甲', type: 'defend', rarity: 'epic', price: 500, value: 35, icon: 'resources/equipments/天蚕宝甲.png', desc: '天蚕丝织就水火不侵' },
-        { id: 'linlinjia', name: '鳞鳞甲', type: 'defend', rarity: 'epic', price: 500, value: 33, icon: '🐉', desc: '龙鳞镶嵌的战甲威武霸气' },
+        { id: 'linlinjia', name: '鳞鳞甲', type: 'defend', rarity: 'epic', price: 500, value: 33, icon: 'resources/equipments/龙鳞战甲.png', desc: '龙鳞镶嵌的战甲威武霸气' },
         { id: 'bujuejinshen', name: '不灭金身', type: 'defend', rarity: 'epic', price: 500, value: 38, icon: 'resources/equipments/不灭金身.png', desc: '金刚不坏之体万法不侵' },
-        { id: 'tiancanshenjia', name: '天蚕神甲', type: 'defend', rarity: 'legend', price: 800, value: 52, icon: '🦋', desc: '天下第一宝甲刀剑难伤' },
+        { id: 'tiancanshenjia', name: '天蚕神甲', type: 'defend', rarity: 'legend', price: 800, value: 52, icon: 'resources/equipments/天蚕宝甲.png', desc: '天下第一宝甲刀剑难伤' },
         { id: 'ruanweijia', name: '软猬甲', type: 'defend', rarity: 'legend', price: 800, value: 50, icon: 'resources/equipments/软猬甲.png', desc: '黄蓉宝甲内藏尖刺反伤敌人' },
         { id: 'hutishenggang', name: '护体神罡', type: 'defend', rarity: 'legend', price: 800, value: 54, icon: '💫', desc: '先天真气护体百邪不侵' }
     ];
@@ -266,12 +266,14 @@
         } catch (e) {}
     }
 
+    var speakQueue = [];
+    var isSpeaking = false;
+
     function speak(text) {
         if (!game.voiceEnabled) return;
         try {
             if (!('speechSynthesis' in window)) return;
             var synth = window.speechSynthesis;
-            synth.cancel();
             var utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'zh-CN'; utter.rate = 1.1; utter.pitch = 1.0; utter.volume = 0.9;
             if (zhVoiceCached) {
@@ -281,10 +283,65 @@
                 var zhVoice = voices.find(function (v) { return v.lang.indexOf('zh') >= 0; });
                 if (zhVoice) { utter.voice = zhVoice; zhVoiceCached = zhVoice; }
             }
+            utter.onend = function () {
+                isSpeaking = false;
+                if (speakQueue.length > 0) {
+                    var next = speakQueue.shift();
+                    doSpeak(next);
+                }
+            };
+            utter.onerror = function () {
+                isSpeaking = false;
+                if (speakQueue.length > 0) {
+                    var next = speakQueue.shift();
+                    doSpeak(next);
+                }
+            };
+            if (isSpeaking) {
+                synth.cancel();
+                isSpeaking = false;
+            }
+            doSpeak(utter);
+        } catch (e) {}
+    }
+
+    function doSpeak(utter) {
+        try {
+            var synth = window.speechSynthesis;
             var ctx = getAudioCtx();
             if (ctx && ctx.state === 'suspended') ctx.resume();
+            isSpeaking = true;
             synth.speak(utter);
+        } catch (e) {
+            isSpeaking = false;
+        }
+    }
+
+    function waitForSpeech(callback, minDelay) {
+        minDelay = minDelay || 0;
+        if (!isSpeaking) {
+            setTimeout(callback, minDelay);
+            return;
+        }
+        var startTime = Date.now();
+        var checkInterval = setInterval(function () {
+            if (!isSpeaking || Date.now() - startTime > 5000) {
+                clearInterval(checkInterval);
+                var elapsed = Date.now() - startTime;
+                var remaining = minDelay - elapsed;
+                setTimeout(callback, Math.max(0, remaining));
+            }
+        }, 100);
+    }
+
+    function stopSpeech() {
+        try {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
         } catch (e) {}
+        isSpeaking = false;
+        speakQueue = [];
     }
 
     function $(id) { return document.getElementById(id); }
@@ -304,10 +361,11 @@
             skillHtml = '<div style="margin-top:12px;padding:10px 16px;background:rgba(156,39,176,0.2);border:1px solid rgba(156,39,176,0.5);border-radius:8px;font-size:14px;color:#ce93d8;line-height:1.6;">' +
                 '<span style="font-size:18px;">' + card.skill.icon + '</span> <strong style="font-size:15px;">' + card.skill.name + '</strong>：<br/>' + card.skill.desc + '</div>';
         }
+        var iconFontSize = isImageEmoji(card.icon) ? '80px' : '64px';
         $('card-preview').innerHTML =
             '<div class="weapon-card rarity-' + card.rarity + '" style="transform:scale(1.7);margin:20px auto;min-width:220px;min-height:310px;">' +
             '<span class="card-type ' + card.type + '" style="font-size:14px;padding:3px 8px;border-radius:4px;">' + typeLabel + '</span>' +
-            '<span class="card-icon" style="font-size:52px;margin:6px 0;">' + renderEmoji(card.icon) + '</span>' +
+            '<span class="card-icon" style="font-size:' + iconFontSize + ';margin:6px 0;">' + renderEmoji(card.icon).replace(/<img /, '<img style="width:2.8em!important;height:2.8em!important;object-fit:contain;" ') + '</span>' +
             '<span class="card-name" style="font-size:18px;font-weight:800;">' + card.name + '</span>' +
             '<span class="card-value" style="font-size:26px;font-weight:900;color:' + valueColor + ';text-shadow:0 0 10px ' + valueColor + '66;margin:4px 0;display:block;">⚔ ' + valueLabel + ' <strong>' + card.value + '</strong></span>' +
             '<span class="card-price" style="font-size:13px;font-weight:600;">💰' + card.price + ' · ' + rarityName + '</span></div>' +
@@ -1051,10 +1109,10 @@
                         var remaining = document.querySelectorAll('.char-grid .char-card:not(.selected)');
                         remaining.forEach(function (c) { c.classList.remove('disabled'); c.classList.add('selectable-glow'); });
                         updateSelectionUI();
-                        speak('玩家A选择了' + ch.name + '，请玩家B选择');
+                        speak(ch.name + '，' + ch.voiceLine + '。请玩家B选择');
                     }, 300);
                 } else {
-                    speak('你选择了' + ch.name);
+                    speak(ch.name + '，' + ch.voiceLine);
                     notifyPeer('char-spin-result', { charId: charId, phase: 'selected-A' });
                     checkBothSelected();
                 }
@@ -1068,10 +1126,10 @@
                     charSelectState.phase = 'done';
                     disableAllCards();
                     updateSelectionUI();
-                    speak('你选择了' + ch.name);
-                    setTimeout(function () { clearCountdown(); showVSAnimation(); }, 3000);
+                    speak(ch.name + '，' + ch.voiceLine);
+                    waitForSpeech(function () { clearCountdown(); showVSAnimation(); }, 3000);
                 } else {
-                    speak('你选择了' + ch.name);
+                    speak(ch.name + '，' + ch.voiceLine);
                     notifyPeer('char-spin-result', { charId: charId, phase: 'selected-B' });
                     checkBothSelected();
                 }
@@ -1084,7 +1142,7 @@
             charSelectState.phase = 'done';
             disableAllCards();
             updateSelectionUI();
-            setTimeout(function () { clearCountdown(); showVSAnimation(); }, 800);
+            waitForSpeech(function () { clearCountdown(); showVSAnimation(); }, 800);
         } else {
             updateSelectionUI();
         }
@@ -1225,13 +1283,13 @@
         speak(a.char.name + ' 对阵 ' + b.char.name);
         console.log('[ VS ] isOnlineMode:', isOnlineMode, 'isGuest():', Multiplayer.isGuest());
         if (isOnlineMode && Multiplayer.isGuest()) {
-            setTimeout(function () {
+            waitForSpeech(function () {
                 $('vs-container').innerHTML = '<p style="color:var(--text-dim);font-size:16px;">等待房主同步游戏数据...</p>';
                 console.log('[ VS ] 显示等待房主同步...');
             }, 3000);
         } else {
-            setTimeout(function () {
-                console.log('[ VS ] 3秒后调用 startBattle()');
+            waitForSpeech(function () {
+                console.log('[ VS ] 语音播完后调用 startBattle()');
                 startBattle();
             }, 3000);
         }
@@ -1347,21 +1405,21 @@
         showSection('weapon-draw-area');
         updateAttackProgress();
         hideAllOps();
+        var panelA = $('panel-a'), panelB = $('panel-b');
+        if (panelA) { panelA.classList.remove('inactive-panel'); panelA.classList.add('active-panel'); }
+        if (panelB) { panelB.classList.remove('inactive-panel'); panelB.classList.add('active-panel'); }
         updateWeaponDrawUI();
         $('action-hint').textContent = '第' + game.round + '轮 - 武器抽取阶段（双方同时抽取）';
         updateWeaponDrawHint(); wheelAngle = 0; drawWeaponWheel();
         $('drawn-cards').innerHTML = '';
         clearCountdown();
-        if (!isOnlineMode || canIOperate('A')) {
+        var needCountdown = (!isOnlineMode || canIOperate('A') || canIOperate('B'));
+        if (needCountdown) {
             showCountdown(10, function () {
-                if (game.phase === 'weapon-draw' && !wheelSpinning && game.weaponDrawCountA < 3) {
+                if (game.phase !== 'weapon-draw' || wheelSpinning) return;
+                if ((!isOnlineMode || canIOperate('A')) && game.weaponDrawCountA < 3) {
                     spinWeaponForPlayer('A');
-                }
-            });
-        }
-        if (!isOnlineMode || canIOperate('B')) {
-            showCountdown(10, function () {
-                if (game.phase === 'weapon-draw' && !wheelSpinning && game.weaponDrawCountB < 3) {
+                } else if ((!isOnlineMode || canIOperate('B')) && game.weaponDrawCountB < 3) {
                     spinWeaponForPlayer('B');
                 }
             });
@@ -1491,7 +1549,7 @@
                     console.log('[ Weapon ] 发送 weapon-spin 消息, uid:', drawn.uid);
                     notifyPeer('weapon-spin', { weapon: { id: wp.id, uid: drawn.uid }, player: pid });
                     var delay = isRare ? 2500 : 1200;
-                    setTimeout(function () {
+                    waitForSpeech(function () {
                         try {
                             $('drawn-cards').innerHTML = '';
                             afterWeaponDrawAction(pid);
@@ -1838,10 +1896,8 @@
                                 var diceArea = $('dice-area');
                                 if (diceArea) {
                                     diceArea.classList.add('hidden');
-                                    startAttackPhase(false);
-                                } else {
-                                    startAttackPhase(false);
                                 }
+                                waitForSpeech(function () { startAttackPhase(false); }, 500);
                             } catch (e2) {
                                 handleError('doRollDice-timeout', e2);
                             }
@@ -1924,7 +1980,7 @@
         var attackNum = game.currentAttackIndex + 1;
         var maxAtk = getMaxAttacks();
         $('action-hint').textContent = phaseLabel + '阶段（已攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）';
-        showOp(game.phaseAttacker, 'confirm-card', { disabled: true });
+        showOp(game.phaseAttacker, 'confirm-card', { disabled: true, text: '⚔️ 攻击' });
         showOp(game.phaseAttacker, 'sell');
         showOp(game.phaseAttacker, 'buy');
         showOp(game.phaseAttacker, 'synthesis');
@@ -2021,7 +2077,7 @@
 
         var maxAtk = getMaxAttacks();
         $('action-hint').textContent = '防御阶段（攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）';
-        showOp(game.phaseDefender, 'confirm-card', { disabled: true });
+        showOp(game.phaseDefender, 'confirm-card', { disabled: true, text: '🛡️ 防御' });
         showOp(game.phaseDefender, 'skip-defend');
         showOp(game.phaseDefender, 'sell');
         showOp(game.phaseDefender, 'buy');
@@ -2251,7 +2307,71 @@
         kuihua: '葵花宝典天下无双！东方不败修炼，快如闪电无人能敌！',
         longxiang: '龙象般若功十三层！金轮法王神功，龙象之力举世无双！',
         xixing: '吸星大法万邪不侵！任我行绝学，吸尽天下内力为我所用！',
-        qiankun_abs: '乾坤大挪移绝对守护！明教护教神功，乾坤挪移万法不侵！'
+        qiankun_abs: '乾坤大挪移绝对守护！明教护教神功，乾坤挪移万法不侵！',
+        xueyindao: '雪饮刀出！寒冰之气冻结万物，聂风佩刀霜寒九州！',
+        jueshihaojian: '绝世好剑现世！步惊云佩剑，天下第一剑锋芒毕露！',
+        yingxiongjian: '英雄剑出鞘！无名佩剑，武林神话剑气长存！',
+        shenghuoling: '圣火令显威！明教圣物，至高无上烈焰焚天！',
+        xiaolifeidao: '小李飞刀出手！例不虚发，天下第一暗器！',
+        longfengshuanghuan: '龙凤双环护身！上官金虹兵器，攻防一体天下无双！',
+        geludao: '割鹿刀斩出！天下第一神刀，传说之兵威震江湖！',
+        xuantiejia: '玄铁重甲加身！玄铁打造坚不可摧，刀枪不入！',
+        jinsibaojia: '金丝宝甲护体！金丝银线编织，刀枪不入水火不侵！',
+        tiancanbaojia: '天蚕宝甲披挂！天蚕丝织就，水火不侵万法难破！',
+        linlinjia: '龙鳞战甲上身！龙鳞镶嵌威武霸气，刀剑难伤！',
+        bujuejinshen: '不灭金身显威！金刚不坏之体，万法不侵刀枪不入！',
+        tiancanshenjia: '天蚕神甲护身！天下第一宝甲，刀剑难伤万邪辟易！',
+        ruanweijia: '软猬甲护体！黄蓉宝甲内藏尖刺，反伤敌人！',
+        hutishenggang: '护体神罡罩身！先天真气护体，百邪不侵万法难破！',
+        bm_dragon_slayer: '屠龙者荣耀之剑！斩龙勇士传承，剑锋所指所向披靡！',
+        bm_shadow_blade: '影刃暗袭！暗影之中致命一击，无声无息取你性命！',
+        bm_frost_armor: '寒冰甲冻结！冰封万里寒气逼人，攻者自伤！',
+        bm_phantom_shield: '幻影盾浮现！虚幻莫测防护，真假难辨！',
+        bm_inferno_sword: '烈焰剑焚天！焚烧一切的火焰之剑，灰飞烟灭！',
+        bm_thunder_hammer: '雷神锤降世！雷霆万钧神力，天崩地裂！',
+        bm_divine_protection: '神圣庇护降临！神明赐予守护，金光护体！',
+        bm_abyssal_guard: '深渊守卫苏醒！来自深渊的强大防护，暗影庇佑！',
+        bm_void_blade: '虚空之刃斩出！撕裂空间的虚空之力，无处可逃！',
+        bm_time_dial: '时光之轮转动！时间停滞的绝对防御，万物静止！',
+        bm_soul_reaper: '死神镰刀挥舞！收割灵魂的恐怖武器，命悬一线！',
+        bm_angel_wings: '天使之翼展开！神圣天使的庇护之翼，圣光守护！',
+        bm_dragon_scale_armor: '龙鳞战甲披挂！远古巨龙遗落的鳞甲，坚不可摧！',
+        bm_eternal_shield: '永恒之盾竖起！传说中永不破碎的神圣护盾！',
+        bm_void_barrier: '虚空屏障展开！虚空之力构筑绝对防御场！',
+        bm_crystal_mirror: '水晶魔镜闪耀！反射一切攻击的神秘魔镜！',
+        xl18z: '降龙十八掌！丐帮镇帮神功，刚猛无俦天下第一掌法！',
+        lmsj: '六脉神剑！大理段氏绝学，无形剑气伤敌于无形！',
+        dg9j: '独孤九剑！独孤求败所创，无招胜有招破尽天下武功！',
+        dgbf: '打狗棒法！三十六路棒法精妙绝伦，天下无狗！',
+        qkdny: '乾坤大挪移！明教护教神功，借力打力化敌于无形！',
+        jygf: '九阳真经护体！至阳至刚万邪不侵，天下第一内功！',
+        yjyjg: '易筋经护体！达摩祖师所创，化腐朽为神奇！',
+        zxgf: '紫霞神功！华山派绝顶内功，紫气东来照影成双！',
+        tjtaiji: '武当太极！张三丰所创以柔克刚，四两拨千斤！',
+        taijijianfa: '太极剑法！武当镇派剑法，以静制动后发制人！',
+        shaolin72jueji: '少林七十二绝技！千年武学精华，博大精深！',
+        mohewuliang: '摩诃无量！风云合璧天下无敌，毁天灭地！',
+        paiyunzhang: '排云掌！步惊云绝学，掌法刚柔并济排山倒海！',
+        fengshentui: '风神腿！聂风绝学，腿法快如疾风势不可挡！',
+        tianshuangquan: '天霜拳！雄霸绝学，拳法寒冰之气冰封万里！',
+        jianersan: '剑二十三！无名终极剑招，时间静止空间破碎！',
+        jiuyinbaiguzhao: '九阴白骨爪！五指如钩阴毒无比，九阴真经绝学！',
+        taijiquan: '太极拳！张三丰所创，以柔克刚天下无敌！',
+        shenghuolingfa: '圣火令神功！明教波斯总教失传武学，诡异莫测！',
+        xiaolifeidao_art: '小李飞刀！李寻欢绝技，例不虚发出必中！',
+        kuaijian: '快剑！阿飞剑法，快如闪电无招无式！',
+        taixuanjing: '太玄经！石破天领悟绝世内功，武学巅峰！',
+        luohanfumogong: '罗汉伏魔功！少林绝学，伏魔神功刚柔并济！',
+        xixingdafa: '吸星大法！任我行绝学，吸尽天下内力为我所用！',
+        xiaowuxianggong: '小无相功！逍遥派绝学，模仿天下武学无往不利！',
+        changchungong: '长春功！全真教长春真人所创，生生不息！',
+        zhuangong: '庄功！少林基础功法，稳扎稳打根基深厚！',
+        babangliuhe: '八荒六合唯我独尊功！天山童姥绝学，返老还童！',
+        shenzhaojing: '神照经！金庸笔下最强疗伤神功，起死回生！',
+        hamagong: '蛤蟆功！欧阳锋绝学，蓄势待发以静制动！',
+        qiankunerceng: '乾坤大挪移二成！阳顶天所悟残本，威力不减！',
+        geludaofa: '割鹿刀法！萧十一郎绝学，天下第一刀法！',
+        tianwaifeixian: '天外飞仙！连城璧终极剑招，快若闪电！'
     };
 
     function getCardVoice(card) {
@@ -2296,7 +2416,7 @@
         var duration = (card.rarity === 'legend' || card.rarity === 'epic') ? 4500 : 3800;
         setTimeout(function () {
             overlay.classList.add('card-play-fadeout');
-            setTimeout(function () {
+            waitForSpeech(function () {
                 if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
                 if (callback) callback();
             }, 400);
@@ -2339,6 +2459,7 @@
         var pid = game.phaseDefender;
         if (isOnlineMode && !canIOperate(pid)) return;
         playSound('click');
+        stopSpeech();
         hideSelectAreas();
         game.currentDefendCard = null;
         notifyPeer('skip-defend', {});
@@ -2573,9 +2694,9 @@
         } else { playSound('defend'); speak('攻击被完全防御'); }
 
         if (defender.hp <= 0) {
-            setTimeout(function () { try { endGame(game.phaseAttacker); } catch (e) { handleError('resolveSingleAttack-timeout', e); } }, 1500);
+            waitForSpeech(function () { try { endGame(game.phaseAttacker); } catch (e) { handleError('resolveSingleAttack-timeout', e); } }, 1500);
         } else {
-            setTimeout(function () {
+            waitForSpeech(function () {
                 try {
                 showContinueChoice();
                 } catch (e) { handleError('resolveSingleAttack-continue', e); }
@@ -2814,7 +2935,7 @@
                 return;
             }
             renderCardHand(game.phaseAttacker, 'attack');
-            showOp(game.phaseAttacker, 'confirm-card', { disabled: true });
+            showOp(game.phaseAttacker, 'confirm-card', { disabled: true, text: '⚔️ 攻击' });
             showOp(game.phaseAttacker, 'sell');
             showOp(game.phaseAttacker, 'buy');
             showOp(game.phaseAttacker, 'synthesis');
@@ -2833,7 +2954,7 @@
                 return;
             }
             renderCardHand(game.phaseDefender, 'defend');
-            showOp(game.phaseDefender, 'confirm-card', { disabled: true });
+            showOp(game.phaseDefender, 'confirm-card', { disabled: true, text: '🛡️ 防御' });
             showOp(game.phaseDefender, 'skip-defend');
             showOp(game.phaseDefender, 'sell');
             showOp(game.phaseDefender, 'buy');
@@ -3107,7 +3228,7 @@
                         speak('购买成功，获得' + wp.name);
                         hideModal();
                         showCardPreview(newCard);
-                        setTimeout(function () {
+                        waitForSpeech(function () {
                             $('card-preview-overlay').classList.add('hidden');
                             showBuyModal(pid, 'black-market');
                         }, 1500);
@@ -3252,7 +3373,7 @@
                 var pid = p === 'a' ? 'A' : 'B';
                 if (game.phaseAttacker !== pid) return;
                 if (isOnlineMode && !canIOperate(pid)) return;
-                playSound('click'); afterAttackPhaseEnds();
+                playSound('click'); stopSpeech(); afterAttackPhaseEnds();
                 notifyPeer('end-attack', { currentAttackIndex: game.currentAttackIndex, attackReduction: game.attackReduction, bonusAttacks: game.bonusAttacks, isCounterPhase: game.isCounterPhase });
             });
         });
@@ -3900,6 +4021,7 @@
                 showAttackCardSelect();
                 break;
             case 'end-attack':
+                stopSpeech();
                 if (payload && payload.currentAttackIndex !== undefined) { game.currentAttackIndex = payload.currentAttackIndex; }
                 if (payload && payload.attackReduction !== undefined) { game.attackReduction = payload.attackReduction; }
                 if (payload && payload.bonusAttacks !== undefined) { game.bonusAttacks = payload.bonusAttacks; }
@@ -3946,7 +4068,7 @@
             game.playerA.char = ch; game.playerA.hp = ch.hp; game.playerA.maxHp = ch.maxHp;
             game.usedCharIds.push(ch.id);
             showSelectedChar('char-selected-a', ch);
-            speak('房主(A)选择了' + ch.name);
+            speak('房主(A)选择了' + ch.name + '，' + ch.voiceLine);
             playSound('result');
             checkBothSelected();
         } else if (phase === 'selected-B' && !charSelectState.selectedB) {
@@ -3954,7 +4076,7 @@
             game.playerB.char = ch; game.playerB.hp = ch.hp; game.playerB.maxHp = ch.maxHp;
             game.usedCharIds.push(ch.id);
             showSelectedChar('char-selected-b', ch);
-            speak('访客(B)选择了' + ch.name);
+            speak('访客(B)选择了' + ch.name + '，' + ch.voiceLine);
             playSound('result');
             checkBothSelected();
         } else if (phase === 'select-B' && !charSelectState.selectedA) {
@@ -3964,7 +4086,7 @@
             showSelectedChar('char-selected-a', ch);
             charSelectState.phase = 'select-B';
             updateSelectionUI();
-            speak('房主选择了' + ch.name);
+            speak('房主选择了' + ch.name + '，' + ch.voiceLine);
             if (canIOperate('B')) {
                 var remaining = document.querySelectorAll('.char-grid .char-card:not(.selected)');
                 remaining.forEach(function (c) { c.classList.remove('disabled'); c.classList.add('selectable-glow'); });
@@ -3980,8 +4102,8 @@
             charSelectState.phase = 'done';
             disableAllCards();
             updateSelectionUI();
-            speak('对方选择了' + ch.name);
-            setTimeout(function () { clearCountdown(); showVSAnimation(); }, 800);
+            speak('对方选择了' + ch.name + '，' + ch.voiceLine);
+            waitForSpeech(function () { clearCountdown(); showVSAnimation(); }, 800);
             playSound('result');
         }
     }
@@ -4275,6 +4397,7 @@
     }
 
     function handleSkipDefendRemote() {
+        stopSpeech();
         game.currentDefendCard = null;
         resolveSingleAttack();
     }
