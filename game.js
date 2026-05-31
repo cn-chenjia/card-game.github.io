@@ -250,13 +250,13 @@
     function playBattleBgMusic() {
         try {
             if (!battleBgMusic) {
-                battleBgMusic = new Audio('resources/music/江湖笑.flac');
+                battleBgMusic = new Audio('resources/music/清心普善咒.flac');
                 battleBgMusic.loop = true;
                 battleBgMusic.volume = 0.4;
             }
             battleBgMusic.play().then(function() {
                 bgMusicPlaying = true;
-                console.log('[音乐] ✅ 对战背景音乐开始播放（江湖笑）');
+                console.log('[音乐] ✅ 对战背景音乐开始播放（清心普善咒）');
             }).catch(function(e) {
                 console.warn('[音乐] ⚠️ 自动播放被阻止:', e);
             });
