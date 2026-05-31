@@ -20,6 +20,7 @@
                     <button class="btn btn-secondary btn-large" id="btn-online">🌐 联机对战</button>
                 </div>
                 <div class="sound-toggle">
+                    <button class="btn btn-small" id="btn-bgm">🎵 音乐：开</button>
                     <button class="btn btn-small" id="btn-sound">🔊 音效：开</button>
                 </div>
             </div>
@@ -152,13 +153,7 @@
                         <div class="ops-status" id="ops-a-status"></div>
                         <div class="player-gold">💰 金币: <span id="player-a-gold">0</span></div>
                         <div class="ops-row-top">
-                            <div class="auto-spin-container">
-                                <label class="auto-spin-label">
-                                    <input type="checkbox" id="auto-spin-a" class="auto-spin-checkbox">
-                                    <span class="auto-spin-text">🤖</span>
-                                </label>
-                            </div>
-                            <button class="btn btn-primary btn-op" id="btn-a-spin-weapon">🎰 转动</button>
+                            <button class="btn btn-primary btn-op" id="btn-a-spin-weapon">🎰 抽取装备</button>
                         </div>
                         <button class="btn btn-primary btn-op hidden" id="btn-a-confirm-card-old" disabled>✅ 确认选择</button>
                         <button class="btn btn-primary btn-op" id="btn-a-continue">▶ 继续</button>
@@ -167,8 +162,20 @@
                             <button class="btn btn-primary btn-op btn-trade" id="btn-a-buy">🛒 购买</button>
                         </div>
                         <div class="ops-special-btns">
-                            <button class="btn btn-special" id="btn-a-synthesis">🔮 合成</button>
+                            <button class="btn btn-special" id="btn-a-synthesis">🔮 重铸</button>
                             <button class="btn btn-special" id="btn-a-cultivation">🧘 修炼</button>
+                        </div>
+                    </div>
+                    <div class="panel-sound-controls">
+                        <div class="sound-slider-group">
+                            <label class="sound-label">🎵 音乐</label>
+                            <input type="range" class="sound-slider" id="slider-bgm-a" min="0" max="100" value="40">
+                            <span class="sound-value" id="value-bgm-a">40%</span>
+                        </div>
+                        <div class="sound-slider-group">
+                            <label class="sound-label">🔊 音效</label>
+                            <input type="range" class="sound-slider" id="slider-sfx-a" min="0" max="100" value="80">
+                            <span class="sound-value" id="value-sfx-a">80%</span>
                         </div>
                     </div>
                 </div>
@@ -176,18 +183,22 @@
                 <div class="panel-center">
                     <div class="center-top">
                         <div id="online-status-bar" class="online-status-bar hidden">
+                            <span class="opponent-info-label">对方信息</span>
+                            <span class="opponent-char-info" id="opponent-char-info"></span>
                             <span class="room-id-display-inline">🏠 房间: <strong id="battle-room-id"></strong></span>
                             <span class="peer-status-inline" id="battle-peer-status"><span class="peer-status-dot-small"></span><span id="battle-peer-text">未连接</span></span>
                         </div>
-                        <span id="round-number">第1轮</span>
-                        <div class="attack-progress" id="attack-progress" style="display:none">
-                            <span class="attack-progress-label">攻击进度</span>
-                            <div class="attack-progress-bar-container">
-                                <div class="attack-progress-bar" id="attack-progress-bar"></div>
+                        <div class="round-status-row">
+                            <span id="round-number">第1轮</span>
+                            <div class="attack-progress" id="attack-progress" style="display:none">
+                                <span class="attack-progress-label">攻击进度</span>
+                                <div class="attack-progress-bar-container">
+                                    <div class="attack-progress-bar" id="attack-progress-bar"></div>
+                                </div>
+                                <span class="attack-progress-text" id="attack-progress-text">0/3</span>
                             </div>
-                            <span class="attack-progress-text" id="attack-progress-text">0/3</span>
+                            <div class="action-hint" id="action-hint">准备开始</div>
                         </div>
-                        <div class="action-hint" id="action-hint">准备开始</div>
                     </div>
                     <div class="center-body">
                         <div id="battle-log" class="battle-log hidden">
@@ -199,10 +210,12 @@
                             <div class="table-cards-empty">牌桌</div>
                         </div>
 
+                        <div id="select-card-preview" class="select-card-preview hidden"></div>
+
                         <div id="organize-phase-area" class="organize-phase-area hidden">
                             <div class="organize-hint">📋 请整理各自卡牌</div>
                             <button class="btn btn-primary btn-large" id="btn-ready">✅ 准备就绪</button>
-                            <div class="organize-ops-hint">双方可进行：出售 / 购买 / 合成 / 修炼</div>
+                            <div class="organize-ops-hint">双方可进行：出售 / 购买 / 重铸 / 修炼</div>
                         </div>
 
                         <div id="weapon-draw-area" class="battle-section hidden">
@@ -271,20 +284,14 @@
                         </div>
                     </div>
                     <button class="btn btn-primary btn-op" id="btn-b-confirm-card" disabled style="margin:6px 8px;">✅ 确认选择</button>
-                    <button class="btn btn-secondary btn-op" id="btn-b-skip-defend">⏭️ 跳过防御</button>
+                    <button class="btn btn-secondary btn-op" id="btn-b-skip-defend">⏭️ 跳过</button>
                     <button class="btn btn-primary btn-op btn-atk" id="btn-b-continue-attack">⚔️ 继续攻击</button>
                     <button class="btn btn-secondary btn-op" id="btn-b-end-attack">🛑 结束攻击</button>
                     <div class="panel-ops" id="ops-b">
                         <div class="ops-status" id="ops-b-status"></div>
                         <div class="player-gold">💰 金币: <span id="player-b-gold">0</span></div>
                         <div class="ops-row-top">
-                            <div class="auto-spin-container">
-                                <label class="auto-spin-label">
-                                    <input type="checkbox" id="auto-spin-b" class="auto-spin-checkbox">
-                                    <span class="auto-spin-text">🤖</span>
-                                </label>
-                            </div>
-                            <button class="btn btn-primary btn-op" id="btn-b-spin-weapon">🎰 转动</button>
+                            <button class="btn btn-primary btn-op" id="btn-b-spin-weapon">🎰 抽取装备</button>
                         </div>
                         <button class="btn btn-primary btn-op hidden" id="btn-b-confirm-card-old" disabled>✅ 确认选择</button>
                         <button class="btn btn-primary btn-op" id="btn-b-continue">▶ 继续</button>
@@ -293,8 +300,20 @@
                             <button class="btn btn-primary btn-op btn-trade" id="btn-b-buy">🛒 购买</button>
                         </div>
                         <div class="ops-special-btns">
-                            <button class="btn btn-special" id="btn-b-synthesis">🔮 合成</button>
+                            <button class="btn btn-special" id="btn-b-synthesis">🔮 重铸</button>
                             <button class="btn btn-special" id="btn-b-cultivation">🧘 修炼</button>
+                        </div>
+                    </div>
+                    <div class="panel-sound-controls">
+                        <div class="sound-slider-group">
+                            <label class="sound-label">🎵 音乐</label>
+                            <input type="range" class="sound-slider" id="slider-bgm-b" min="0" max="100" value="40">
+                            <span class="sound-value" id="value-bgm-b">40%</span>
+                        </div>
+                        <div class="sound-slider-group">
+                            <label class="sound-label">🔊 音效</label>
+                            <input type="range" class="sound-slider" id="slider-sfx-b" min="0" max="100" value="80">
+                            <span class="sound-value" id="value-sfx-b">80%</span>
                         </div>
                     </div>
                 </div>
@@ -357,7 +376,7 @@
                     <div class="slot-content" id="synth-slot-B"><span style="color:var(--text-dim)">点击选择</span></div>
                 </div>
             </div>
-            <button class="btn btn-primary btn-large" id="btn-do-synthesis" disabled>开始合成</button>
+            <button class="btn btn-primary btn-large" id="btn-do-synthesis" disabled>开始重铸</button>
             <button class="btn btn-secondary modal-btn" id="btn-close-synthesis">关闭</button>
         </div>
     </div>

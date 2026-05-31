@@ -25,7 +25,7 @@
     --rarity-legend: #ff9800;
     --card-attack: #c0392b;
     --card-defend: #2980b9;
-    --panel-width: 220px;
+    --panel-width: 275px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -104,7 +104,7 @@ body {
 }
 .game-subtitle { font-size: clamp(14px, 3vw, 18px); color: var(--text-dim); margin-bottom: 40px; letter-spacing: 2px; }
 .mode-select { display: flex; flex-direction: column; gap: 16px; align-items: center; }
-.sound-toggle { margin-top: 30px; }
+.sound-toggle { margin-top: 30px; display: flex; gap: 10px; justify-content: center; }
 
 #screen-character { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 10px; }
 .screen-header { text-align: center; padding: 10px 0 6px; flex-shrink: 0; }
@@ -207,8 +207,10 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
 }
-.panel-a { border-right: 2px solid rgba(212, 168, 67, 0.2); }
-.panel-b { border-left: 2px solid rgba(212, 168, 67, 0.2); }
+.panel-a { border-left: 2px solid rgba(212, 168, 67, 0.2); order: 1; }
+.panel-b { border-left: 2px solid rgba(212, 168, 67, 0.2); order: 2; }
+
+.panel-center { order: 0; }
 
 .player-panel.active-panel {
     background: rgba(0, 0, 0, 0.4);
@@ -239,6 +241,9 @@ body {
     opacity: 1;
     pointer-events: auto;
 }
+.organize-active .ops-status {
+    display: none;
+}
 
 .panel-info {
     padding: 10px 8px; display: flex; align-items: center; gap: 8px;
@@ -256,7 +261,7 @@ body {
 .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .panel-a .player-avatar { border-color: var(--red-light); }
 .panel-b .player-avatar { border-color: var(--blue-light); }
-.player-details { min-width: 0; flex: 1; }
+.player-details { min-width: 0; flex: 1; overflow: visible; }
 .player-name { font-size: 11px; color: var(--text-dim); }
 .player-char-name { font-family: 'Ma Shan Zheng', cursive; font-size: 15px; color: var(--gold-light); }
 .hp-bar-container {
@@ -265,10 +270,14 @@ body {
 }
 .hp-bar { height: 100%; border-radius: 8px; transition: width 0.5s ease; }
 .panel-a .hp-bar { background: linear-gradient(90deg, #c0392b, #e74c3c); }
-.panel-b .hp-bar { background: linear-gradient(90deg, #2980b9, #3498db); }
+.panel-b .hp-bar { background: linear-gradient(90deg, #3498db, #2980b9); }
 .hp-text {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     font-size: 9px; font-weight: 700; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    display: flex; align-items: center; gap: 2px;
+}
+.hp-heart-icon {
+    font-size: 10px; line-height: 1;
 }
 .ability-badge {
     font-size: 10px; padding: 1px 5px; border-radius: 4px;
@@ -366,6 +375,57 @@ body {
     background: rgba(0, 0, 0, 0.3);
     border-bottom: 1px solid rgba(212, 168, 67, 0.2);
     flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.panel-sound-controls {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 8px 10px; background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px; margin-top: auto;
+}
+.sound-slider-group {
+    display: flex; align-items: center; gap: 8px;
+}
+.sound-label {
+    font-size: 11px; color: var(--text-light);
+    min-width: 45px; font-family: inherit;
+}
+.sound-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 80px; height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px; outline: none;
+    cursor: pointer; transition: all 0.2s ease;
+}
+.sound-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px;
+    background: linear-gradient(135deg, #d4a843, #f4d03f);
+    border-radius: 50%; cursor: pointer;
+    box-shadow: 0 2px 6px rgba(212, 168, 67, 0.5);
+    transition: transform 0.2s ease;
+}
+.sound-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+.sound-slider::-moz-range-thumb {
+    width: 14px; height: 14px;
+    background: linear-gradient(135deg, #d4a843, #f4d03f);
+    border-radius: 50%; cursor: pointer; border: none;
+    box-shadow: 0 2px 6px rgba(212, 168, 67, 0.5);
+    transition: transform 0.2s ease;
+}
+.sound-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+.sound-slider:disabled {
+    opacity: 0.3; cursor: not-allowed;
+}
+.sound-value {
+    font-size: 10px; color: var(--gold-light);
+    min-width: 32px; text-align: right;
+    font-weight: bold; font-family: inherit;
+}
+.center-top .round-status-row {
     display: flex; align-items: center; justify-content: center; gap: 16px;
 }
 .center-top #round-number {
@@ -373,12 +433,20 @@ body {
 }
 
 .online-status-bar {
-    display: flex; align-items: center; gap: 16px;
+    display: flex; align-items: center; gap: 12px;
     font-size: 12px; padding: 4px 10px;
     background: rgba(0, 0, 0, 0.4);
     border-radius: 6px; border: 1px solid rgba(212, 168, 67, 0.25);
-    margin-bottom: 4px;
+    width: 100%; box-sizing: border-box; justify-content: flex-start; flex-wrap: wrap;
 }
+.opponent-info-label {
+    font-family: 'Ma Shan Zheng', cursive; font-size: 14px; color: var(--gold);
+    font-weight: bold; border-right: 1px solid rgba(212,168,67,0.3); padding-right: 8px; margin-right: 2px;
+}
+.opponent-char-info {
+    color: var(--text-light); font-size: 12px;
+}
+.opponent-char-info .opponent-char-name { color: var(--gold-light); font-weight: bold; }
 .room-id-display-inline { color: var(--text-light); }
 .room-id-display-inline strong { color: var(--gold-light); }
 .peer-status-inline {
@@ -520,6 +588,54 @@ body {
 .table-card .card-name { font-size: 8px; }
 .table-card .card-value { font-size: 9px; }
 .table-card .card-price { display: none; }
+
+.select-card-preview {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 100; pointer-events: auto;
+    background: linear-gradient(145deg, rgba(30,25,40,0.97), rgba(18,15,28,0.98));
+    border: 1px solid rgba(212,168,67,0.35);
+    border-radius: 14px;
+    padding: 16px 22px;
+    min-width: 260px; max-width: 340px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(212,168,67,0.08), inset 0 1px 0 rgba(255,255,255,0.05);
+    animation: selectPreviewPopIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+.select-card-preview.hidden { display: none; }
+@keyframes selectPreviewPopIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(0.88); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+.select-card-preview .scp-card {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
+}
+.select-card-preview .scp-icon-wrap {
+    width: 64px; height: 90px; flex-shrink: 0;
+    border-radius: 8px; padding: 6px 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.select-card-preview .scp-icon-wrap .card-type {
+    font-size: 9px; padding: 1px 5px; border-radius: 3px; margin-bottom: 2px;
+}
+.select-card-preview .scp-icon-wrap .card-icon { font-size: 28px; }
+.select-card-preview .scp-icon-wrap .card-name { font-size: 11px; font-weight: 700; }
+.select-card-preview .scp-icon-wrap .card-value { font-size: 12px; font-weight: 800; }
+.select-card-preview .scp-info { flex: 1; min-width: 0; }
+.select-card-preview .scp-name-row {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+}
+.select-card-preview .scp-name { font-size: 16px; font-weight: 800; color: #fff; }
+.select-card-preview .scp-rarity { font-size: 11px; color: var(--gold-light); opacity: 0.7; }
+.select-card-preview .scp-value-row { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.select-card-preview .scp-desc { font-size: 12px; color: var(--text-dim); line-height: 1.55; }
+.select-card-preview .scp-skill {
+    margin-top: 8px; padding: 8px 12px;
+    background: rgba(156,39,176,0.15); border: 1px solid rgba(156,39,176,0.35); border-radius: 6px;
+    font-size: 12px; color: #ce93d8; line-height: 1.5;
+}
+.select-card-preview .scp-skill-name { font-weight: 700; font-size: 13px; }
+.select-card-preview .scp-hint {
+    text-align: center; font-size: 11px; color: rgba(255,255,255,0.2); margin-top: 8px;
+}
 
 .pk-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -752,15 +868,17 @@ body {
 
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, 0.7); display: flex; align-items: safe center; justify-content: center;
     z-index: 1000; animation: fadeIn 0.3s ease;
+    padding: 20px;
+    box-sizing: border-box;
 }
 .modal-content {
     background: linear-gradient(135deg, var(--bg-medium), var(--bg-dark));
     border: 2px solid var(--gold); border-radius: 16px; padding: 24px;
     max-width: 560px !important; width: 92% !important; text-align: center; animation: fadeInUp 0.3s ease;
-    position: relative; overflow: hidden;
-    max-height: 90vh !important; overflow-y: auto;
+    position: relative; overflow-y: auto;
+    max-height: calc(100vh - 30px) !important;
 }
 .modal-content::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
@@ -833,12 +951,22 @@ body {
 
 .rare-wheel-section {
     display: flex; flex-direction: column; align-items: center;
+    padding-bottom: 8px;
 }
 .rare-wheel-container {
-    margin: 8px 0;
+    margin: 4px 0;
 }
 .rare-wheel-container canvas {
     width: 280px; height: 280px;
+}
+@media (min-width: 769px) {
+    .rare-wheel-container canvas {
+        width: 220px; height: 220px;
+    }
+    .rare-wheel-container .wheel-pointer.small {
+        border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+        border-right: 32px solid var(--gold); border-left: none;
+    }
 }
 
 .card-preview-overlay {
@@ -856,6 +984,32 @@ body {
 @keyframes previewFadeIn {
     from { opacity: 0; transform: scale(0.9); }
     to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+    .card-preview-overlay {
+        padding-top: 60px;
+        align-items: center;
+    }
+    .card-preview {
+        margin-top: 20px;
+        padding-bottom: 20px;
+    }
+    .card-preview .weapon-card {
+        transform: scale(1.2) !important;
+        min-width: 180px !important;
+        min-height: 280px !important;
+        margin: 10px auto !important;
+    }
+    .card-preview .weapon-card .card-icon {
+        font-size: 48px !important;
+    }
+    .card-preview .weapon-card .card-name {
+        font-size: 13px !important;
+    }
+    .card-preview .weapon-card .card-value {
+        font-size: 16px !important;
+    }
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -1062,7 +1216,7 @@ body {
     font-size: 7px; line-height: 1;
 }
 
-/* ====== 合成/修炼按钮组 ====== */
+/* ====== 重铸/修炼按钮组 ====== */
 .synthesis-cultivation-btns {
     display: flex;
     gap: 12px;
@@ -1074,7 +1228,7 @@ body {
     flex: 1;
 }
 
-/* ====== 合成弹窗 ====== */
+/* ====== 重铸弹窗 ====== */
 .synthesis-modal {
     max-width: 600px !important;
 }
@@ -1344,7 +1498,7 @@ body {
     color: #93c5fd;
 }
 
-/* 选卡弹窗（用于选择要合成的卡牌） */
+/* 选卡弹窗（用于选择要重铸的卡牌） */
 .card-select-for-synthesis {
     max-height: 350px;
     overflow-y: auto;
@@ -1382,7 +1536,7 @@ body {
 }
 
 @media (max-width: 900px) {
-    :root { --panel-width: 170px; }
+    :root { --panel-width: 210px; }
     .weapon-card.mini { width: 26px; height: 34px; }
     .weapon-card.mini .card-icon { font-size: 10px; }
     .weapon-card.mini .card-value { font-size: 7px; }
@@ -1398,7 +1552,7 @@ body {
 }
 
 @media (max-width: 700px) {
-    :root { --panel-width: 140px; }
+    :root { --panel-width: 180px; }
     .player-avatar { width: 36px; height: 36px; font-size: 20px; }
     .player-char-name { font-size: 13px; }
     .hp-bar-container { height: 12px; min-width: 50px; }
@@ -1415,7 +1569,7 @@ body {
 }
 
 @media (max-width: 560px) {
-    :root { --panel-width: 110px; }
+    :root { --panel-width: 150px; }
     .player-avatar { width: 30px; height: 30px; font-size: 16px; }
     .player-char-name { font-size: 12px; }
     .player-name { font-size: 9px; }
@@ -1664,6 +1818,7 @@ body {
 /* ====== 联机对战大厅 ====== */
 #screen-lobby {
     justify-content: center;
+    align-items: center;
     background: linear-gradient(135deg, var(--bg-dark) 0%, #0d1b2a 50%, var(--bg-dark) 100%);
 }
 .lobby-container {

@@ -188,7 +188,8 @@
         playerB: { char: null, hp: 0, maxHp: 0, library: [], roundCards: [], gold: 1000 },
         firstAttacker: null, secondAttacker: null,
         weaponDrawCountA: 0, weaponDrawCountB: 0,
-        selectedCardUid: null, soundEnabled: true, voiceEnabled: true,
+        selectedCardUid: null, soundEnabled: true, voiceEnabled: true, bgmEnabled: false,
+        bgmVolume: 0, sfxVolume: 80,
         totalDamageA: 0, totalDamageB: 0, usedCharIds: [],
         currentDrawnCard: null,
         currentAttackIndex: 0,
@@ -219,6 +220,7 @@
 
     var audioCtx = null;
     var bgMusic = null;
+    var battleBgMusic = null;
     var bgMusicPlaying = false;
 
     function getAudioCtx() {
@@ -227,14 +229,16 @@
     }
 
     function playBgMusic() {
-        if (bgMusicPlaying) return;
+        if (bgMusicPlaying && bgMusic) return;
         try {
-            bgMusic = new Audio('resources/music/偷功.flac');
-            bgMusic.loop = true;
-            bgMusic.volume = 0.4;
+            if (!bgMusic) {
+                bgMusic = new Audio('resources/music/偷功.flac');
+                bgMusic.loop = true;
+                bgMusic.volume = 0.4;
+            }
             bgMusic.play().then(function() {
                 bgMusicPlaying = true;
-                console.log('[音乐] ✅ 背景音乐开始播放');
+                console.log('[音乐] ✅ 背景音乐开始播放（偷功）');
             }).catch(function(e) {
                 console.warn('[音乐] ⚠️ 自动播放被阻止:', e);
             });
@@ -243,24 +247,78 @@
         }
     }
 
-    function stopBgMusic() {
-        if (!bgMusicPlaying || !bgMusic) return;
+    function playBattleBgMusic() {
         try {
-            bgMusic.pause();
-            bgMusic.currentTime = 0;
-            bgMusicPlaying = false;
-            console.log('[音乐] ⏹️ 背景音乐已停止');
+            if (!battleBgMusic) {
+                battleBgMusic = new Audio('resources/music/江湖笑.flac');
+                battleBgMusic.loop = true;
+                battleBgMusic.volume = 0.4;
+            }
+            battleBgMusic.play().then(function() {
+                bgMusicPlaying = true;
+                console.log('[音乐] ✅ 对战背景音乐开始播放（江湖笑）');
+            }).catch(function(e) {
+                console.warn('[音乐] ⚠️ 自动播放被阻止:', e);
+            });
         } catch (e) {
-            console.error('[音乐] ⚠️ 停止失败:', e);
+            console.error('[音乐] ❌ 播放失败:', e);
         }
     }
 
+    function switchToBattleMusic() {
+        stopBgMusic();
+        setTimeout(function() {
+            if (game.bgmEnabled) playBattleBgMusic();
+        }, 100);
+    }
+
+    function stopBgMusic() {
+        var stopped = false;
+        if (bgMusic) {
+            try {
+                bgMusic.pause();
+                bgMusic.currentTime = 0;
+                stopped = true;
+                console.log('[音乐] ⏹️ 角色选择背景音乐已停止');
+            } catch (e) {
+                console.error('[音乐] ⚠️ 停止失败:', e);
+            }
+        }
+        if (battleBgMusic) {
+            try {
+                battleBgMusic.pause();
+                battleBgMusic.currentTime = 0;
+                stopped = true;
+                console.log('[音乐] ⏹️ 对战背景音乐已停止');
+            } catch (e) {
+                console.error('[音乐] ⚠️ 停止失败:', e);
+            }
+        }
+        if (stopped) bgMusicPlaying = false;
+    }
+
     function toggleBgMusic(shouldPlay) {
-        if (shouldPlay && !bgMusicPlaying) {
-            playBgMusic();
-        } else if (!shouldPlay && bgMusicPlaying) {
+        if (shouldPlay) {
+            if (game.phase === 'battle') {
+                playBattleBgMusic();
+            } else {
+                playBgMusic();
+            }
+        } else {
             stopBgMusic();
         }
+    }
+
+    function updateBgmVolume(vol) {
+        var volume = vol / 100;
+        if (bgMusic) bgMusic.volume = volume;
+        if (battleBgMusic) battleBgMusic.volume = volume;
+        console.log('[音乐] 🎵 背景音乐音量调整为：' + vol + '%');
+    }
+
+    function updateSfxVolume(vol) {
+        game.sfxVolumeMultiplier = vol / 80;
+        console.log('[音效] 🔊 音效音量调整为：' + vol + '%');
     }
 
     function playSound(type) {
@@ -270,23 +328,24 @@
             if (ctx.state === 'suspended') ctx.resume().catch(function() {});
             var osc = ctx.createOscillator(), gain = ctx.createGain();
             osc.connect(gain); gain.connect(ctx.destination);
+            var multiplier = game.sfxVolumeMultiplier || 1;
             switch (type) {
-                case 'click': osc.frequency.value = 800; osc.type = 'sine'; gain.gain.value = 0.08; osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.05); break;
-                case 'spin': osc.frequency.value = 400; osc.type = 'sawtooth'; gain.gain.value = 0.06; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(800, ctx.currentTime + 0.3); osc.stop(ctx.currentTime + 0.35); break;
-                case 'result': osc.frequency.value = 523; osc.type = 'sine'; gain.gain.value = 0.1; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(659, ctx.currentTime + 0.12); osc.frequency.setValueAtTime(784, ctx.currentTime + 0.24); osc.stop(ctx.currentTime + 0.4); break;
-                case 'attack': osc.frequency.value = 200; osc.type = 'sawtooth'; gain.gain.value = 0.12; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.15); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25); osc.stop(ctx.currentTime + 0.25); break;
-                case 'defend': osc.frequency.value = 600; osc.type = 'triangle'; gain.gain.value = 0.08; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(900, ctx.currentTime + 0.12); osc.stop(ctx.currentTime + 0.15); break;
-                case 'damage': osc.frequency.value = 150; osc.type = 'square'; gain.gain.value = 0.1; osc.start(ctx.currentTime); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25); osc.stop(ctx.currentTime + 0.25); break;
-                case 'dice': osc.frequency.value = 300; osc.type = 'triangle'; gain.gain.value = 0.08; osc.start(ctx.currentTime); for (var i = 0; i < 6; i++) osc.frequency.setValueAtTime(300 + Math.random() * 400, ctx.currentTime + i * 0.06); osc.stop(ctx.currentTime + 0.4); break;
-                case 'win': osc.frequency.value = 523; osc.type = 'sine'; gain.gain.value = 0.1; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(659, ctx.currentTime + 0.15); osc.frequency.setValueAtTime(784, ctx.currentTime + 0.3); osc.frequency.setValueAtTime(1047, ctx.currentTime + 0.45); osc.stop(ctx.currentTime + 0.7); break;
-                case 'lose': osc.frequency.value = 400; osc.type = 'sine'; gain.gain.value = 0.08; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(200, ctx.currentTime + 0.4); osc.stop(ctx.currentTime + 0.5); break;
-                case 'pk': osc.frequency.value = 300; osc.type = 'sawtooth'; gain.gain.value = 0.15; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.1); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime + 0.3); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4); osc.stop(ctx.currentTime + 0.4); break;
-                case 'rare': osc.frequency.value = 660; osc.type = 'sine'; gain.gain.value = 0.1; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15); osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.3); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5); osc.stop(ctx.currentTime + 0.5); break;
-                case 'epic': osc.frequency.value = 440; osc.type = 'sine'; gain.gain.value = 0.12; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1); osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2); osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.35); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.6); osc.stop(ctx.currentTime + 0.6); break;
-                case 'bonus': osc.frequency.value = 880; osc.type = 'triangle'; gain.gain.value = 0.1; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1); osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.2); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4); osc.stop(ctx.currentTime + 0.4); break;
-                case 'coin': osc.frequency.value = 1200; osc.type = 'sine'; gain.gain.value = 0.08; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(1400, ctx.currentTime + 0.08); osc.frequency.setValueAtTime(1600, ctx.currentTime + 0.15); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25); osc.stop(ctx.currentTime + 0.25); break;
-                case 'skill': osc.frequency.value = 300; osc.type = 'sawtooth'; gain.gain.value = 0.12; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.2); osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.4); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5); osc.stop(ctx.currentTime + 0.5); break;
-                default: osc.frequency.value = 440; osc.type = 'sine'; gain.gain.value = 0.05; osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.08);
+                case 'click': osc.frequency.value = 800; osc.type = 'sine'; gain.gain.value = 0.08 * multiplier; osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.05); break;
+                case 'spin': osc.frequency.value = 400; osc.type = 'sawtooth'; gain.gain.value = 0.06 * multiplier; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(800, ctx.currentTime + 0.3); osc.stop(ctx.currentTime + 0.35); break;
+                case 'result': osc.frequency.value = 523; osc.type = 'sine'; gain.gain.value = 0.1 * multiplier; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(659, ctx.currentTime + 0.12); osc.frequency.setValueAtTime(784, ctx.currentTime + 0.24); osc.stop(ctx.currentTime + 0.4); break;
+                case 'attack': osc.frequency.value = 200; osc.type = 'sawtooth'; gain.gain.value = 0.12 * multiplier; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.15); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25); osc.stop(ctx.currentTime + 0.25); break;
+                case 'defend': osc.frequency.value = 600; osc.type = 'triangle'; gain.gain.value = 0.08 * multiplier; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(900, ctx.currentTime + 0.12); osc.stop(ctx.currentTime + 0.15); break;
+                case 'damage': osc.frequency.value = 150; osc.type = 'square'; gain.gain.value = 0.1 * multiplier; osc.start(ctx.currentTime); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25); osc.stop(ctx.currentTime + 0.25); break;
+                case 'dice': osc.frequency.value = 300; osc.type = 'triangle'; gain.gain.value = 0.08 * multiplier; osc.start(ctx.currentTime); for (var i = 0; i < 6; i++) osc.frequency.setValueAtTime(300 + Math.random() * 400, ctx.currentTime + i * 0.06); osc.stop(ctx.currentTime + 0.4); break;
+                case 'win': osc.frequency.value = 523; osc.type = 'sine'; gain.gain.value = 0.1 * multiplier; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(659, ctx.currentTime + 0.15); osc.frequency.setValueAtTime(784, ctx.currentTime + 0.3); osc.frequency.setValueAtTime(1047, ctx.currentTime + 0.45); osc.stop(ctx.currentTime + 0.7); break;
+                case 'lose': osc.frequency.value = 400; osc.type = 'sine'; gain.gain.value = 0.08 * multiplier; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(200, ctx.currentTime + 0.4); osc.stop(ctx.currentTime + 0.5); break;
+                case 'pk': osc.frequency.value = 300; osc.type = 'sawtooth'; gain.gain.value = 0.15 * multiplier; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.1); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime + 0.3); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4); osc.stop(ctx.currentTime + 0.4); break;
+                case 'rare': osc.frequency.value = 660; osc.type = 'sine'; gain.gain.value = 0.1 * multiplier; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15); osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.3); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5); osc.stop(ctx.currentTime + 0.5); break;
+                case 'epic': osc.frequency.value = 440; osc.type = 'sine'; gain.gain.value = 0.12 * multiplier; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1); osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2); osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.35); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.6); osc.stop(ctx.currentTime + 0.6); break;
+                case 'bonus': osc.frequency.value = 880; osc.type = 'triangle'; gain.gain.value = 0.1 * multiplier; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1); osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.2); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4); osc.stop(ctx.currentTime + 0.4); break;
+                case 'coin': osc.frequency.value = 1200; osc.type = 'sine'; gain.gain.value = 0.08 * multiplier; osc.start(ctx.currentTime); osc.frequency.setValueAtTime(1400, ctx.currentTime + 0.08); osc.frequency.setValueAtTime(1600, ctx.currentTime + 0.15); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25); osc.stop(ctx.currentTime + 0.25); break;
+                case 'skill': osc.frequency.value = 300; osc.type = 'sawtooth'; gain.gain.value = 0.12 * multiplier; osc.start(ctx.currentTime); osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.2); osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.4); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5); osc.stop(ctx.currentTime + 0.5); break;
+                default: osc.frequency.value = 440; osc.type = 'sine'; gain.gain.value = 0.05 * multiplier; osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.08);
             }
         } catch (e) { }
     }
@@ -384,7 +443,17 @@
     }
 
     function $(id) { return document.getElementById(id); }
-    function showScreen(id) { document.querySelectorAll('.screen').forEach(function (s) { s.classList.remove('active'); }); $(id).classList.add('active'); }
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(function (s) {
+            s.classList.remove('active');
+            s.style.display = 'none';
+        });
+        var target = $(id);
+        if (target) {
+            target.classList.add('active');
+            target.style.display = 'flex';
+        }
+    }
     function showSection(id) { document.querySelectorAll('.battle-section').forEach(function (s) { s.classList.add('hidden'); }); $(id).classList.remove('hidden'); var ca = $('center-actions'); if (ca) ca.innerHTML = ''; }
     function showModal(html) { $('modal-content').innerHTML = html; $('modal-overlay').classList.remove('hidden'); }
     function hideModal() { $('modal-overlay').classList.add('hidden'); }
@@ -414,6 +483,43 @@
             '<div style="margin-top:18px;font-size:12px;color:rgba(255,255,255,0.25);">点击任意位置关闭</div>' +
             '</div>';
         $('card-preview-overlay').classList.remove('hidden');
+    }
+
+    function showSelectCardPreview(card) {
+        var el = $('select-card-preview');
+        if (!el || !card) return;
+        var typeLabel = card.type === 'attack' ? '攻击' : '防御';
+        var valueLabel = card.type === 'attack' ? '伤害' : '防御';
+        var rarityName = RARITY_NAMES[card.rarity] || card.rarity;
+        var desc = card.desc || '';
+        var valueColor = card.type === 'attack' ? '#e74c3c' : '#3498db';
+        var nameStyle = card.rarity === 'legendary' ? 'color:#ffffff;text-shadow:0 1px 4px rgba(0,0,0,0.8);' : '';
+        var iconFontSize = isImageEmoji(card.icon) ? '28px' : '24px';
+        var skillHtml = '';
+        if (card.skill) {
+            skillHtml = '<div class="scp-skill"><span class="scp-skill-name">' + card.skill.icon + ' ' + card.skill.name + '</span>：' + card.skill.desc + '</div>';
+        }
+        el.innerHTML =
+            '<div class="scp-card">' +
+                '<div class="scp-icon-wrap weapon-card rarity-' + card.rarity + '">' +
+                    '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
+                    '<span class="card-icon" style="font-size:' + iconFontSize + ';">' + renderEmoji(card.icon).replace(/<img /, '<img style="width:1.6em!important;height:1.6em!important;object-fit:contain;" ') + '</span>' +
+                    '<span class="card-name" style="' + nameStyle + '">' + card.name + '</span>' +
+                    '<span class="card-value" style="color:' + valueColor + ';text-shadow:0 0 6px ' + valueColor + '44;">⚔ ' + valueLabel + ' <strong>' + card.value + '</strong></span>' +
+                '</div>' +
+                '<div class="scp-info">' +
+                    '<div class="scp-name-row"><span class="scp-name" style="' + nameStyle + '">' + card.name + '</span><span class="scp-rarity">' + rarityName + '</span></div>' +
+                    '<div class="scp-value-row" style="color:' + valueColor + ';">💰 ' + card.price + ' · ⚔ ' + valueLabel + ': <strong>' + card.value + '</strong></div>' +
+                    (desc ? '<div class="scp-desc">' + desc + '</div>' : '') +
+                    skillHtml +
+                '</div>' +
+            '</div>' +
+            '<div class="scp-hint">点击桌面任意处关闭</div>';
+        el.classList.remove('hidden');
+    }
+    function hideSelectCardPreview() {
+        var el = $('select-card-preview');
+        if (el) el.classList.add('hidden');
     }
 
     function createCardHTML(card, selectable) {
@@ -475,10 +581,6 @@
         keepButtons = keepButtons || [];
         ['a', 'b'].forEach(function (p) {
             var pid = p.toUpperCase();
-            var autoContainer = document.querySelector('#panel-' + p.toLowerCase() + ' .auto-spin-container');
-            if (autoContainer && keepButtons.indexOf('btn-' + p + '-spin-weapon') === -1) {
-                autoContainer.style.display = 'none';
-            }
             ['spin-weapon', 'confirm-card', 'skip-defend', 'continue-attack', 'end-attack', 'continue', 'sell', 'buy', 'synthesis', 'cultivation'].forEach(function (b) {
                 var btnId = 'btn-' + p + '-' + b;
                 var el = $(btnId);
@@ -517,8 +619,6 @@
                 }
             }
             if (btnId === 'spin-weapon') {
-                var autoContainer = $('auto-spin-' + pPrefix(pid).toLowerCase()).closest('.auto-spin-container') || $('auto-spin-' + pPrefix(pid).toLowerCase()).parentElement;
-                if (autoContainer) autoContainer.style.display = 'flex';
                 ['confirm-card', 'skip-defend', 'continue-attack', 'end-attack', 'continue'].forEach(function (b) {
                     var btn = opBtn(pid, b);
                     if (btn) { btn.style.display = 'none'; btn.disabled = false; }
@@ -550,7 +650,7 @@
         if (a.char) {
             $('player-a-avatar').innerHTML = renderEmoji(a.char.emoji);
             $('player-a-char').textContent = a.char.name;
-            $('player-a-hp-text').textContent = a.hp.toFixed(1) + '/' + a.maxHp;
+            $('player-a-hp-text').innerHTML = a.hp.toFixed(1) + '/' + a.maxHp + ' <span class="hp-heart-icon">❤️</span>';
             $('player-a-hp-bar').style.width = (a.hp / a.maxHp * 100) + '%';
             var aAbility = game.blockAbilityA ? '🚫 技能被封印' : generateAbilityDesc(a.char);
             $('player-a-ability').textContent = aAbility;
@@ -558,7 +658,7 @@
         if (b.char) {
             $('player-b-avatar').innerHTML = renderEmoji(b.char.emoji);
             $('player-b-char').textContent = b.char.name;
-            $('player-b-hp-text').textContent = b.hp.toFixed(1) + '/' + b.maxHp;
+            $('player-b-hp-text').innerHTML = b.hp.toFixed(1) + '/' + b.maxHp + ' <span class="hp-heart-icon">❤️</span>';
             $('player-b-hp-bar').style.width = (b.hp / b.maxHp * 100) + '%';
             var bAbility = game.blockAbilityB ? '🚫 技能被封印' : generateAbilityDesc(b.char);
             $('player-b-ability').textContent = bAbility;
@@ -568,6 +668,23 @@
         updateLibraryDisplay();
         renderLearnedMartialArts('A');
         renderLearnedMartialArts('B');
+
+        if (isOnlineMode) {
+            var myPid = Multiplayer.getMyRole();
+            var otherPid = myPid === 'A' ? 'B' : 'A';
+            var myPanel = $('panel-' + myPid.toLowerCase());
+            var otherPanel = $('panel-' + otherPid.toLowerCase());
+            if (myPanel) myPanel.classList.remove('hidden');
+            if (otherPanel) otherPanel.classList.add('hidden');
+            var opponentInfoEl = $('opponent-char-info');
+            var opponent = otherPid === 'A' ? game.playerA : game.playerB;
+            if (opponentInfoEl && opponent && opponent.char) {
+                opponentInfoEl.innerHTML = '<span class="opponent-char-name">' + renderEmoji(opponent.char.emoji) + ' ' + opponent.char.name + '</span> HP:' + opponent.hp.toFixed(1) + '/' + opponent.maxHp + ' <span class="hp-heart-icon">❤️</span>';
+            }
+        } else {
+            $('panel-a').classList.remove('hidden');
+            $('panel-b').classList.remove('hidden');
+        }
     }
 
     function generateAbilityDesc(char) {
@@ -748,6 +865,64 @@
         if (el) { el.remove(); }
     }
 
+    var opponentWaitTimer = null, opponentWaitSeconds = 0, opponentWaitMaxSeconds = 0;
+    function showOpponentWaitCountdown(seconds) {
+        clearOpponentWaitCountdown();
+        opponentWaitMaxSeconds = seconds;
+        opponentWaitSeconds = seconds;
+        var existingEl = document.getElementById('opponent-wait-display');
+        if (!existingEl) {
+            var el = document.createElement('div');
+            el.id = 'opponent-wait-display';
+            el.style.cssText = 'position:absolute;top:10px;left:12px;background:rgba(0,0,0,0.85);color:#fff;padding:6px 14px;border-radius:8px;font-size:15px;font-weight:bold;z-index:100;border:2px solid #e53935;min-width:140px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.5);font-family:inherit;pointer-events:none;';
+            document.body.appendChild(el);
+            positionOpponentWaitDisplay(el);
+        }
+        updateOpponentWaitDisplay();
+        opponentWaitTimer = setInterval(function () {
+            opponentWaitSeconds--;
+            updateOpponentWaitDisplay();
+            if (opponentWaitSeconds <= 0) {
+                clearOpponentWaitCountdown();
+            }
+        }, 1000);
+    }
+    function positionOpponentWaitDisplay(el) {
+        var area = $('card-select-area');
+        if (area && area.offsetParent !== null) {
+            var rect = area.getBoundingClientRect();
+            el.style.position = 'fixed';
+            el.style.top = (rect.top + 10) + 'px';
+            el.style.left = (rect.left + 12) + 'px';
+        } else {
+            var tableArea = $('table-cards-area');
+            if (tableArea && tableArea.offsetParent !== null) {
+                var tRect = tableArea.getBoundingClientRect();
+                el.style.position = 'fixed';
+                el.style.top = (tRect.top + 10) + 'px';
+                el.style.left = (tRect.left + 12) + 'px';
+            } else {
+                el.style.position = 'fixed';
+                el.style.top = '70px';
+                el.style.left = '20px';
+            }
+        }
+    }
+    function updateOpponentWaitDisplay() {
+        var el = document.getElementById('opponent-wait-display');
+        if (!el) return;
+        positionOpponentWaitDisplay(el);
+        var pct = opponentWaitSeconds / opponentWaitMaxSeconds;
+        var color = pct > 0.5 ? '#e53935' : (pct > 0.2 ? '#ff9800' : '#f44336');
+        el.style.borderColor = color;
+        el.textContent = '⏳ 等待对方出牌 ' + opponentWaitSeconds + 's';
+    }
+    function clearOpponentWaitCountdown() {
+        if (opponentWaitTimer) { clearInterval(opponentWaitTimer); opponentWaitTimer = null; }
+        var el = document.getElementById('opponent-wait-display');
+        if (el) { el.remove(); }
+    }
+
     function drawWheel(canvasId, items) {
         var canvas = $(canvasId); if (!canvas) return;
         var ctx = canvas.getContext('2d');
@@ -876,13 +1051,86 @@
 
     function initStartScreen() {
         $('btn-dual').addEventListener('click', function () { playSound('click'); game.mode = 'dual'; isOnlineMode = false; startCharacterSelect(); });
-        $('btn-online').addEventListener('click', function () { playSound('click'); initLobby(); showScreen('screen-lobby'); });
+        $('btn-online').addEventListener('click', function () {
+            playSound('click');
+            initLobby();
+            showScreen('screen-lobby');
+        });
         $('btn-sound').addEventListener('click', function () {
             game.soundEnabled = !game.soundEnabled;
             game.voiceEnabled = game.soundEnabled;
             $('btn-sound').textContent = game.soundEnabled ? '🔊 音效：开' : '🔇 音效：关';
             if (game.soundEnabled) playSound('click');
-            toggleBgMusic(game.soundEnabled);
+            syncSoundButtons();
+        });
+        $('btn-bgm').addEventListener('click', function () {
+            game.bgmEnabled = !game.bgmEnabled;
+            $('btn-bgm').textContent = game.bgmEnabled ? '🎵 音乐：开' : '🔇 音乐：关';
+            toggleBgMusic(game.bgmEnabled);
+            if (game.soundEnabled) playSound('click');
+            syncSoundSliders();
+        });
+        initBattleSoundSliders();
+        syncSoundSliders();
+    }
+
+    function syncSoundSliders() {
+        var bgmBtn = $('btn-bgm'), sfxBtn = $('btn-sound');
+        if (bgmBtn) {
+            bgmBtn.textContent = game.bgmEnabled ? '🎵 音乐：开' : '🔇 音乐：关';
+        }
+        if (sfxBtn) {
+            sfxBtn.textContent = game.soundEnabled ? '🔊 音效：开' : '🔇 音效：关';
+        }
+
+        var sliders = [
+            { slider: $('slider-bgm-a'), value: $('value-bgm-a') },
+            { slider: $('slider-bgm-b'), value: $('value-bgm-b') },
+            { slider: $('slider-sfx-a'), value: $('value-sfx-a') },
+            { slider: $('slider-sfx-b'), value: $('value-sfx-b') }
+        ];
+
+        sliders.forEach(function(item) {
+            if (item.slider) {
+                if (item.slider.id.indexOf('bgm') >= 0) {
+                    item.slider.value = game.bgmVolume;
+                    if (item.value) item.value.textContent = game.bgmVolume + '%';
+                    item.slider.disabled = !game.bgmEnabled;
+                } else {
+                    item.slider.value = game.sfxVolume;
+                    if (item.value) item.value.textContent = game.sfxVolume + '%';
+                    item.slider.disabled = !game.soundEnabled;
+                }
+            }
+        });
+    }
+
+    function initBattleSoundSliders() {
+        var bgmSliders = ['slider-bgm-a', 'slider-bgm-b'];
+        var sfxSliders = ['slider-sfx-a', 'slider-sfx-b'];
+
+        bgmSliders.forEach(function(id) {
+            var slider = $(id);
+            if (slider) {
+                slider.addEventListener('input', function() {
+                    var vol = parseInt(this.value);
+                    game.bgmVolume = vol;
+                    updateBgmVolume(vol);
+                    syncSoundSliders();
+                });
+            }
+        });
+
+        sfxSliders.forEach(function(id) {
+            var slider = $(id);
+            if (slider) {
+                slider.addEventListener('input', function() {
+                    var vol = parseInt(this.value);
+                    game.sfxVolume = vol;
+                    updateSfxVolume(vol);
+                    syncSoundSliders();
+                });
+            }
         });
     }
 
@@ -907,8 +1155,9 @@
         buildScrollingCards();
         showFlipButton();
         speak('侠客卡牌巡礼中');
-        if (game.soundEnabled) playBgMusic();
+        if (game.bgmEnabled) playBgMusic();
         clearCountdown();
+        clearOpponentWaitCountdown();
         setTimeout(function () {
             var btn = document.getElementById('btn-flip-cards');
             if (btn) btn.click();
@@ -1419,6 +1668,7 @@
         game.attackReduction = 0; game.tempDefenseReduction = 0;
         clearTableCards(); clearBattleLog();
         showScreen('screen-battle'); updatePlayerInfo(); updateLibraryDisplay([]);
+        switchToBattleMusic();
         $('btn-switch-player').style.display = 'none';
         updateOnlineStatusBar();
         speak('对战开始');
@@ -1443,6 +1693,7 @@
 
     function startWeaponDrawPhase() {
         game.phase = 'weapon-draw';
+        game._weaponDrawDone = false;
         game.weaponDrawCountA = 0; game.weaponDrawCountB = 0;
         game.playerA.roundCards = []; game.playerB.roundCards = []; game.selectedCardUid = null;
         clearBattleLog();
@@ -1451,10 +1702,16 @@
         updateAttackProgress();
         hideAllOps();
         var panelA = $('panel-a'), panelB = $('panel-b');
-        if (panelA) { panelA.classList.remove('inactive-panel'); panelA.classList.add('active-panel'); }
-        if (panelB) { panelB.classList.remove('inactive-panel'); panelB.classList.add('active-panel'); }
+        if (!isOnlineMode) {
+            if (panelA) { panelA.style.display = 'flex'; }
+            if (panelB) { panelB.style.display = 'none'; }
+            game.currentPlayer = 'A';
+        } else {
+            if (panelA) { panelA.classList.remove('inactive-panel'); panelA.classList.add('active-panel'); }
+            if (panelB) { panelB.classList.remove('inactive-panel'); panelB.classList.add('active-panel'); }
+        }
         updateWeaponDrawUI();
-        $('action-hint').textContent = '第' + game.round + '轮 - 武器抽取阶段（双方同时抽取）';
+        $('action-hint').textContent = '第' + game.round + '轮 - 武器抽取阶段（玩家A先抽取）';
         updateWeaponDrawHint(); wheelAngle = 0; drawWeaponWheel();
         $('drawn-cards').innerHTML = '';
         clearCountdown();
@@ -1463,9 +1720,9 @@
             showCountdown(10, function () {
                 if (game.phase !== 'weapon-draw' || wheelSpinning) return;
                 if ((!isOnlineMode || canIOperate('A')) && game.weaponDrawCountA < 3) {
-                    spinWeaponForPlayer('A');
+                    spinWheelForPlayer('A');
                 } else if ((!isOnlineMode || canIOperate('B')) && game.weaponDrawCountB < 3) {
-                    spinWeaponForPlayer('B');
+                    spinWheelForPlayer('B');
                 }
             });
         }
@@ -1473,24 +1730,46 @@
 
     function updateWeaponDrawUI() {
         var weaponWheelEl = document.querySelector('#weapon-draw-area .wheel-container');
+        var panelA = $('panel-a'), panelB = $('panel-b');
 
         if (!isOnlineMode) {
-            showOp('A', 'spin-weapon');
-            showOp('B', 'spin-weapon');
-            setOpsStatus('A', '请抽取武器');
-            setOpsStatus('B', '请抽取武器');
+            var currentPid = game.currentPlayer || 'A';
+            if (currentPid === 'A') {
+                if (game.weaponDrawCountA >= 3) { showOp('A', 'spin-weapon', { disabled: true }); }
+                else { showOp('A', 'spin-weapon'); }
+                setOpsStatus('A', game.weaponDrawCountA >= 3 ? '✅ 已完成' : '请抽取武器');
+                if (panelA) { panelA.style.display = 'flex'; }
+                if (panelB) { panelB.style.display = 'none'; }
+            } else if (currentPid === 'B') {
+                if (game.weaponDrawCountB >= 3) { showOp('B', 'spin-weapon', { disabled: true }); }
+                else { showOp('B', 'spin-weapon'); }
+                setOpsStatus('B', game.weaponDrawCountB >= 3 ? '✅ 已完成' : '请抽取武器');
+                if (panelB) { panelB.style.display = 'flex'; }
+                if (panelA) { panelA.style.display = 'none'; }
+            }
             if (weaponWheelEl) { weaponWheelEl.style.opacity = '1'; weaponWheelEl.style.pointerEvents = 'auto'; }
+            if (currentPid === 'A' && game.weaponDrawCountA < 3) {
+                $('action-hint').textContent = '🎯 第' + game.round + '轮 - 玩家A抽取武器（' + (3 - game.weaponDrawCountA) + '次剩余）';
+            } else if (currentPid === 'B' && game.weaponDrawCountB < 3) {
+                $('action-hint').textContent = '🎯 第' + game.round + '轮 - 玩家B抽取武器（' + (3 - game.weaponDrawCountB) + '次剩余）';
+            } else if (game.weaponDrawCountA >= 3 && game.weaponDrawCountB >= 3) {
+                $('action-hint').textContent = ' 第' + game.round + '轮 - 武器抽取完成';
+            }
         } else {
             if (canIOperate('A')) {
-                showOp('A', 'spin-weapon');
+                if (game.weaponDrawCountA >= 3) { showOp('A', 'spin-weapon', { disabled: true }); }
+                else { showOp('A', 'spin-weapon'); }
                 setOpsStatus('A', game.weaponDrawCountA >= 3 ? '✅ 已完成' : '请抽取武器');
             } else {
+                if (game.weaponDrawCountA >= 3) { showOp('A', 'spin-weapon', { disabled: true }); }
                 setOpsStatus('A', game.weaponDrawCountA >= 3 ? '✅ 已完成' : '⏳ 对方抽取中...');
             }
             if (canIOperate('B')) {
-                showOp('B', 'spin-weapon');
+                if (game.weaponDrawCountB >= 3) { showOp('B', 'spin-weapon', { disabled: true }); }
+                else { showOp('B', 'spin-weapon'); }
                 setOpsStatus('B', game.weaponDrawCountB >= 3 ? '✅ 已完成' : '请抽取武器');
             } else {
+                if (game.weaponDrawCountB >= 3) { showOp('B', 'spin-weapon', { disabled: true }); }
                 setOpsStatus('B', game.weaponDrawCountB >= 3 ? '✅ 已完成' : '⏳ 对方抽取中...');
             }
             if (weaponWheelEl) { weaponWheelEl.style.opacity = '1'; weaponWheelEl.style.pointerEvents = 'auto'; }
@@ -1504,8 +1783,6 @@
             } else {
                 $('action-hint').textContent = '🎯 第' + game.round + '轮 - 请抽取武器（' + (3 - myCount) + '次剩余）';
             }
-        } else if (!isOnlineMode) {
-            $('action-hint').textContent = '🎯 第' + game.round + '轮 - 双方同时抽取武器';
         }
     }
 
@@ -1539,9 +1816,6 @@
             var countVar = pid === 'A' ? 'weaponDrawCountA' : 'weaponDrawCountB';
             if (game[countVar] >= 3) return;
             clearCountdown();
-            var autoCheckbox = $('auto-spin-' + pid.toLowerCase());
-            var isAutoMode = autoCheckbox && autoCheckbox.checked;
-            var autoSpinPlayer = pid;
             var btn = opBtn(pid, 'spin-weapon');
             if (btn) btn.disabled = true;
             var mapped = WEAPONS.map(function (w) { return { name: w.name, id: w.id, icon: w.icon, rarity: w.rarity }; });
@@ -1591,20 +1865,13 @@
                     var cardEl = $('drawn-cards').querySelector('.weapon-card');
                     if (cardEl) cardEl.addEventListener('click', function () { showCardPreview(drawn); });
                     updateLibraryDisplay([drawn.uid]);
-                    console.log('[ Weapon ] 发送 weapon-spin 消息, uid:', drawn.uid);
-                    notifyPeer('weapon-spin', { weapon: { id: wp.id, uid: drawn.uid }, player: pid });
+                    console.log('[ Weapon ] 联机模式仅同步抽卡进度(不暴露卡牌内容)');
+                    notifyPeer('weapon-draw-progress', { player: pid });
                     var delay = isRare ? 2500 : 1200;
                     waitForSpeech(function () {
                         try {
                             $('drawn-cards').innerHTML = '';
                             afterWeaponDrawAction(pid);
-                            var currentCheckbox = $('auto-spin-' + pid.toLowerCase());
-                            var currentAutoMode = currentCheckbox && currentCheckbox.checked;
-                            if (currentAutoMode && pid === autoSpinPlayer && game[countVar] < 3 && game.phase === 'weapon-draw') {
-                                setTimeout(function () {
-                                    spinWheelForPlayer(pid);
-                                }, 1000);
-                            }
                         } catch (e) {
                             handleError('spinWheelForPlayer-delay', e);
                         }
@@ -1627,23 +1894,42 @@
         console.log('[ Weapon ] afterWeaponDrawAction - player:', pid, 'countA:', game.weaponDrawCountA, 'countB:', game.weaponDrawCountB, 'phase:', game.phase);
         
         updateWeaponDrawHint();
-        updateWeaponDrawUI();
         
-        if (game.weaponDrawCountA < 3 || game.weaponDrawCountB < 3) {
-            var btn = opBtn(pid, 'spin-weapon');
-            if (btn && game[(pid === 'A' ? 'weaponDrawCountA' : 'weaponDrawCountB')] < 3) { btn.style.display = 'block'; btn.disabled = false; }
-            drawWeaponWheel();
-            var countVar = pid === 'A' ? 'weaponDrawCountA' : 'weaponDrawCountB';
-            var autoCb = $('auto-spin-' + pid.toLowerCase());
-            var isAuto = autoCb && autoCb.checked;
-            if (!isAuto && (!isOnlineMode || canIOperate(pid)) && game[countVar] < 3) {
+        if (!isOnlineMode) {
+            if (game.weaponDrawCountA >= 3 && game.weaponDrawCountB < 3) {
+                game.currentPlayer = 'B';
+                updateWeaponDrawUI();
+                drawWeaponWheel();
                 showCountdown(10, function () {
-                    if (game.phase === 'weapon-draw' && !wheelSpinning && game[countVar] < 3) {
-                        spinWheelForPlayer(pid);
+                    if (game.phase === 'weapon-draw' && !wheelSpinning && game.weaponDrawCountB < 3) {
+                        spinWheelForPlayer('B');
+                    }
+                });
+            } else if (game.weaponDrawCountA < 3) {
+                updateWeaponDrawUI();
+                drawWeaponWheel();
+                showCountdown(10, function () {
+                    if (game.phase === 'weapon-draw' && !wheelSpinning && game.weaponDrawCountA < 3) {
+                        spinWheelForPlayer('A');
                     }
                 });
             }
-        } 
+        } else {
+            updateWeaponDrawUI();
+            if (game.weaponDrawCountA < 3 || game.weaponDrawCountB < 3) {
+                var btn = opBtn(pid, 'spin-weapon');
+                if (btn && game[(pid === 'A' ? 'weaponDrawCountA' : 'weaponDrawCountB')] < 3) { btn.style.display = 'block'; btn.disabled = false; }
+                drawWeaponWheel();
+                var countVar = pid === 'A' ? 'weaponDrawCountA' : 'weaponDrawCountB';
+                if ((!isOnlineMode || canIOperate(pid)) && game[countVar] < 3) {
+                    showCountdown(10, function () {
+                        if (game.phase === 'weapon-draw' && !wheelSpinning && game[countVar] < 3) {
+                            spinWheelForPlayer(pid);
+                        }
+                    });
+                }
+            }
+        }
         
         if (game.weaponDrawCountA >= 3 && game.weaponDrawCountB >= 3) {
             clearCountdown();
@@ -1657,7 +1943,13 @@
     }
 
     function finishWeaponDraw() {
+        if (game._weaponDrawDone) { console.log('[ Weapon ] ⚠️ finishWeaponDraw 防重入，跳过'); return; }
+        game._weaponDrawDone = true;
         console.log('[ Weapon ] 🎯 finishWeaponDraw 被调用, isOnlineMode:', isOnlineMode, 'isHost:', Multiplayer.isHost());
+        
+        var panelA = $('panel-a'), panelB = $('panel-b');
+        if (panelA) { panelA.style.display = ''; }
+        if (panelB) { panelB.style.display = ''; }
         
         hideAllOps();
         updatePlayerInfo();
@@ -1681,11 +1973,11 @@
         }
 
         console.log('[ Weapon ] 显示完成弹窗(2秒自动消失)');
-        showModal('<h3>🎲 武器抽取完成</h3>' +
+        showModal('<h3>⚔️ 武器抽取完成</h3>' +
             '<p style="font-size:14px;color:var(--text-light);margin:8px 0;">玩家A获得 ' + game.playerA.roundCards.length + ' 张：' + (al || '无') + '</p>' +
             '<p style="font-size:14px;color:var(--text-light);margin:8px 0;">玩家B获得 ' + game.playerB.roundCards.length + ' 张：' + (bl || '无') + '</p>' +
             '<p style="color:var(--gold-light);font-size:13px;margin-top:12px;">⏳ 2秒后进入整理阶段...</p>');
-            
+
         setTimeout(function () {
             console.log('[ Weapon ] 2秒后进入整理阶段');
             hideModal();
@@ -2025,7 +2317,7 @@
         var attackNum = game.currentAttackIndex + 1;
         var maxAtk = getMaxAttacks();
         $('action-hint').textContent = phaseLabel + '阶段（已攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）';
-        showOp(game.phaseAttacker, 'confirm-card', { disabled: true, text: '⚔️ 攻击' });
+        showOp(game.phaseAttacker, 'confirm-card', { disabled: true, text: '⚔️ 攻击出牌' });
         showOp(game.phaseAttacker, 'sell');
         showOp(game.phaseAttacker, 'buy');
         showOp(game.phaseAttacker, 'synthesis');
@@ -2035,6 +2327,7 @@
         announcePlayerTurn(game.phaseAttacker, '请选择第' + attackNum + '次攻击卡牌');
         showTradeOpsForNonActivePlayer(game.phaseDefender);
         clearCountdown();
+        clearOpponentWaitCountdown();
         if (!isOnlineMode || canIOperate(game.phaseAttacker)) {
             showCountdown(60, function () {
                 if (game.phase !== 'attack-select') return;
@@ -2049,6 +2342,8 @@
                     if (endBtn && endBtn.style.display !== 'none') endBtn.click();
                 }
             });
+        } else if (isOnlineMode) {
+            showOpponentWaitCountdown(60);
         }
     }
 
@@ -2104,12 +2399,15 @@
             announcePlayerTurn(game.phaseDefender, '您没有防御卡牌，请选择是否跳过防御');
             showTradeOpsForNonActivePlayer(game.phaseAttacker);
             clearCountdown();
+            clearOpponentWaitCountdown();
             if (!isOnlineMode || canIOperate(game.phaseDefender)) {
                 showCountdown(60, function () {
                     if (game.phase !== 'defend-select') return;
                     var skipBtn = opBtn(game.phaseDefender, 'skip-defend');
                     if (skipBtn && skipBtn.style.display !== 'none') skipBtn.click();
                 });
+            } else if (isOnlineMode) {
+                showOpponentWaitCountdown(60);
             }
             return;
         }
@@ -2122,7 +2420,7 @@
 
         var maxAtk = getMaxAttacks();
         $('action-hint').textContent = '防御阶段（攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）';
-        showOp(game.phaseDefender, 'confirm-card', { disabled: true, text: '🛡️ 防御' });
+        showOp(game.phaseDefender, 'confirm-card', { disabled: true, text: '🛡️ 防御出牌' });
         showOp(game.phaseDefender, 'skip-defend');
         showOp(game.phaseDefender, 'sell');
         showOp(game.phaseDefender, 'buy');
@@ -2133,6 +2431,7 @@
         announcePlayerTurn(game.phaseDefender, '请选择防御卡牌');
         showTradeOpsForNonActivePlayer(game.phaseAttacker);
         clearCountdown();
+        clearOpponentWaitCountdown();
         if (!isOnlineMode || canIOperate(game.phaseDefender)) {
             showCountdown(60, function () {
                 if (game.phase !== 'defend-select') return;
@@ -2147,10 +2446,13 @@
                     if (skipBtn && skipBtn.style.display !== 'none') skipBtn.click();
                 }
             });
+        } else if (isOnlineMode) {
+            showOpponentWaitCountdown(60);
         }
     }
 
     function renderCardHand(playerId, cardType) {
+        hideSelectCardPreview();
         var player = getPlayer(playerId);
         var prefix = 'player-' + playerId.toLowerCase();
         var selectArea = $(prefix + '-select-area');
@@ -2212,6 +2514,8 @@
                         game.selectedCardUid = target.getAttribute('data-uid');
                         var confirmBtn = opBtn(playerId, 'confirm-card');
                         if (confirmBtn) confirmBtn.disabled = false;
+                        var card = findCardByUid(player, game.selectedCardUid);
+                        if (card) showSelectCardPreview(card);
                     }
                 });
 
@@ -2219,7 +2523,12 @@
                     var target = e.target.closest('.weapon-card.selectable');
                     if (target) {
                         var card = findCardByUid(player, target.getAttribute('data-uid'));
-                        if (card) showCardPreview(card);
+                        if (card) {
+                            selectCards.querySelectorAll('.weapon-card.selected').forEach(function (c) { c.classList.remove('selected'); });
+                            target.classList.add('selected');
+                            game.selectedCardUid = card.uid;
+                            handleConfirmCard();
+                        }
                         e.stopPropagation();
                     }
                 });
@@ -2247,6 +2556,7 @@
             var sa = $('player-' + p + '-select-area');
             if (sa) sa.classList.add('hidden');
         });
+        hideSelectCardPreview();
     }
 
     function addBattleLogEntry(atkCard, atkWithBonus, defCard, defWithBonus, finalDamage, attackerPid, defenderPid) {
@@ -2475,6 +2785,7 @@
         var card = getSelectedCard(pid);
         if (!card) return; playSound('click');
         clearCountdown();
+        clearOpponentWaitCountdown();
         hideSelectAreas();
 
         if (game.phase === 'attack-select') {
@@ -2509,6 +2820,7 @@
         game.currentDefendCard = null;
         notifyPeer('skip-defend', {});
         clearCountdown();
+        clearOpponentWaitCountdown();
         resolveSingleAttack();
         } catch (e) { handleError('handleSkipDefend', e); }
     }
@@ -2730,6 +3042,7 @@
         $('center-actions').innerHTML = '';
         hideAllOps();
         clearCountdown();
+        clearOpponentWaitCountdown();
 
         if (finalDamage > 0) {
             playSound('damage');
@@ -2788,6 +3101,7 @@
 
     function showContinueChoice() {
         clearCountdown();
+        clearOpponentWaitCountdown();
         var atkCards = getPlayer(game.phaseAttacker).library.filter(function (c) { return c.type === 'attack'; });
         var maxAtk = getMaxAttacks();
 
@@ -2825,11 +3139,14 @@
                     if (btn && btn.style.display !== 'none') btn.click();
                 }
             }, 1000);
+        } else if (isOnlineMode) {
+            showOpponentWaitCountdown(10);
         }
     }
 
     function afterAttackPhaseEnds() {
         clearCountdown();
+        clearOpponentWaitCountdown();
         hideAllOps();
         var el = $('attack-progress');
         if (el) el.style.display = 'none';
@@ -2980,7 +3297,7 @@
                 return;
             }
             renderCardHand(game.phaseAttacker, 'attack');
-            showOp(game.phaseAttacker, 'confirm-card', { disabled: true, text: '⚔️ 攻击' });
+            showOp(game.phaseAttacker, 'confirm-card', { disabled: true, text: '⚔️ 攻击出牌' });
             showOp(game.phaseAttacker, 'sell');
             showOp(game.phaseAttacker, 'buy');
             showOp(game.phaseAttacker, 'synthesis');
@@ -2999,7 +3316,7 @@
                 return;
             }
             renderCardHand(game.phaseDefender, 'defend');
-            showOp(game.phaseDefender, 'confirm-card', { disabled: true, text: '🛡️ 防御' });
+            showOp(game.phaseDefender, 'confirm-card', { disabled: true, text: '🛡️ 防御出牌' });
             showOp(game.phaseDefender, 'skip-defend');
             showOp(game.phaseDefender, 'sell');
             showOp(game.phaseDefender, 'buy');
@@ -3134,13 +3451,12 @@
                 var canSpin = player.gold >= rareWheelPrice;
                 var rareWheelHtml = '<div class="rare-wheel-section">' +
                     '<p style="color:var(--gold-light);font-size:14px;margin:8px 0;">转动稀有转盘，获取稀有或史诗卡牌！</p>' +
-                    '<p style="color:var(--text-dim);font-size:12px;margin-bottom:12px;">每次转动消耗 💰' + rareWheelPrice + '</p>' +
+                    '<button class="btn btn-primary' + (canSpin ? '' : ' disabled-btn') + '" id="btn-spin-rare-wheel"' + (canSpin ? '' : ' disabled') + '>' +
+                    '🎰 转动稀有转盘 (💰' + rareWheelPrice + ')</button>' +
                     '<div class="wheel-container small rare-wheel-container">' +
                     '<canvas id="rare-wheel-canvas" width="280" height="280"></canvas>' +
                     '<div class="wheel-pointer small"></div>' +
                     '</div>' +
-                    '<button class="btn btn-primary' + (canSpin ? '' : ' disabled-btn') + '" id="btn-spin-rare-wheel"' + (canSpin ? '' : ' disabled') + '>' +
-                    '🎰 转动稀有转盘 (💰' + rareWheelPrice + ')</button>' +
                     '</div>';
                 content.innerHTML = rareWheelHtml;
 
@@ -3259,6 +3575,15 @@
                 bmHtml += '</div></div>';
                 content.innerHTML = bmHtml;
 
+                content.querySelectorAll('.shop-card').forEach(function (cardEl) {
+                    cardEl.style.cursor = 'pointer';
+                    cardEl.addEventListener('click', function () {
+                        var wpId = cardEl.closest('.shop-card-item').querySelector('.btn-buy-bm').getAttribute('data-id');
+                        var wp = BLACK_MARKET_WEAPONS.find(function (w) { return w.id === wpId; });
+                        if (wp) showCardPreview(wp);
+                    });
+                });
+
                 content.querySelectorAll('.btn-buy-bm:not([disabled])').forEach(function (btn) {
                     btn.addEventListener('click', function () {
                         var wpId = btn.getAttribute('data-id');
@@ -3308,14 +3633,14 @@
                     notifyPeer('rematch-request', {});
                 }
             } else {
-                var sm = game.mode, ss = game.soundEnabled;
+                var sm = game.mode, ss = game.soundEnabled, sb = game.bgmEnabled;
                 game = {
                     mode: sm, phase: 'start', currentPlayer: 'A', round: 1,
                     playerA: { char: null, hp: 0, maxHp: 0, library: [], roundCards: [], gold: 3000 },
                     playerB: { char: null, hp: 0, maxHp: 0, library: [], roundCards: [], gold: 3000 },
                     firstAttacker: null, secondAttacker: null,
                     weaponDrawCountA: 0, weaponDrawCountB: 0,
-                    selectedCardUid: null, soundEnabled: ss, voiceEnabled: ss,
+                    selectedCardUid: null, soundEnabled: ss, voiceEnabled: ss, bgmEnabled: sb,
                     totalDamageA: 0, totalDamageB: 0, usedCharIds: [],
                     currentDrawnCard: null, currentAttackIndex: 0, bonusAttacks: 0,
                     phaseAttacker: null, phaseDefender: null, isCounterPhase: false,
@@ -3338,7 +3663,7 @@
     function startRematch() {
         try {
         console.log('[ rematch ] 开始新一局');
-        var ss = game.soundEnabled;
+        var ss = game.soundEnabled, sb = game.bgmEnabled;
         console.log('[ rematch ] isOnlineMode:', isOnlineMode, 'Multiplayer.isConnected():', Multiplayer.isConnected());
         vsAnimationShown = false;
         console.log('[ rematch ] 重置 vsAnimationShown = false');
@@ -3348,7 +3673,7 @@
             playerB: { char: null, hp: 0, maxHp: 0, library: [], roundCards: [], gold: 3000 },
             firstAttacker: null, secondAttacker: null,
             weaponDrawCountA: 0, weaponDrawCountB: 0,
-            selectedCardUid: null, soundEnabled: ss, voiceEnabled: ss,
+            selectedCardUid: null, soundEnabled: ss, voiceEnabled: ss, bgmEnabled: sb,
             totalDamageA: 0, totalDamageB: 0, usedCharIds: [],
             currentDrawnCard: null, currentAttackIndex: 0, bonusAttacks: 0,
             phaseAttacker: null, phaseDefender: null, isCounterPhase: false,
@@ -3374,6 +3699,16 @@
 
     function initSwitchPlayer() { $('btn-switch-player').addEventListener('click', function () { playSound('click'); switchPlayer(); }); }
     function initCardPreview() { $('card-preview-overlay').addEventListener('click', function () { $('card-preview-overlay').classList.add('hidden'); }); }
+    function initSelectCardPreview() {
+        document.addEventListener('mousedown', function (e) {
+            var previewEl = $('select-card-preview');
+            if (!previewEl || previewEl.classList.contains('hidden')) return;
+            var target = e.target;
+            if (!previewEl.contains(target) && !target.closest('.panel-select-cards')) {
+                hideSelectCardPreview();
+            }
+        });
+    }
 
     function initWeaponDraw() {
         ['a', 'b'].forEach(function (p) {
@@ -3449,10 +3784,8 @@
         }
         initStartScreen(); initCharacterSelect(); initWeaponDraw();
         initCardSelect(); initContinueChoice();
-        initGameOver(); initCardPreview(); initSellBuy();
+        initGameOver(); initCardPreview(); initSelectCardPreview(); initSellBuy();
         initSynthesisCultivationButtons(); initMultiplayer();
-        $('auto-spin-a').checked = true;
-        $('auto-spin-b').checked = true;
         showScreen('screen-start');
     }
 
@@ -3697,25 +4030,40 @@
     }
 
     function initLobby() {
+        try {
         lobbyReady = false;
-        $('room-created-area').classList.add('hidden');
-        $('peer-info').classList.add('hidden');
-        $('join-peer-info').classList.add('hidden');
-        $('join-room-area').classList.add('hidden');
-        $('btn-create-room').classList.remove('hidden');
-        $('btn-start-online').classList.add('hidden');
-        $('btn-join-room').classList.remove('hidden');
-        $('btn-join-room').disabled = false;
-        $('btn-join-room').textContent = '加入房间';
-        $('create-status').textContent = '';
-        $('join-status').textContent = '';
-        if ($('join-peer-text')) $('join-peer-text').textContent = '已连接到房主，等待开始游戏...';
-        $('input-room-id').value = 'CG_';
-        $('input-room-id').classList.remove('hidden');
+        var roomCreated = $('room-created-area');
+        var peerInfo = $('peer-info');
+        var joinPeerInfo = $('join-peer-info');
+        var joinRoomArea = $('join-room-area');
+        var btnCreateRoom = $('btn-create-room');
+        var btnStartOnline = $('btn-start-online');
+        var btnJoinRoom = $('btn-join-room');
+        var createStatus = $('create-status');
+        var joinStatus = $('join-status');
+        var inputRoomId = $('input-room-id');
+        var tabCreate = $('tab-create');
+        var panelCreate = $('panel-create');
+
+        if (roomCreated) roomCreated.classList.add('hidden');
+        if (peerInfo) peerInfo.classList.add('hidden');
+        if (joinPeerInfo) joinPeerInfo.classList.add('hidden');
+        if (joinRoomArea) joinRoomArea.classList.add('hidden');
+        if (btnCreateRoom) btnCreateRoom.classList.remove('hidden');
+        if (btnStartOnline) btnStartOnline.classList.add('hidden');
+        if (btnJoinRoom) { btnJoinRoom.classList.remove('hidden'); btnJoinRoom.disabled = false; btnJoinRoom.textContent = '加入房间'; }
+        if (createStatus) createStatus.textContent = '';
+        if (joinStatus) joinStatus.textContent = '';
+        var joinPeerText = $('join-peer-text');
+        if (joinPeerText) joinPeerText.textContent = '已连接到房主，等待开始游戏...';
+        if (inputRoomId) { inputRoomId.value = 'CG_'; inputRoomId.classList.remove('hidden'); }
         document.querySelectorAll('.btn-tab').forEach(function (t) { t.classList.remove('active'); });
         document.querySelectorAll('.lobby-panel').forEach(function (p) { p.classList.remove('active'); });
-        $('tab-create').classList.add('active');
-        $('panel-create').classList.add('active');
+        if (tabCreate) tabCreate.classList.add('active');
+        if (panelCreate) panelCreate.classList.add('active');
+        } catch (e) {
+            console.error('[initLobby] 初始化大厅失败:', e);
+        }
     }
 
     function handleCreateRoom() {
@@ -3969,7 +4317,7 @@
         var result = Multiplayer.sendGameAction(action, payload);
         console.log('[notifyPeer] ✅ sendGameAction 返回:', result);
 
-        if (['weapon-spin', 'switch-player', 'player-finished', 'weapon-draw-complete', 'card-selected', 'end-attack', 'buy-card', 'sell-card',
+        if (['weapon-spin', 'weapon-draw-progress', 'switch-player', 'player-finished', 'weapon-draw-complete', 'card-selected', 'end-attack', 'buy-card', 'sell-card',
             'synthesis-result', 'cultivation-result', 'dice-roll'].indexOf(action) !== -1) {
             setTimeout(saveStateSnapshot, 100);
         }
@@ -4035,6 +4383,20 @@
                     }
                 }
                 break;
+            case 'weapon-draw-progress':
+                var progressPid = payload.player;
+                var progressVar = progressPid === 'A' ? 'weaponDrawCountA' : 'weaponDrawCountB';
+                game[progressVar]++;
+                console.log('[ Weapon ] 收到抽卡进度通知, player:', progressPid, 'count:', game[progressVar]);
+                updateWeaponDrawHint();
+                updateWeaponDrawUI();
+                if (game.weaponDrawCountA >= 3 && game.weaponDrawCountB >= 3) {
+                    console.log('[ Weapon ] ✅ 双方都抽完了(进度同步)');
+                    if (!Multiplayer.isHost()) {
+                        finishWeaponDraw();
+                    }
+                }
+                break;
             case 'weapon-spin':
                 applyWeaponSpinResult(payload.weapon, payload.player);
                 break;
@@ -4052,12 +4414,15 @@
                 applyDiceResult(payload.value);
                 break;
             case 'card-selected':
+                clearOpponentWaitCountdown();
                 applyCardSelected(payload.uid, payload.player);
                 break;
             case 'skip-defend':
+                clearOpponentWaitCountdown();
                 handleSkipDefendRemote();
                 break;
             case 'continue-attack':
+                clearOpponentWaitCountdown();
                 if (payload && payload.currentAttackIndex !== undefined) { game.currentAttackIndex = payload.currentAttackIndex; }
                 if (payload && payload.attackReduction !== undefined) { game.attackReduction = payload.attackReduction; }
                 if (payload && payload.bonusAttacks !== undefined) { game.bonusAttacks = payload.bonusAttacks; }
@@ -4066,6 +4431,7 @@
                 showAttackCardSelect();
                 break;
             case 'end-attack':
+                clearOpponentWaitCountdown();
                 stopSpeech();
                 if (payload && payload.currentAttackIndex !== undefined) { game.currentAttackIndex = payload.currentAttackIndex; }
                 if (payload && payload.attackReduction !== undefined) { game.attackReduction = payload.attackReduction; }
@@ -4216,6 +4582,7 @@
     }
 
     function applyWeaponDrawComplete(data) {
+        if (game._weaponDrawDone) { console.log('[ Weapon ] ⚠️ applyWeaponDrawComplete 防重入，跳过弹窗'); }
         console.log('[ Weapon ] 收到武器抽取完成同步消息');
         console.log('[ Weapon ] 同步数据 libraryA长度:', data.libraryA.length, 'libraryB长度:', data.libraryB.length);
 
@@ -4243,10 +4610,11 @@
         updatePlayerInfo();
         updateLibraryDisplay([]);
 
-        if (!Multiplayer.isHost()) {
+        if (!Multiplayer.isHost() && !game._weaponDrawDone) {
+            game._weaponDrawDone = true;
             var al = game.playerA.roundCards.map(function (c) { return c.name; }).join('、');
             var bl = game.playerB.roundCards.map(function (c) { return c.name; }).join('、');
-            showModal('<h3>🎲 武器抽取完成</h3>' +
+            showModal('<h3>⚔️ 武器抽取完成</h3>' +
                 '<p style="font-size:14px;color:var(--text-light);margin:8px 0;">玩家A获得 ' + game.playerA.roundCards.length + ' 张：' + (al || '无') + '</p>' +
                 '<p style="font-size:14px;color:var(--text-light);margin:8px 0;">玩家B获得 ' + game.playerB.roundCards.length + ' 张：' + (bl || '无') + '</p>' +
                 '<p style="color:var(--gold-light);font-size:13px;margin-top:12px;">⏳ 2秒后进入整理阶段...</p>');
@@ -4360,7 +4728,7 @@
             renderCardHand(game.phaseDefender, 'defend');
         }
 
-        speak(payload.success ? '对方合成成功' : '对方合成失败');
+        speak(payload.success ? '对方重铸成功' : '对方重铸失败');
     }
 
     function applyCultivationResult(payload) {
@@ -4551,7 +4919,7 @@
         });
     }
 
-    // ========== 卡牌合成系统 ==========
+    // ========== 卡牌重铸系统 ==========
 
     function showSynthesisModal(pid) {
         var synthModal = document.getElementById('synthesis-modal');
@@ -4695,11 +5063,11 @@
 
                 document.getElementById('synthesis-modal').classList.add('hidden');
                 showSynthesisResult(true, newCard, pid);
-                speak('合成成功！获得' + newCard.name);
+                speak('重铸成功！获得' + newCard.name);
             } else {
                 document.getElementById('synthesis-modal').classList.add('hidden');
                 showSynthesisResult(false, null, pid, cardA, cardB);
-                speak('合成失败，原卡牌已粉碎');
+                speak('重铸失败，原卡牌已粉碎');
             }
 
             game.synthesisState.isProcessing = false;
@@ -4767,7 +5135,7 @@
             enhancedCard.value = minValueRequired + Math.floor(Math.random() * 5);
             enhancedCard.price = Math.round(enhancedCard.price * (enhancedCard.value / bestCandidate.value));
             enhancedCard.name = bestCandidate.name + '·强化';
-            enhancedCard.desc = '合成强化的' + bestCandidate.name;
+            enhancedCard.desc = '重铸强化的' + bestCandidate.name;
             enhancedCard.uid = newCardUid();
             return enhancedCard;
         }
@@ -4786,7 +5154,7 @@
             var valueLabel = card.type === 'attack' ? '伤害' : '防御';
             resultHtml = '<div style="text-align:center;padding:20px;">' +
                 '<div style="font-size:56px;margin-bottom:12px;line-height:1;">✨</div>' +
-                '<div style="font-family:\'Ma Shan Zheng\',cursive;font-size:30px;color:#4ade80;margin-bottom:6px;letter-spacing:4px;text-shadow:0 2px 12px rgba(74,222,128,0.6);">🎉 合成成功！</div>' +
+                '<div style="font-family:\'Ma Shan Zheng\',cursive;font-size:30px;color:#4ade80;margin-bottom:6px;letter-spacing:4px;text-shadow:0 2px 12px rgba(74,222,128,0.6);">🎉 重铸成功！</div>' +
                 '<div style="height:8px;"></div>' +
                 '<div class="weapon-card rarity-' + card.rarity + '" style="margin:16px auto;transform:scale(1.3);pointer-events:none;min-width:180px;">' +
                 '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
@@ -4808,7 +5176,7 @@
             }
             resultHtml = '<div style="text-align:center;padding:20px;">' +
                 '<div style="font-size:56px;margin-bottom:12px;line-height:1;">💔</div>' +
-                '<div style="font-family:\'Ma Shan Zheng\',cursive;font-size:30px;color:#f87171;margin-bottom:6px;letter-spacing:4px;text-shadow:0 2px 12px rgba(248,113,113,0.6);">合成失败</div>' +
+                '<div style="font-family:\'Ma Shan Zheng\',cursive;font-size:30px;color:#f87171;margin-bottom:6px;letter-spacing:4px;text-shadow:0 2px 12px rgba(248,113,113,0.6);">重铸失败</div>' +
                 '<div style="color:var(--text-dim);font-size:15px;margin-top:10px;line-height:1.8;">原卡牌已粉碎消失<br>可重新选择卡牌再次尝试</div>' +
                 crushedText +
                 '</div>';
