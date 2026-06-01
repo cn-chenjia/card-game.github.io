@@ -744,8 +744,36 @@
     function setActivePlayer(pid) {
         game.currentPlayer = pid;
         var panelA = $('panel-a'), panelB = $('panel-b');
-        if (panelA) { panelA.classList.toggle('active-panel', pid === 'A'); panelA.classList.toggle('inactive-panel', pid !== 'A'); }
-        if (panelB) { panelB.classList.toggle('active-panel', pid === 'B'); panelB.classList.toggle('inactive-panel', pid !== 'B'); }
+        
+        // 单机模式：只显示当前玩家的操作区，隐藏另一个玩家的操作区
+        if (!isOnlineMode) {
+            if (pid === 'A') {
+                if (panelA) { 
+                    panelA.style.display = 'flex';
+                    panelA.classList.remove('inactive-panel');
+                    panelA.classList.add('active-panel');
+                }
+                if (panelB) { 
+                    panelB.style.display = 'none';
+                    panelB.classList.remove('active-panel', 'inactive-panel');
+                }
+            } else if (pid === 'B') {
+                if (panelB) { 
+                    panelB.style.display = 'flex';
+                    panelB.classList.remove('inactive-panel');
+                    panelB.classList.add('active-panel');
+                }
+                if (panelA) { 
+                    panelA.style.display = 'none';
+                    panelA.classList.remove('active-panel', 'inactive-panel');
+                }
+            }
+        } else {
+            // 联机模式：保持原有逻辑，使用active/inactive类
+            if (panelA) { panelA.classList.toggle('active-panel', pid === 'A'); panelA.classList.toggle('inactive-panel', pid !== 'A'); }
+            if (panelB) { panelB.classList.toggle('active-panel', pid === 'B'); panelB.classList.toggle('inactive-panel', pid !== 'B'); }
+        }
+        
         $('player-a-info').classList.toggle('active-turn', pid === 'A');
         $('player-b-info').classList.toggle('active-turn', pid === 'B');
         if (isOnlineMode) {
@@ -760,6 +788,22 @@
 
     function announcePlayerTurn(pid, action) { var p = getPlayer(pid); speak(playerLabel(pid) + '，' + (p.char ? p.char.name : '') + '，' + action); }
     function switchPlayer() { var next = game.currentPlayer === 'A' ? 'B' : 'A'; setActivePlayer(next); $('action-hint').textContent = '已切换至' + playerLabel(next) + '操作'; }
+    
+    // 单机模式：隐藏所有玩家操作区（用于不需要玩家操作的阶段）
+    function hideAllPanels() {
+        if (!isOnlineMode) {
+            var panelA = $('panel-a'), panelB = $('panel-b');
+            if (panelA) { panelA.style.display = 'none'; }
+            if (panelB) { panelB.style.display = 'none'; }
+        }
+    }
+    
+    // 单机模式：显示指定玩家的操作区
+    function showPlayerPanel(pid) {
+        if (!isOnlineMode) {
+            setActivePlayer(pid);
+        }
+    }
     function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
     function getMaxAttacks() { return Math.max(1, BASE_MAX_ATTACKS + game.bonusAttacks - game.attackReduction); }
 
@@ -1565,7 +1609,7 @@
             '<div class="vs-player">玩家A</div>' +
             '<div class="vs-hp">' + generateAbilityDesc(a.char) + '</div>' +
             '</div>' +
-            '<div class="vs-text">PK</div>' +
+            '<div class="vs-text">VS</div>' +
             '<div class="vs-fighter vs-right">' +
             '<div class="vs-emoji">' + renderEmoji(b.char.emoji) + '</div>' +
             '<div class="vs-name">' + b.char.name + '</div>' +
@@ -1706,6 +1750,7 @@
             if (panelA) { panelA.style.display = 'flex'; }
             if (panelB) { panelB.style.display = 'none'; }
             game.currentPlayer = 'A';
+            speak('第' + game.round + '轮武器抽取阶段，玩家A先抽取');
         } else {
             if (panelA) { panelA.classList.remove('inactive-panel'); panelA.classList.add('active-panel'); }
             if (panelB) { panelB.classList.remove('inactive-panel'); panelB.classList.add('active-panel'); }
@@ -1898,6 +1943,10 @@
         if (!isOnlineMode) {
             if (game.weaponDrawCountA >= 3 && game.weaponDrawCountB < 3) {
                 game.currentPlayer = 'B';
+                // 只在玩家B第一次抽取时配音
+                if (game.weaponDrawCountB === 0) {
+                    speak('轮到玩家B抽取武器');
+                }
                 updateWeaponDrawUI();
                 drawWeaponWheel();
                 showCountdown(10, function () {
@@ -1906,6 +1955,10 @@
                     }
                 });
             } else if (game.weaponDrawCountA < 3) {
+                // 只在玩家A第一次抽取时配音
+                if (game.weaponDrawCountA === 0) {
+                    speak('轮到玩家A抽取武器');
+                }
                 updateWeaponDrawUI();
                 drawWeaponWheel();
                 showCountdown(10, function () {
@@ -2270,6 +2323,11 @@
         hideAllOps();
         $('action-hint').textContent = '投掷骰子决定攻击顺序';
         
+        // 单机模式：骰子阶段不需要玩家操作，隐藏两个面板
+        if (!isOnlineMode) {
+            hideAllPanels();
+        }
+        
         if ($('dice-face')) $('dice-face').textContent = '?'; 
         if ($('dice-result')) $('dice-result').classList.add('hidden');
         if ($('btn-roll-dice')) $('btn-roll-dice').style.display = 'none';
@@ -2415,6 +2473,7 @@
         var atkCards = getPlayer(game.phaseAttacker).library.filter(function (c) { return c.type === 'attack'; });
 
         if (atkCards.length === 0) {
+            game.phase = 'attack-select';
             hideSelectAreas();
             hideAllOps();
             showOp(game.phaseAttacker, 'end-attack');
@@ -2455,8 +2514,28 @@
                 if (cards.length > 0) {
                     var randomCard = cards[Math.floor(Math.random() * cards.length)];
                     game.selectedCardUid = randomCard.uid;
+                    
+                    // 模拟卡牌选择的完整流程
+                    var selectCards = $('panel-' + pPrefix(game.phaseAttacker) + '-select-cards');
+                    if (selectCards) {
+                        // 清除之前的选择
+                        selectCards.querySelectorAll('.weapon-card').forEach(function (c) { 
+                            c.classList.remove('selected'); 
+                        });
+                        
+                        // 找到对应的卡牌元素并选中
+                        var cardElement = selectCards.querySelector('[data-uid="' + randomCard.uid + '"]');
+                        if (cardElement) {
+                            cardElement.classList.add('selected');
+                        }
+                    }
+                    
+                    // 启用确认按钮并点击
                     var confirmBtn = opBtn(game.phaseAttacker, 'confirm-card');
-                    if (confirmBtn) confirmBtn.click();
+                    if (confirmBtn) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.click();
+                    }
                 } else {
                     var endBtn = opBtn(game.phaseAttacker, 'end-attack');
                     if (endBtn && endBtn.style.display !== 'none') endBtn.click();
@@ -2559,8 +2638,28 @@
                 if (cards.length > 0) {
                     var randomCard = cards[Math.floor(Math.random() * cards.length)];
                     game.selectedCardUid = randomCard.uid;
+                    
+                    // 模拟卡牌选择的完整流程
+                    var selectCards = $('panel-' + pPrefix(game.phaseDefender) + '-select-cards');
+                    if (selectCards) {
+                        // 清除之前的选择
+                        selectCards.querySelectorAll('.weapon-card').forEach(function (c) { 
+                            c.classList.remove('selected'); 
+                        });
+                        
+                        // 找到对应的卡牌元素并选中
+                        var cardElement = selectCards.querySelector('[data-uid="' + randomCard.uid + '"]');
+                        if (cardElement) {
+                            cardElement.classList.add('selected');
+                        }
+                    }
+                    
+                    // 启用确认按钮并点击
                     var confirmBtn = opBtn(game.phaseDefender, 'confirm-card');
-                    if (confirmBtn) confirmBtn.click();
+                    if (confirmBtn) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.click();
+                    }
                 } else {
                     var skipBtn = opBtn(game.phaseDefender, 'skip-defend');
                     if (skipBtn && skipBtn.style.display !== 'none') skipBtn.click();
@@ -3240,6 +3339,7 @@
 
         if (atkCards.length === 0) {
             // 攻击次数还有但卡牌不足：显示"结束攻击"、"出售"、"购买"按钮，允许交易操作
+            game.phase = 'attack-select';
             showOp(game.phaseAttacker, 'end-attack');
             showOp(game.phaseAttacker, 'sell');
             showOp(game.phaseAttacker, 'buy');
@@ -3426,7 +3526,11 @@
                 hideSelectAreas();
                 hideAllOps();
                 showOp(game.phaseAttacker, 'end-attack');
-                setOpsStatus(game.phaseAttacker, '没有攻击卡牌了');
+                showOp(game.phaseAttacker, 'sell');
+                showOp(game.phaseAttacker, 'buy');
+                showOp(game.phaseAttacker, 'synthesis');
+                showOp(game.phaseAttacker, 'cultivation');
+                setOpsStatus(game.phaseAttacker, '没有攻击卡牌了，请选择操作');
                 return;
             }
             renderCardHand(game.phaseAttacker, 'attack');
@@ -3502,6 +3606,7 @@
                 var idx = player.library.findIndex(function (c) { return c.uid === uid; });
                 if (idx >= 0) player.library.splice(idx, 1);
                 playSound('coin');
+                speak('出售成功，获得' + sellPrice + '金币');
                 updatePlayerInfo();
                 notifyPeer('sell-card', { uid: uid, pid: pid });
                 hideModal();
@@ -3569,6 +3674,7 @@
                         var newCard = Object.assign({}, wp); newCard.uid = newCardUid();
                         player.library.push(newCard);
                         playSound('coin');
+                        speak('购买成功，获得' + wp.name);
                         updatePlayerInfo();
                         notifyPeer('buy-card', { weaponId: wp.id, price: wp.price, pid: pid, cardUid: newCard.uid });
                         hideModal();

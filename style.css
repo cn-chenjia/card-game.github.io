@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+/* 使用系统默认中文字体，避免网络请求问题 */
+/* 如需网络字体，可取消注释以下行 */
+/* @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500:700&display=swap'); */
 
 :root {
     --gold: #d4a843;
@@ -31,7 +33,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    font-family: 'Noto Sans SC', sans-serif;
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif;
     background: var(--bg-dark);
     color: var(--text-light);
     overflow: hidden;
@@ -52,7 +54,7 @@ body {
 
 .btn {
     border: none; border-radius: 8px; padding: 10px 24px; font-size: 16px;
-    font-family: 'Noto Sans SC', sans-serif; font-weight: 500; cursor: pointer;
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif; font-weight: 500; cursor: pointer;
     transition: all 0.2s ease; outline: none; position: relative; overflow: hidden;
 }
 .btn:active { transform: scale(0.95); }
@@ -97,7 +99,7 @@ body {
     50% { transform: translateY(-8px); }
 }
 .game-title {
-    font-family: 'Ma Shan Zheng', cursive; font-size: clamp(36px, 8vw, 72px);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: clamp(36px, 8vw, 72px);
     background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     margin-bottom: 8px; letter-spacing: 4px;
@@ -108,7 +110,7 @@ body {
 
 #screen-character { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 10px; }
 .screen-header { text-align: center; padding: 10px 0 6px; flex-shrink: 0; }
-.screen-header h2 { font-family: 'Ma Shan Zheng', cursive; font-size: 24px; color: var(--gold-light); }
+.screen-header h2 { font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 24px; color: var(--gold-light); }
 
 .char-select-layout {
     display: flex; flex: 1; width: 100%; gap: 16px;
@@ -181,7 +183,7 @@ body {
     border: 2px solid var(--gold); border-radius: 16px; padding: 16px; max-width: 260px; margin: 0 auto 12px;
 }
 .char-info-card .char-emoji { font-size: 40px; margin-bottom: 4px; }
-.char-info-card .char-name { font-family: 'Ma Shan Zheng', cursive; font-size: 24px; color: var(--gold-light); margin-bottom: 4px; }
+.char-info-card .char-name { font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 24px; color: var(--gold-light); margin-bottom: 4px; }
 .char-info-card .char-stat { font-size: 13px; color: var(--text-dim); margin: 3px 0; }
 .char-info-card .char-ability {
     background: rgba(212, 168, 67, 0.15); border: 1px solid var(--gold-dark);
@@ -262,8 +264,8 @@ body {
 .panel-a .player-avatar { border-color: var(--red-light); }
 .panel-b .player-avatar { border-color: var(--blue-light); }
 .player-details { min-width: 0; flex: 1; overflow: visible; }
-.player-name { font-size: 11px; color: var(--text-dim); }
-.player-char-name { font-family: 'Ma Shan Zheng', cursive; font-size: 15px; color: var(--gold-light); }
+.player-name { font-size: 11px; color: var(--text-dim); font-family: 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif; }
+.player-char-name { font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 15px; color: var(--gold-light); }
 .hp-bar-container {
     width: 100%; min-width: 70px; height: 14px; background: rgba(0, 0, 0, 0.5);
     border-radius: 8px; overflow: hidden; position: relative; border: 1px solid rgba(255, 255, 255, 0.1);
@@ -295,7 +297,7 @@ body {
     max-height: 50vh;
 }
 .panel-library-title {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 14px; color: var(--gold-light);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 14px; color: var(--gold-light);
     text-align: center; padding: 3px 0; border-bottom: 1px solid rgba(212, 168, 67, 0.2); margin-bottom: 3px;
 }
 .panel-library-section { margin-bottom: 4px; }
@@ -313,7 +315,7 @@ body {
 }
 .panel-select-area.hidden { display: none; }
 .panel-select-title {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 12px; color: var(--gold-light);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 12px; color: var(--gold-light);
     text-align: center; margin-bottom: 4px;
 }
 .panel-select-cards {
@@ -336,7 +338,7 @@ body {
     padding: 4px; border-radius: 4px;
     background: rgba(212, 168, 67, 0.1);
     min-height: 22px;
-    font-family: 'Ma Shan Zheng', cursive;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
 }
 .btn-op {
     width: 100%; padding: 6px 10px; font-size: 12px; border-radius: 6px;
@@ -429,7 +431,7 @@ body {
     display: flex; align-items: center; justify-content: center; gap: 16px;
 }
 .center-top #round-number {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 20px; color: var(--gold);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 20px; color: var(--gold);
 }
 
 .online-status-bar {
@@ -440,7 +442,7 @@ body {
     width: 100%; box-sizing: border-box; justify-content: flex-start; flex-wrap: wrap;
 }
 .opponent-info-label {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 14px; color: var(--gold);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 14px; color: var(--gold);
     font-weight: bold; border-right: 1px solid rgba(212,168,67,0.3); padding-right: 8px; margin-right: 2px;
 }
 .opponent-char-info {
@@ -467,7 +469,7 @@ body {
 #battle-peer-text.connected { color: #4ade80; }
 
 .attack-progress { display: flex; align-items: center; gap: 4px; }
-.attack-progress-label { font-size: 9px; color: var(--text-dim); font-family: 'Noto Sans SC', sans-serif; white-space: nowrap; }
+.attack-progress-label { font-size: 9px; color: var(--text-dim); font-family: 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif; white-space: nowrap; }
 .attack-progress-bar-container {
     width: 60px; height: 8px; background: rgba(0, 0, 0, 0.5);
     border-radius: 4px; overflow: hidden; border: 1px solid rgba(212, 168, 67, 0.3);
@@ -478,11 +480,11 @@ body {
 }
 .attack-progress-text {
     font-size: 10px; color: var(--gold-light);
-    font-family: 'Noto Sans SC', sans-serif; font-weight: 700; white-space: nowrap;
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif; font-weight: 700; white-space: nowrap;
 }
 
 .action-hint {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 18px; color: var(--gold-light);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 18px; color: var(--gold-light);
     text-align: center;
 }
 
@@ -493,7 +495,7 @@ body {
 }
 
 .battle-section { width: 100%; max-width: 560px; text-align: center; animation: fadeInUp 0.4s ease; }
-.section-title { font-family: 'Ma Shan Zheng', cursive; font-size: 22px; color: var(--gold-light); margin-bottom: 6px; }
+.section-title { font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 22px; color: var(--gold-light); margin-bottom: 6px; }
 .drawn-cards { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; min-height: 60px; }
 .dice-container { display: flex; justify-content: center; margin: 16px 0; }
 .dice {
@@ -515,7 +517,7 @@ body {
 
 .damage-display { text-align: center; padding: 16px; animation: fadeInUp 0.4s ease; position: relative; z-index: 2; }
 .damage-display .damage-number {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 48px; color: var(--red-light);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 48px; color: var(--red-light);
     text-shadow: 0 0 20px rgba(231, 76, 60, 0.5); animation: damagePopIn 0.5s ease;
 }
 .damage-display .damage-detail { font-size: 13px; color: var(--text-dim); margin: 6px 0; }
@@ -534,7 +536,7 @@ body {
 }
 .battle-log.hidden { display: none; }
 .battle-log-title {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 14px; color: var(--gold-light);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 14px; color: var(--gold-light);
     text-align: center; margin-bottom: 4px;
     border-bottom: 1px solid rgba(212, 168, 67, 0.15); padding-bottom: 3px;
 }
@@ -570,7 +572,7 @@ body {
     margin-bottom: 6px;
 }
 .table-cards-empty {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 14px; color: var(--text-dim);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 14px; color: var(--text-dim);
     text-align: center; padding: 8px;
 }
 .table-card-item {
@@ -761,7 +763,7 @@ body {
 }
 
 .rarity-tag {
-    font-family: 'Ma Shan Zheng', cursive;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
     font-size: 20px; text-align: center; padding: 6px 0;
     margin-bottom: 8px; border-radius: 8px;
     animation: tagPulse 1s ease infinite;
@@ -804,7 +806,7 @@ body {
 .vs-fighter.vs-right { animation-delay: 0.4s; }
 .vs-fighter .vs-emoji { font-size: 64px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
 .vs-fighter .vs-emoji img { width: 80px; height: 80px; object-fit: contain; border-radius: 8px; }
-.vs-fighter .vs-name { font-family: 'Ma Shan Zheng', cursive; font-size: 28px; color: var(--gold-light); }
+.vs-fighter .vs-name { font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 28px; color: var(--gold-light); }
 .vs-fighter .vs-player { font-size: 14px; color: var(--text-dim); }
 .vs-fighter .vs-hp { font-size: 12px; color: var(--text-dim); }
 .vs-fighter .vs-ability { font-size: 11px; color: var(--gold); background: rgba(212,168,67,0.1); padding: 2px 8px; border-radius: 4px; }
@@ -822,7 +824,7 @@ body {
     100% { transform: translateX(0) scale(1); opacity: 1; }
 }
 .vs-text {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 72px; color: var(--red-light);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 72px; color: var(--red-light);
     text-shadow: 0 0 30px rgba(231, 76, 60, 0.6), 0 0 60px rgba(231, 76, 60, 0.3);
     animation: vsTextPulse 0.6s ease-out 0.6s both;
     flex-shrink: 0;
@@ -833,9 +835,9 @@ body {
     100% { transform: scale(1); opacity: 1; }
 }
 .gameover-content { text-align: center; padding: 20px; animation: fadeInUp 0.6s ease; }
-.gameover-title { font-family: 'Ma Shan Zheng', cursive; font-size: 36px; color: var(--gold-light); margin-bottom: 20px; }
+.gameover-title { font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 36px; color: var(--gold-light); margin-bottom: 20px; }
 .winner-display { margin: 20px 0; }
-.winner-display .winner-char { font-family: 'Ma Shan Zheng', cursive; font-size: 48px; color: var(--gold); margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.winner-display .winner-char { font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 48px; color: var(--gold); margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .winner-display .winner-char img { width: 56px; height: 56px; object-fit: contain; border-radius: 8px; vertical-align: middle; }
 .winner-display .winner-player { font-size: 20px; color: var(--text-light); }
 .game-stats {
@@ -849,7 +851,7 @@ body {
 
 .round-detail-section { margin-top: 12px; text-align: left; }
 .round-detail-title {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 16px; color: var(--gold-light);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 16px; color: var(--gold-light);
     text-align: center; margin-bottom: 8px; padding-bottom: 4px;
     border-bottom: 1px solid rgba(212, 168, 67, 0.3);
 }
@@ -884,7 +886,7 @@ body {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
     background: linear-gradient(90deg, var(--gold-dark), var(--gold-light), var(--gold-dark));
 }
-.modal-content h3 { font-family: 'Ma Shan Zheng', cursive; font-size: 24px; color: var(--gold-light); margin-bottom: 12px; }
+.modal-content h3 { font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 24px; color: var(--gold-light); margin-bottom: 12px; }
 .modal-content p { font-size: 14px; color: var(--text-dim); margin: 8px 0; }
 .modal-content .modal-btn { margin-top: 16px; }
 .modal-actions { margin-top: 12px; }
@@ -1040,7 +1042,7 @@ body {
     100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 .card-play-player {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 20px; color: var(--gold-light);
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 20px; color: var(--gold-light);
     text-shadow: 0 0 10px rgba(212, 168, 67, 0.5);
 }
 .card-play-card {
@@ -1091,7 +1093,7 @@ body {
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-family: 'Noto Sans SC', sans-serif;
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif;
     white-space: nowrap;
 }
 
@@ -1171,7 +1173,7 @@ body {
     font-weight: 500;
 }
 .card-play-desc {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 22px; color: #fff;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 22px; color: #fff;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     text-align: center; max-width: 320px;
     animation: cardPlayDescIn 0.4s ease 0.3s both;
@@ -1202,7 +1204,7 @@ body {
 }
 
 .card-play-skill {
-    font-family: 'Ma Shan Zheng', cursive; font-size: 18px; color: #ce93d8;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 18px; color: #ce93d8;
     text-shadow: 0 0 10px rgba(156, 39, 176, 0.5);
     text-align: center; max-width: 320px;
     padding: 6px 12px; background: rgba(156, 39, 176, 0.15);
@@ -1244,7 +1246,7 @@ body {
     text-align: center;
 }
 .slot-label {
-    font-family: 'Ma Shan Zheng', cursive;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
     font-size: 14px;
     color: var(--gold-light);
     margin-bottom: 8px;
@@ -1419,7 +1421,7 @@ body {
 
 /* ====== 修炼卡槽区域 ====== */
 .cultivation-section-title {
-    font-family: 'Ma Shan Zheng', cursive;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
     font-size: 14px;
     color: var(--gold-light);
     margin: 16px 0 8px;
@@ -1835,7 +1837,7 @@ body {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 .lobby-title {
-    font-family: 'Ma Shan Zheng', cursive;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
     font-size: 32px;
     color: var(--gold-light);
     text-shadow: 0 2px 8px rgba(212, 168, 67, 0.3);
@@ -1936,7 +1938,7 @@ body {
     color: var(--text-dim);
     opacity: 0.6;
     font-size: 14px;
-    font-family: 'Noto Sans SC', sans-serif;
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif;
     font-weight: 400;
     text-transform: none;
 }
@@ -2069,7 +2071,7 @@ body {
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .organize-hint {
-    font-family: 'Ma Shan Zheng', cursive;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
     font-size: 20px;
     color: var(--gold-light);
     text-align: center;
@@ -2369,7 +2371,7 @@ body {
     white-space: nowrap;
 }
 .char-card-front .card-char-name {
-    font-family: 'Ma Shan Zheng', cursive;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
     font-size: 18px;
     color: var(--gold-light);
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
@@ -2552,7 +2554,7 @@ body {
 }
 
 .card-spotlight-card .card-char-name {
-    font-family: 'Ma Shan Zheng', cursive;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
     font-size: 28px;
     color: #ffd700;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
@@ -2622,7 +2624,7 @@ body {
 }
 
 .card-spotlight-name {
-    font-family: 'Ma Shan Zheng', cursive;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
     font-size: 36px;
     color: #ffd700;
     text-shadow:
@@ -2703,7 +2705,7 @@ body {
     min-width: 120px;
 }
 .char-selected-display .select-label {
-    font-family: 'Ma Shan Zheng', cursive;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
     font-size: 16px;
     color: var(--gold-light);
 }
@@ -2739,7 +2741,7 @@ body {
     background: linear-gradient(145deg, #2a1f4e, #1a1a3e);
 }
 .char-vs-badge {
-    font-family: 'Ma Shan Zheng', cursive;
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
     font-size: 28px;
     color: var(--gold);
     text-shadow: 0 0 12px rgba(212, 168, 67, 0.4);
