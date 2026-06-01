@@ -2012,34 +2012,68 @@
             readyBtn.onclick = onReadyClick;
         }
         
-        $('action-hint').textContent = '⏱️ 整理阶段 - 请准备卡牌';
-        
-        var panelA = document.getElementById('panel-a');
-        var panelB = document.getElementById('panel-b');
-        panelA.classList.remove('inactive-panel');
-        panelA.classList.add('active-panel', 'organize-active');
-        panelB.classList.remove('inactive-panel');
-        panelB.classList.add('active-panel', 'organize-active');
-        
-        hideAllOps(['btn-a-sell', 'btn-a-buy', 'btn-a-synthesis', 'btn-a-cultivation', 'btn-b-sell', 'btn-b-buy', 'btn-b-synthesis', 'btn-b-cultivation']);
-        
-        showOp('A', 'sell');
-        showOp('A', 'buy');
-        showOp('A', 'synthesis');
-        showOp('A', 'cultivation');
-        showOp('B', 'sell');
-        showOp('B', 'buy');
-        showOp('B', 'synthesis');
-        showOp('B', 'cultivation');
+        // 单机模式：先让玩家A操作，隐藏玩家B操作区
+        if (!isOnlineMode) {
+            game.currentPlayer = 'A';
+            var panelA = document.getElementById('panel-a');
+            var panelB = document.getElementById('panel-b');
+            
+            // 显示玩家A操作区，隐藏玩家B操作区
+            if (panelA) {
+                panelA.style.display = 'flex';
+                panelA.classList.remove('inactive-panel');
+                panelA.classList.add('active-panel', 'organize-active');
+            }
+            if (panelB) {
+                panelB.style.display = 'none';
+                panelB.classList.remove('active-panel', 'organize-active', 'inactive-panel');
+            }
+            
+            $('action-hint').textContent = '⏱️ 整理阶段 - 玩家A请准备卡牌（300秒）';
+            
+            // 只显示玩家A的操作按钮
+            hideAllOps(['btn-a-sell', 'btn-a-buy', 'btn-a-synthesis', 'btn-a-cultivation', 'btn-b-sell', 'btn-b-buy', 'btn-b-synthesis', 'btn-b-cultivation']);
+            showOp('A', 'sell');
+            showOp('A', 'buy');
+            showOp('A', 'synthesis');
+            showOp('A', 'cultivation');
+            
+            // 设置300秒倒计时
+            showCountdown(300, function () {
+                console.log('[ Organize ] ⏰ 玩家A倒计时结束，切换到玩家B');
+                switchToPlayerBOrganize();
+            });
+        } else {
+            // 联机模式保持原有逻辑
+            $('action-hint').textContent = '⏱️ 整理阶段 - 请准备卡牌';
+            
+            var panelA = document.getElementById('panel-a');
+            var panelB = document.getElementById('panel-b');
+            panelA.classList.remove('inactive-panel');
+            panelA.classList.add('active-panel', 'organize-active');
+            panelB.classList.remove('inactive-panel');
+            panelB.classList.add('active-panel', 'organize-active');
+            
+            hideAllOps(['btn-a-sell', 'btn-a-buy', 'btn-a-synthesis', 'btn-a-cultivation', 'btn-b-sell', 'btn-b-buy', 'btn-b-synthesis', 'btn-b-cultivation']);
+            
+            showOp('A', 'sell');
+            showOp('A', 'buy');
+            showOp('A', 'synthesis');
+            showOp('A', 'cultivation');
+            showOp('B', 'sell');
+            showOp('B', 'buy');
+            showOp('B', 'synthesis');
+            showOp('B', 'cultivation');
+            
+            showCountdown(600, function () {
+                console.log('[ Organize ] ⏰ 倒计时结束，进入骰子阶段');
+                exitOrganizePhase();
+                startDicePhase();
+            });
+        }
         
         updateLibraryDisplay();
         updatePlayerInfo();
-        
-        showCountdown(600, function () {
-            console.log('[ Organize ] ⏰ 倒计时结束，进入骰子阶段');
-            exitOrganizePhase();
-            startDicePhase();
-        });
     }
 
     var organizeReadyState = { A: false, B: false };
@@ -2052,6 +2086,31 @@
         var currentPid = isOnlineMode ? Multiplayer.getMyRole() : game.currentPlayer;
         organizeReadyState[currentPid] = true;
 
+        // 单机模式：点击准备就绪后直接切换到下一个玩家
+        if (!isOnlineMode) {
+            clearCountdown();
+            
+            if (currentPid === 'A') {
+                // 玩家A已准备，切换到玩家B
+                console.log('[ Organize ] 玩家A已准备，切换到玩家B');
+                switchToPlayerBOrganize();
+            } else {
+                // 玩家B已准备，进入下一阶段
+                console.log('[ Organize ] 玩家B已准备，进入骰子阶段');
+                btn.textContent = '✅ 双方已准备';
+                btn.classList.add('ready-clicked');
+                btn.disabled = true;
+                $('action-hint').textContent = '✅ 双方都已准备！即将开始...';
+                
+                setTimeout(function () {
+                    exitOrganizePhase();
+                    startDicePhase();
+                }, 800);
+            }
+            return;
+        }
+
+        // 联机模式保持原有逻辑
         var otherReady = organizeReadyState[currentPid === 'A' ? 'B' : 'A'];
 
         if (otherReady) {
@@ -2131,6 +2190,63 @@
             tip.style.transform = 'translate(-50%,-60%) scale(0.95)';
             setTimeout(function() { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 300);
         }, 1700);
+    }
+
+    // 单机模式：切换到玩家B操作
+    function switchToPlayerBOrganize() {
+        console.log('[ Organize ] 切换到玩家B操作');
+        game.currentPlayer = 'B';
+        
+        var panelA = document.getElementById('panel-a');
+        var panelB = document.getElementById('panel-b');
+        
+        // 隐藏玩家A操作区，显示玩家B操作区
+        if (panelA) {
+            panelA.style.display = 'none';
+            panelA.classList.remove('active-panel', 'organize-active', 'inactive-panel');
+        }
+        if (panelB) {
+            panelB.style.display = 'flex';
+            panelB.classList.remove('inactive-panel');
+            panelB.classList.add('active-panel', 'organize-active');
+        }
+        
+        $('action-hint').textContent = '⏱️ 整理阶段 - 玩家B请准备卡牌（300秒）';
+        
+        // 重置准备按钮状态
+        var readyBtn = $('btn-ready');
+        if (readyBtn) {
+            readyBtn.disabled = false;
+            readyBtn.textContent = '✅ 准备就绪';
+            readyBtn.classList.remove('ready-clicked');
+        }
+        
+        // 隐藏玩家A的操作按钮，显示玩家B的操作按钮
+        hideAllOps(['btn-a-sell', 'btn-a-buy', 'btn-a-synthesis', 'btn-a-cultivation', 'btn-b-sell', 'btn-b-buy', 'btn-b-synthesis', 'btn-b-cultivation']);
+        showOp('B', 'sell');
+        showOp('B', 'buy');
+        showOp('B', 'synthesis');
+        showOp('B', 'cultivation');
+        
+        updateLibraryDisplay();
+        updatePlayerInfo();
+        
+        // 设置300秒倒计时
+        showCountdown(300, function () {
+            console.log('[ Organize ] ⏰ 玩家B倒计时结束，进入骰子阶段');
+            var btn = $('btn-ready');
+            if (btn) {
+                btn.textContent = '✅ 双方已准备';
+                btn.classList.add('ready-clicked');
+                btn.disabled = true;
+            }
+            $('action-hint').textContent = '✅ 双方都已准备！即将开始...';
+            
+            setTimeout(function () {
+                exitOrganizePhase();
+                startDicePhase();
+            }, 800);
+        });
     }
 
     function exitOrganizePhase() {
@@ -2302,7 +2418,11 @@
             hideSelectAreas();
             hideAllOps();
             showOp(game.phaseAttacker, 'end-attack');
-            setOpsStatus(game.phaseAttacker, '没有攻击卡牌了');
+            showOp(game.phaseAttacker, 'sell');
+            showOp(game.phaseAttacker, 'buy');
+            showOp(game.phaseAttacker, 'synthesis');
+            showOp(game.phaseAttacker, 'cultivation');
+            setOpsStatus(game.phaseAttacker, '没有攻击卡牌了，请选择操作');
             showTradeOpsForNonActivePlayer(game.phaseDefender);
             return;
         }
@@ -3105,7 +3225,7 @@
         var atkCards = getPlayer(game.phaseAttacker).library.filter(function (c) { return c.type === 'attack'; });
         var maxAtk = getMaxAttacks();
 
-        if (game.currentAttackIndex >= maxAtk || atkCards.length === 0) {
+        if (game.currentAttackIndex >= maxAtk) {
             notifyPeer('end-attack', { currentAttackIndex: game.currentAttackIndex, attackReduction: game.attackReduction, bonusAttacks: game.bonusAttacks, isCounterPhase: game.isCounterPhase });
             afterAttackPhaseEnds();
             return;
@@ -3117,6 +3237,19 @@
 
         var phaseLabel = game.isCounterPhase ? '反击' : '攻击';
         $('action-hint').textContent = phaseLabel + '阶段（已攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）';
+
+        if (atkCards.length === 0) {
+            // 攻击次数还有但卡牌不足：显示"结束攻击"、"出售"、"购买"按钮，允许交易操作
+            showOp(game.phaseAttacker, 'end-attack');
+            showOp(game.phaseAttacker, 'sell');
+            showOp(game.phaseAttacker, 'buy');
+            showOp(game.phaseAttacker, 'synthesis');
+            showOp(game.phaseAttacker, 'cultivation');
+            setOpsStatus(game.phaseAttacker, '没有攻击卡牌了，请选择操作');
+            announcePlayerTurn(game.phaseAttacker, '没有攻击卡牌了，请选择是否结束攻击');
+            showTradeOpsForNonActivePlayer(game.phaseDefender);
+            return;
+        }
 
         showOp(game.phaseAttacker, 'continue-attack', { text: '⚔️ 继续攻击（' + (game.currentAttackIndex + 1) + '/' + maxAtk + '）<span id="ca-countdown">(10s)</span>', html: true });
         showOp(game.phaseAttacker, 'end-attack');
