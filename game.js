@@ -189,7 +189,7 @@
         firstAttacker: null, secondAttacker: null,
         weaponDrawCountA: 0, weaponDrawCountB: 0,
         selectedCardUid: null, soundEnabled: true, voiceEnabled: true, bgmEnabled: false,
-        bgmVolume: 0, sfxVolume: 80,
+        bgmVolume: 40, sfxVolume: 80,
         totalDamageA: 0, totalDamageB: 0, usedCharIds: [],
         currentDrawnCard: null,
         currentAttackIndex: 0,
@@ -234,8 +234,8 @@
             if (!bgMusic) {
                 bgMusic = new Audio('resources/music/偷功.flac');
                 bgMusic.loop = true;
-                bgMusic.volume = 0.4;
             }
+            bgMusic.volume = game.bgmEnabled ? (game.bgmVolume / 100) : 0;
             bgMusic.play().then(function() {
                 bgMusicPlaying = true;
                 console.log('[音乐] ✅ 背景音乐开始播放（偷功）');
@@ -252,8 +252,8 @@
             if (!battleBgMusic) {
                 battleBgMusic = new Audio('resources/music/清心普善咒.flac');
                 battleBgMusic.loop = true;
-                battleBgMusic.volume = 0.4;
             }
+            battleBgMusic.volume = game.bgmEnabled ? (game.bgmVolume / 100) : 0;
             battleBgMusic.play().then(function() {
                 bgMusicPlaying = true;
                 console.log('[音乐] ✅ 对战背景音乐开始播放（清心普善咒）');
@@ -405,6 +405,10 @@
 
     function doSpeak(utter) {
         try {
+            if (!game.voiceEnabled) {
+                isSpeaking = false;
+                return;
+            }
             var synth = window.speechSynthesis;
             var ctx = getAudioCtx();
             if (ctx && ctx.state === 'suspended') ctx.resume();
@@ -1109,23 +1113,42 @@
         });
         $('btn-bgm').addEventListener('click', function () {
             game.bgmEnabled = !game.bgmEnabled;
+            if (!game.bgmEnabled) {
+                if (bgMusic) bgMusic.volume = 0;
+                if (battleBgMusic) battleBgMusic.volume = 0;
+            } else {
+                if (!bgMusicPlaying || !bgMusic) playBgMusic();
+                else bgMusic.volume = game.bgmVolume / 100;
+                if (battleBgMusic) battleBgMusic.volume = game.bgmVolume / 100;
+            }
             $('btn-bgm').textContent = game.bgmEnabled ? '🎵 音乐：开' : '🔇 音乐：关';
-            toggleBgMusic(game.bgmEnabled);
             if (game.soundEnabled) playSound('click');
             syncSoundSliders();
         });
         initBattleSoundSliders();
         syncSoundSliders();
+        initCharSelectSoundControls();
+        initVsSoundControls();
+        initGameoverSoundControls();
     }
 
     function syncSoundSliders() {
-        var bgmBtn = $('btn-bgm'), sfxBtn = $('btn-sound');
-        if (bgmBtn) {
-            bgmBtn.textContent = game.bgmEnabled ? '🎵 音乐：开' : '🔇 音乐：关';
-        }
-        if (sfxBtn) {
-            sfxBtn.textContent = game.soundEnabled ? '🔊 音效：开' : '🔇 音效：关';
-        }
+        var bgmBtns = ['btn-bgm', 'char-btn-bgm', 'vs-btn-bgm', 'gameover-btn-bgm'];
+        var sfxBtns = ['btn-sound', 'char-btn-sound', 'vs-btn-sound', 'gameover-btn-sound'];
+
+        bgmBtns.forEach(function(id) {
+            var btn = $(id);
+            if (btn) {
+                btn.textContent = game.bgmEnabled ? '🎵 音乐：开' : '🔇 音乐：关';
+            }
+        });
+
+        sfxBtns.forEach(function(id) {
+            var btn = $(id);
+            if (btn) {
+                btn.textContent = game.soundEnabled ? '🔊 音效：开' : '🔇 音效：关';
+            }
+        });
 
         var sliders = [
             { slider: $('slider-bgm-a'), value: $('value-bgm-a') },
@@ -1137,13 +1160,13 @@
         sliders.forEach(function(item) {
             if (item.slider) {
                 if (item.slider.id.indexOf('bgm') >= 0) {
-                    item.slider.value = game.bgmVolume;
-                    if (item.value) item.value.textContent = game.bgmVolume + '%';
-                    item.slider.disabled = !game.bgmEnabled;
+                    var displayVol = game.bgmEnabled ? game.bgmVolume : 0;
+                    item.slider.value = displayVol;
+                    if (item.value) item.value.textContent = displayVol + '%';
                 } else {
-                    item.slider.value = game.sfxVolume;
-                    if (item.value) item.value.textContent = game.sfxVolume + '%';
-                    item.slider.disabled = !game.soundEnabled;
+                    var displayVol = game.soundEnabled ? game.sfxVolume : 0;
+                    item.slider.value = displayVol;
+                    if (item.value) item.value.textContent = displayVol + '%';
                 }
             }
         });
@@ -1158,8 +1181,18 @@
             if (slider) {
                 slider.addEventListener('input', function() {
                     var vol = parseInt(this.value);
+                    var wasEnabled = game.bgmEnabled;
                     game.bgmVolume = vol;
+                    game.bgmEnabled = vol > 0;
                     updateBgmVolume(vol);
+                    if (!wasEnabled && vol > 0) {
+                        // 从关闭变为开启，需要启动音乐
+                        if (game.phase === 'battle' || game.phase === 'vs' || game.phase === 'gameover') {
+                            playBattleBgMusic();
+                        } else {
+                            playBgMusic();
+                        }
+                    }
                     syncSoundSliders();
                 });
             }
@@ -1171,11 +1204,106 @@
                 slider.addEventListener('input', function() {
                     var vol = parseInt(this.value);
                     game.sfxVolume = vol;
+                    game.soundEnabled = vol > 0;
                     updateSfxVolume(vol);
                     syncSoundSliders();
                 });
             }
         });
+    }
+
+    function initCharSelectSoundControls() {
+        var btnBgm = $('char-btn-bgm');
+        var btnSound = $('char-btn-sound');
+
+        if (btnBgm) {
+            btnBgm.addEventListener('click', function () {
+                game.bgmEnabled = !game.bgmEnabled;
+                if (!game.bgmEnabled) {
+                    if (bgMusic) bgMusic.volume = 0;
+                    if (battleBgMusic) battleBgMusic.volume = 0;
+                } else {
+                    if (!bgMusicPlaying || !bgMusic) playBgMusic();
+                    else bgMusic.volume = game.bgmVolume / 100;
+                    if (battleBgMusic) battleBgMusic.volume = game.bgmVolume / 100;
+                }
+                btnBgm.textContent = game.bgmEnabled ? '🎵 音乐：开' : '🔇 音乐：关';
+                if (game.soundEnabled) playSound('click');
+                syncSoundSliders();
+            });
+        }
+
+        if (btnSound) {
+            btnSound.addEventListener('click', function () {
+                game.soundEnabled = !game.soundEnabled;
+                game.voiceEnabled = game.soundEnabled;
+                btnSound.textContent = game.soundEnabled ? '🔊 音效：开' : '🔇 音效：关';
+                if (game.soundEnabled) playSound('click');
+                syncSoundSliders();
+            });
+        }
+    }
+
+    function initVsSoundControls() {
+        var btnBgm = $('vs-btn-bgm');
+        var btnSound = $('vs-btn-sound');
+
+        if (btnBgm) {
+            btnBgm.addEventListener('click', function () {
+                game.bgmEnabled = !game.bgmEnabled;
+                if (!game.bgmEnabled) {
+                    if (bgMusic) bgMusic.volume = 0;
+                    if (battleBgMusic) battleBgMusic.volume = 0;
+                } else {
+                    if (!bgMusicPlaying || !bgMusic) playBattleBgMusic();
+                    else if (battleBgMusic) battleBgMusic.volume = game.bgmVolume / 100;
+                }
+                btnBgm.textContent = game.bgmEnabled ? '🎵 音乐：开' : '🔇 音乐：关';
+                if (game.soundEnabled) playSound('click');
+                syncSoundSliders();
+            });
+        }
+
+        if (btnSound) {
+            btnSound.addEventListener('click', function () {
+                game.soundEnabled = !game.soundEnabled;
+                game.voiceEnabled = game.soundEnabled;
+                btnSound.textContent = game.soundEnabled ? '🔊 音效：开' : '🔇 音效：关';
+                if (game.soundEnabled) playSound('click');
+                syncSoundSliders();
+            });
+        }
+    }
+
+    function initGameoverSoundControls() {
+        var btnBgm = $('gameover-btn-bgm');
+        var btnSound = $('gameover-btn-sound');
+
+        if (btnBgm) {
+            btnBgm.addEventListener('click', function () {
+                game.bgmEnabled = !game.bgmEnabled;
+                if (!game.bgmEnabled) {
+                    if (bgMusic) bgMusic.volume = 0;
+                    if (battleBgMusic) battleBgMusic.volume = 0;
+                } else {
+                    if (!bgMusicPlaying || !bgMusic) playBattleBgMusic();
+                    else if (battleBgMusic) battleBgMusic.volume = game.bgmVolume / 100;
+                }
+                btnBgm.textContent = game.bgmEnabled ? '🎵 音乐：开' : '🔇 音乐：关';
+                if (game.soundEnabled) playSound('click');
+                syncSoundSliders();
+            });
+        }
+
+        if (btnSound) {
+            btnSound.addEventListener('click', function () {
+                game.soundEnabled = !game.soundEnabled;
+                game.voiceEnabled = game.soundEnabled;
+                btnSound.textContent = game.soundEnabled ? '🔊 音效：开' : '🔇 音效：关';
+                if (game.soundEnabled) playSound('click');
+                syncSoundSliders();
+            });
+        }
     }
 
     var charSelectState = {
@@ -1200,6 +1328,7 @@
         showFlipButton();
         speak('侠客卡牌巡礼中');
         if (game.bgmEnabled) playBgMusic();
+        else updateBgmVolume(0);
         clearCountdown();
         clearOpponentWaitCountdown();
         setTimeout(function () {
@@ -1776,18 +1905,30 @@
     function updateWeaponDrawUI() {
         var weaponWheelEl = document.querySelector('#weapon-draw-area .wheel-container');
         var panelA = $('panel-a'), panelB = $('panel-b');
+        var btnASpin = $('btn-a-spin-weapon'), btnBSpin = $('btn-b-spin-weapon');
+
+        // 隐藏两个按钮，后续按需显示
+        if (btnASpin) btnASpin.style.display = 'none';
+        if (btnBSpin) btnBSpin.style.display = 'none';
 
         if (!isOnlineMode) {
             var currentPid = game.currentPlayer || 'A';
             if (currentPid === 'A') {
-                if (game.weaponDrawCountA >= 3) { showOp('A', 'spin-weapon', { disabled: true }); }
-                else { showOp('A', 'spin-weapon'); }
+                // 单机模式：控制中间区域的按钮
+                if (game.weaponDrawCountA >= 3) {
+                    if (btnASpin) { btnASpin.style.display = 'block'; btnASpin.disabled = true; btnASpin.textContent = '✅ 已完成'; }
+                } else {
+                    if (btnASpin) { btnASpin.style.display = 'block'; btnASpin.disabled = false; btnASpin.textContent = '🎰 转动转盘'; }
+                }
                 setOpsStatus('A', game.weaponDrawCountA >= 3 ? '✅ 已完成' : '请抽取武器');
                 if (panelA) { panelA.style.display = 'flex'; }
                 if (panelB) { panelB.style.display = 'none'; }
             } else if (currentPid === 'B') {
-                if (game.weaponDrawCountB >= 3) { showOp('B', 'spin-weapon', { disabled: true }); }
-                else { showOp('B', 'spin-weapon'); }
+                if (game.weaponDrawCountB >= 3) {
+                    if (btnBSpin) { btnBSpin.style.display = 'block'; btnBSpin.disabled = true; btnBSpin.textContent = '✅ 已完成'; }
+                } else {
+                    if (btnBSpin) { btnBSpin.style.display = 'block'; btnBSpin.disabled = false; btnBSpin.textContent = '🎰 转动转盘'; }
+                }
                 setOpsStatus('B', game.weaponDrawCountB >= 3 ? '✅ 已完成' : '请抽取武器');
                 if (panelB) { panelB.style.display = 'flex'; }
                 if (panelA) { panelA.style.display = 'none'; }
@@ -1801,20 +1942,31 @@
                 $('action-hint').textContent = ' 第' + game.round + '轮 - 武器抽取完成';
             }
         } else {
+            // 联机模式：双方按钮都可见
             if (canIOperate('A')) {
-                if (game.weaponDrawCountA >= 3) { showOp('A', 'spin-weapon', { disabled: true }); }
-                else { showOp('A', 'spin-weapon'); }
+                if (game.weaponDrawCountA >= 3) {
+                    if (btnASpin) { btnASpin.style.display = 'block'; btnASpin.disabled = true; btnASpin.textContent = '✅ 已完成'; }
+                } else {
+                    if (btnASpin) { btnASpin.style.display = 'block'; btnASpin.disabled = false; btnASpin.textContent = '🎰 转动转盘'; }
+                }
                 setOpsStatus('A', game.weaponDrawCountA >= 3 ? '✅ 已完成' : '请抽取武器');
             } else {
-                if (game.weaponDrawCountA >= 3) { showOp('A', 'spin-weapon', { disabled: true }); }
+                if (game.weaponDrawCountA >= 3) {
+                    if (btnASpin) { btnASpin.style.display = 'block'; btnASpin.disabled = true; btnASpin.textContent = '✅ 已完成'; }
+                }
                 setOpsStatus('A', game.weaponDrawCountA >= 3 ? '✅ 已完成' : '⏳ 对方抽取中...');
             }
             if (canIOperate('B')) {
-                if (game.weaponDrawCountB >= 3) { showOp('B', 'spin-weapon', { disabled: true }); }
-                else { showOp('B', 'spin-weapon'); }
+                if (game.weaponDrawCountB >= 3) {
+                    if (btnBSpin) { btnBSpin.style.display = 'block'; btnBSpin.disabled = true; btnBSpin.textContent = '✅ 已完成'; }
+                } else {
+                    if (btnBSpin) { btnBSpin.style.display = 'block'; btnBSpin.disabled = false; btnBSpin.textContent = '🎰 转动转盘'; }
+                }
                 setOpsStatus('B', game.weaponDrawCountB >= 3 ? '✅ 已完成' : '请抽取武器');
             } else {
-                if (game.weaponDrawCountB >= 3) { showOp('B', 'spin-weapon', { disabled: true }); }
+                if (game.weaponDrawCountB >= 3) {
+                    if (btnBSpin) { btnBSpin.style.display = 'block'; btnBSpin.disabled = true; btnBSpin.textContent = '✅ 已完成'; }
+                }
                 setOpsStatus('B', game.weaponDrawCountB >= 3 ? '✅ 已完成' : '⏳ 对方抽取中...');
             }
             if (weaponWheelEl) { weaponWheelEl.style.opacity = '1'; weaponWheelEl.style.pointerEvents = 'auto'; }
@@ -2001,8 +2153,13 @@
         console.log('[ Weapon ] 🎯 finishWeaponDraw 被调用, isOnlineMode:', isOnlineMode, 'isHost:', Multiplayer.isHost());
         
         var panelA = $('panel-a'), panelB = $('panel-b');
-        if (panelA) { panelA.style.display = ''; }
-        if (panelB) { panelB.style.display = ''; }
+        if (!isOnlineMode) {
+            if (panelA) { panelA.style.display = 'none'; }
+            if (panelB) { panelB.style.display = 'none'; }
+        } else {
+            if (panelA) { panelA.style.display = ''; }
+            if (panelB) { panelB.style.display = ''; }
+        }
         
         hideAllOps();
         updatePlayerInfo();
