@@ -1,6 +1,17 @@
 (function () {
     'use strict';
 
+    /* 修复 Chrome Android 底部工具栏导致的 100vh 问题 */
+    (function fixViewportHeight() {
+        function setVh() {
+            var vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', vh + 'px');
+        }
+        setVh();
+        window.addEventListener('resize', setVh);
+        window.addEventListener('orientationchange', function() { setTimeout(setVh, 100); });
+    })();
+
     function handleError(fnName, err) {
         var msg = err && err.message ? err.message : String(err || '未知错误');
         console.error('[' + fnName + '] 错误:', err);
@@ -526,27 +537,78 @@
         if (el) el.classList.add('hidden');
     }
 
-    function createCardHTML(card, selectable) {
-        var cls = 'weapon-card rarity-' + card.rarity;
-        if (selectable) cls += ' selectable';
+    /**
+     * 装备卡牌统一组件生成函数
+     * @param {Object} card - 卡牌数据 { uid, name, type, rarity, price, value, icon, skill }
+     * @param {Object} opts - 可选配置
+     *   size:      'xs'|'sm'|'md'|'lg'|'xl'  尺寸预设（默认'md'）
+     *   selectable: boolean                   是否可点击选择
+     *   isNew:     boolean                     是否新获得（带入场动画）
+     *   showPrice: boolean                     是否显示价格（默认true）
+     *   showType:  boolean                     是否显示类型标签（默认true）
+     *   extraCls:  string                      额外CSS类名
+     *   style:     string                      额内联样式
+     *   title:     string                      title属性
+     * @returns {string} HTML字符串
+     */
+    function createEquipmentCard(card, opts) {
+        opts = opts || {};
+        var sizeMap = { xs: 'size-xs', sm: 'size-sm', md: 'size-md', lg: 'size-lg', xl: 'size-xl' };
+        var sizeCls = sizeMap[opts.size] || 'size-md';
+        var cls = 'weapon-card rarity-' + card.rarity + ' ' + sizeCls;
+        if (opts.selectable) cls += ' selectable';
+        if (opts.isNew) cls += ' library-new';
+        if (opts.extraCls) cls += ' ' + opts.extraCls;
+
         var typeLabel = card.type === 'attack' ? '攻击' : '防御';
         var valueLabel = card.type === 'attack' ? '伤害' : '防御';
-        var skillIcon = card.skill ? ' ' + card.skill.icon : '';
-        return '<div class="' + cls + '" data-uid="' + card.uid + '">' +
-            '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
-            '<span class="card-icon">' + renderEmoji(card.icon) + '</span>' +
-            '<span class="card-name">' + card.name + skillIcon + '</span>' +
-            '<span class="card-value">' + valueLabel + ':' + card.value + '</span>' +
-            '<span class="card-price">💰' + card.price + '</span></div>';
+        var skillIcon = card.skill ? card.skill.icon : '';
+        var skillTag = card.skill ? '<span class="card-skill-icon">' + skillIcon + '</span>' : '';
+
+        var html = '<div class="' + cls + '" data-uid="' + (card.uid || '') + '"';
+        if (opts.title) html += ' title="' + opts.title + '"';
+        else if (sizeCls === 'size-xs') html += ' title="' + card.name + ' ' + valueLabel + ':' + card.value + (card.skill ? ' 技能:' + card.skill.name : '') + '"';
+        html += '>';
+
+        // 类型标签
+        if (opts.showType !== false) {
+            html += '<span class="card-type ' + card.type + '">' + typeLabel + '</span>';
+        }
+        // 装备图片
+        html += '<span class="card-icon">' + renderEmoji(card.icon) + '</span>';
+        // 装备名称
+        html += '<span class="card-name">' + card.name + skillIcon + '</span>';
+        // 攻击/防御值
+        html += '<span class="card-value">' + valueLabel + ':' + card.value + '</span>';
+        // 价格
+        if (opts.showPrice !== false) {
+            html += '<span class="card-price">💰' + card.price + '</span>';
+        }
+        // 技能图标角标
+        html += skillTag;
+        html += '</div>';
+
+        // 支持内联样式覆盖（用于 scale 等特殊场景）
+        if (opts.style) {
+            // 将内联样式注入到最后一个 > 和 </div> 之间不太方便，改用 style 属性
+            html = html.replace('>', ' style="' + opts.style + '">');
+        }
+
+        return html;
+    }
+
+    /* 向后兼容的便捷封装 */
+    function createCardHTML(card, selectable) {
+        return createEquipmentCard(card, { selectable: !!selectable });
     }
 
     function createMiniCardHTML(card, isNew) {
-        var extraCls = isNew ? ' library-new' : '';
-        var skillIcon = card.skill ? card.skill.icon : '';
-        return '<div class="weapon-card mini rarity-' + card.rarity + extraCls + '" data-uid="' + card.uid + '" title="' + card.name + ' ' + (card.type === 'attack' ? '伤害' : '防御') + ':' + card.value + (card.skill ? ' 技能:' + card.skill.name : '') + '">' +
-'<span class="card-icon">' + renderEmoji(card.icon) + '</span><span class="card-value">' + card.value + '</span>' +
-            (card.skill ? '<span class="card-skill-icon">' + skillIcon + '</span>' : '') +
-            '</div>';
+        return createEquipmentCard(card, {
+            size: 'xs',
+            isNew: !!isNew,
+            showPrice: false,
+            showType: false
+        });
     }
 
     function getPlayer(pid) { return pid === 'A' ? game.playerA : game.playerB; }
@@ -714,25 +776,25 @@
         var atkCards = player.library.filter(function (c) { return c.type === 'attack'; });
         var defCards = player.library.filter(function (c) { return c.type === 'defend'; });
         atkC.innerHTML = ''; defC.innerHTML = '';
-        atkCards.forEach(function (c) { atkC.innerHTML += createMiniCardHTML(c, newCardUids.indexOf(c.uid) >= 0); });
-        defCards.forEach(function (c) { defC.innerHTML += createMiniCardHTML(c, newCardUids.indexOf(c.uid) >= 0); });
+        atkCards.forEach(function (c) { atkC.innerHTML += createEquipmentCard(c, { size: 'sm', isNew: newCardUids.indexOf(c.uid) >= 0 }); });
+        defCards.forEach(function (c) { defC.innerHTML += createEquipmentCard(c, { size: 'sm', isNew: newCardUids.indexOf(c.uid) >= 0 }); });
 
         function setupHoverDelegate(container) {
             container.onmouseenter = function (e) {
-                var target = e.target.closest('.weapon-card.mini');
+                var target = e.target.closest('.weapon-card');
                 if (target) {
                     var card = findCardByUid(player, target.getAttribute('data-uid'));
                     if (card) showCardPreview(card);
                 }
             };
             container.onmouseleave = function (e) {
-                var target = e.target.closest('.weapon-card.mini');
+                var target = e.target.closest('.weapon-card');
                 if (target) {
                     $('card-preview-overlay').classList.add('hidden');
                 }
             };
             container.onclick = function (e) {
-                var target = e.target.closest('.weapon-card.mini');
+                var target = e.target.closest('.weapon-card');
                 if (target) {
                     var card = findCardByUid(player, target.getAttribute('data-uid'));
                     if (card) showCardPreview(card);
@@ -850,16 +912,10 @@
         var html = '';
         game.tableCards.forEach(function (entry) {
             var c = entry.card;
-            var typeLabel = c.type === 'attack' ? '攻击' : '防御';
-            var valueLabel = c.type === 'attack' ? '伤害' : '防御';
             html += '<div class="table-card-item" data-uid="' + c.uid + '">' +
                 '<div class="table-card-player">' + (entry.playerPid === 'A' ? 'A' : 'B') + '</div>' +
-                '<div class="weapon-card rarity-' + c.rarity + ' table-card">' +
-                '<span class="card-type ' + c.type + '">' + typeLabel + '</span>' +
-                '<span class="card-icon">' + renderEmoji(c.icon) + '</span>' +
-                '<span class="card-name">' + c.name + '</span>' +
-                '<span class="card-value">' + valueLabel + ':' + c.value + '</span>' +
-                '</div></div>';
+                createEquipmentCard(c, { size: 'sm', extraCls: 'table-card', showPrice: false }) +
+                '</div>';
         });
         el.innerHTML = html;
 
@@ -1343,9 +1399,9 @@
         if (existing) existing.remove();
         var btn = document.createElement('button');
         btn.id = 'btn-flip-cards';
-        btn.className = 'btn btn-primary btn-large';
+        btn.className = 'btn btn-primary';
         btn.textContent = '🎴 翻面选卡 (10s)';
-        btn.style.cssText = 'position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:20;animation:fadeInUp 0.4s ease;';
+        btn.style.cssText = 'position:absolute;bottom:110px;left:50%;transform:translateX(-50%);z-index:20;animation:fadeInUp 0.4s ease;padding:10px 28px;font-size:16px;';
         var countdown = 10;
         var timer = setInterval(function () {
             countdown--;
@@ -1652,7 +1708,7 @@
         if (isImageEmoji(ch.emoji)) {
             container.innerHTML =
                 '<div style="display:flex;flex-direction:column;align-items:center;width:100%;height:100%;background-image:url(' + ch.emoji + ');background-size:cover;background-position:top center;border-radius:8px;position:relative;">' +
-                '<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(15,23,41,0.7) 0%,rgba(15,23,41,0.2) 40%,transparent 55%,rgba(15,23,41,0.75) 100%);border-radius:8px;"></div>' +
+                '<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(15,23,41,0.3) 0%,rgba(15,23,41,0.08) 35%,transparent 50%,rgba(15,23,41,0.35) 100%);border-radius:8px;"></div>' +
                 '<span style="font-family:\'Ma Shan Zheng\',cursive;font-size:13px;color:#ffd700;margin-top:4px;position:relative;z-index:1;text-shadow:0 1px 5px rgba(0,0,0,0.95);letter-spacing:1px;">' + ch.name + '</span>' +
                 '</div>';
         } else {
@@ -2040,10 +2096,6 @@
                     console.log('[ Weapon ] 本地抽取武器:', drawn.name, 'uid:', drawn.uid, 'player:', pid, 'count:', game[countVar]);
                     console.log('[ Weapon ] 玩家', pid, '库大小:', player.library.length);
                     var isRare = drawn.rarity === 'rare' || drawn.rarity === 'epic' || drawn.rarity === 'legend';
-                    var cardCls = 'weapon-card rarity-' + drawn.rarity;
-                    if (isRare) cardCls += ' rarity-highlight';
-                    var typeLabel = drawn.type === 'attack' ? '攻击' : '防御';
-                    var valueLabel = drawn.type === 'attack' ? '伤害' : '防御';
                     var highlightTag = '';
                     if (drawn.rarity === 'rare') { highlightTag = '<div class="rarity-tag rare-tag">✨ 稀有装备 ✨</div>'; playSound('rare'); speak('恭喜获得稀有装备' + drawn.name); }
                     else if (drawn.rarity === 'epic') { highlightTag = '<div class="rarity-tag epic-tag">💥 史诗装备 💥</div>'; playSound('epic'); speak('恭喜获得史诗装备' + drawn.name); }
@@ -2053,12 +2105,8 @@
                     if (drawn.skill) {
                         skillTag = '<div style="margin-top:6px;padding:4px 8px;background:rgba(156,39,176,0.2);border:1px solid rgba(156,39,176,0.5);border-radius:4px;font-size:11px;color:#ce93d8;">' + drawn.skill.icon + ' ' + drawn.skill.name + '：' + drawn.skill.desc + '</div>';
                     }
-                    $('drawn-cards').innerHTML = highlightTag + '<div class="' + cardCls + '" data-uid="' + drawn.uid + '">' +
-                        '<span class="card-type ' + drawn.type + '">' + typeLabel + '</span>' +
-                        '<span class="card-icon">' + renderEmoji(drawn.icon) + '</span>' +
-                        '<span class="card-name">' + drawn.name + '</span>' +
-                        '<span class="card-value">' + valueLabel + ':' + drawn.value + '</span>' +
-                        '<span class="card-price">💰' + drawn.price + '</span></div>' + skillTag;
+                    var cardExtraCls = isRare ? ' rarity-highlight' : '';
+                    $('drawn-cards').innerHTML = highlightTag + createEquipmentCard(drawn, { size: 'lg', extraCls: cardExtraCls }) + skillTag;
                     var cardEl = $('drawn-cards').querySelector('.weapon-card');
                     if (cardEl) cardEl.addEventListener('click', function () { showCardPreview(drawn); });
                     updateLibraryDisplay([drawn.uid]);
@@ -3124,13 +3172,8 @@
         overlay.innerHTML =
             '<div class="card-play-scene">' +
             '<div class="card-play-player">' + playerLabel(playerPid) + '</div>' +
-            '<div class="card-play-card weapon-card ' + rarityCls + '">' +
-            '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
-            '<span class="card-icon">' + renderEmoji(card.icon) + '</span>' +
-            '<span class="card-name">' + card.name + '</span>' +
-            '<span class="card-value">' + valueLabel + ':' + card.value + '</span>' +
-            '<span class="card-price">' + rarityName + '</span>' +
-            '</div>' +
+            createEquipmentCard(card, { size: 'md', extraCls: 'card-play-card', showPrice: false }) +
+            '<span class="card-price" style="position:absolute;bottom:4px;right:6px;font-size:11px;color:var(--gold-light);">' + rarityName + '</span>' +
             skillHtml +
             '<div class="card-play-desc">' + getCardVoice(card) + '</div>' +
             '</div>';
@@ -3800,13 +3843,7 @@
                     var canBuy = player.gold >= wp.price;
                     var skillIcon = wp.skill ? ' ' + wp.skill.icon : '';
                     cardsHtml += '<div class="shop-card-item">' +
-                        '<div class="weapon-card rarity-' + wp.rarity + ' shop-card">' +
-                        '<span class="card-type ' + wp.type + '">' + typeLabel + '</span>' +
-                        '<span class="card-icon">' + renderEmoji(wp.icon) + '</span>' +
-                        '<span class="card-name">' + wp.name + skillIcon + '</span>' +
-                        '<span class="card-value">' + valueLabel + ':' + wp.value + '</span>' +
-                        '<span class="card-price">💰' + wp.price + '</span>' +
-                        '</div>' +
+                        createEquipmentCard(wp, { size: 'lg', extraCls: 'shop-card' }) +
                         '<button class="btn btn-small btn-buy-card' + (canBuy ? '' : ' disabled-btn') + '" data-id="' + wp.id + '"' + (canBuy ? '' : ' disabled') + '>' +
                         (canBuy ? '购买' : '金币不足') + '</button></div>';
                 });
@@ -3958,13 +3995,7 @@
                     var valueLabel = wp.type === 'attack' ? '伤害' : '防御';
                     var canBuy = player.gold >= wp.price;
                     bmHtml += '<div class="shop-card-item black-market-item">' +
-                        '<div class="weapon-card rarity-' + wp.rarity + ' shop-card">' +
-                        '<span class="card-type ' + wp.type + '">' + typeLabel + '</span>' +
-                        '<span class="card-icon">' + renderEmoji(wp.icon) + '</span>' +
-                        '<span class="card-name">' + wp.name + '</span>' +
-                        '<span class="card-value">' + valueLabel + ':' + wp.value + '</span>' +
-                        '<span class="card-price">💰' + wp.price + '</span>' +
-                        '</div>' +
+                        createEquipmentCard(wp, { size: 'lg', extraCls: 'shop-card' }) +
                         '<button class="btn btn-small btn-buy-bm' + (canBuy ? '' : ' disabled-btn') + '" data-id="' + wp.id + '"' + (canBuy ? '' : ' disabled') + '>' +
                         (canBuy ? '购买' : '金币不足') + '</button></div>';
                 });
@@ -5023,10 +5054,6 @@
 
     function renderWeaponDrawnCard(drawn) {
         var isRare = drawn.rarity === 'rare' || drawn.rarity === 'epic' || drawn.rarity === 'legend';
-        var cardCls = 'weapon-card rarity-' + drawn.rarity;
-        if (isRare) cardCls += ' rarity-highlight';
-        var typeLabel = drawn.type === 'attack' ? '攻击' : '防御';
-        var valueLabel = drawn.type === 'attack' ? '伤害' : '防御';
         var highlightTag = '';
         if (drawn.rarity === 'rare') highlightTag = '<div class="rarity-tag rare-tag">✨ 稀有装备 ✨</div>';
         else if (drawn.rarity === 'epic') highlightTag = '<div class="rarity-tag epic-tag">💥 史诗装备 💥</div>';
@@ -5034,12 +5061,8 @@
         var skillTag = '';
         if (drawn.skill) skillTag = '<div style="margin-top:6px;padding:4px 8px;background:rgba(156,39,176,0.2);border:1px solid rgba(156,39,176,0.5);border-radius:4px;font-size:11px;color:#ce93d8;">' + drawn.skill.icon + ' ' + drawn.skill.name + '：' + drawn.skill.desc + '</div>';
 
-        $('drawn-cards').innerHTML = highlightTag + '<div class="' + cardCls + '" data-uid="' + drawn.uid + '">' +
-            '<span class="card-type ' + drawn.type + '">' + typeLabel + '</span>' +
-            '<span class="card-icon">' + drawn.icon + '</span>' +
-            '<span class="card-name">' + drawn.name + '</span>' +
-            '<span class="card-value">' + valueLabel + ':' + drawn.value + '</span>' +
-            '<span class="card-price">💰' + drawn.price + '</span></div>' + skillTag;
+        var cardExtraCls = isRare ? ' rarity-highlight' : '';
+        $('drawn-cards').innerHTML = highlightTag + createEquipmentCard(drawn, { size: 'lg', extraCls: cardExtraCls }) + skillTag;
         var cardEl = $('drawn-cards').querySelector('.weapon-card');
         if (cardEl) cardEl.addEventListener('click', function () { showCardPreview(drawn); });
         if (isRare) playSound('rare'); else playSound('result');
@@ -5392,11 +5415,7 @@
         } else {
             availableCards.forEach(function(card) {
                 var isDisabled = card.uid === otherSlotUid ? ' disabled-card' : '';
-                html += '<div class="weapon-card rarity-' + card.rarity + ' selectable-card' + isDisabled + '" data-uid="' + card.uid + '">' +
-                    '<span class="card-icon">' + renderEmoji(card.icon) + '</span>' +
-                    '<span class="card-name">' + card.name + '</span>' +
-                    '<span class="card-value">' + (card.type==='attack'?'伤害':'防御') + ':' + card.value + '</span>' +
-                    '</div>';
+                html += createEquipmentCard(card, { size: 'md', selectable: true, extraCls: 'selectable-card' + isDisabled });
             });
         }
 
@@ -5546,19 +5565,11 @@
     function showSynthesisResult(success, card, pid, cardA, cardB) {
         var resultHtml;
         if (success) {
-            var typeLabel = card.type === 'attack' ? '攻击' : '防御';
-            var valueLabel = card.type === 'attack' ? '伤害' : '防御';
             resultHtml = '<div style="text-align:center;padding:20px;">' +
                 '<div style="font-size:56px;margin-bottom:12px;line-height:1;">✨</div>' +
                 '<div style="font-family:\'Ma Shan Zheng\',cursive;font-size:30px;color:#4ade80;margin-bottom:6px;letter-spacing:4px;text-shadow:0 2px 12px rgba(74,222,128,0.6);">🎉 重铸成功！</div>' +
                 '<div style="height:8px;"></div>' +
-                '<div class="weapon-card rarity-' + card.rarity + '" style="margin:16px auto;transform:scale(1.3);pointer-events:none;min-width:180px;">' +
-                '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
-                '<span class="card-icon" style="font-size:28px;">' + renderEmoji(card.icon) + '</span>' +
-                '<span class="card-name" style="font-size:15px;font-weight:bold;">' + card.name + '</span>' +
-                '<span class="card-value">' + valueLabel + ':' + card.value + '</span>' +
-                '<span class="card-price">💰' + card.price + ' · ' + RARITY_NAMES[card.rarity] + '</span>' +
-                '</div>' +
+                '<div style="display:flex;justify-content:center;">' + createEquipmentCard(card, { size: 'lg', extraCls: 'rarity-highlight' }) + '</div>' +
                 '<div style="color:#a7f3d0;font-size:15px;margin-top:14px;font-weight:600;padding:8px;background:rgba(74,222,128,0.08);border-radius:6px;display:inline-block;">💫 消耗2张原卡牌，获得新卡牌！</div>' +
                 '</div>';
             playSound('rare');
@@ -5604,13 +5615,17 @@
         }
 
         cultModal.classList.remove('hidden');
-        game.cultivationState = { 
-            selectedArtId: null, 
-            slot1: null, 
+        game.cultivationState = {
+            selectedArtId: null,
+            slot1: null,
             slot2: null,
-            isProcessing: false, 
-            playerPid: pid 
+            isProcessing: false,
+            playerPid: pid
         };
+
+        // 重置按钮状态，确保可点击
+        var btnDo = document.getElementById('btn-do-cultivation');
+        if (btnDo) btnDo.disabled = true;
 
         renderMartialArtsList(availableArts);
         updateCultivationSlots();
@@ -5738,11 +5753,7 @@
             '<div class="card-select-for-synthesis">';
 
         eligibleCards.forEach(function(card) {
-            html += '<div class="weapon-card rarity-' + card.rarity + ' selectable-card" data-uid="' + card.uid + '">' +
-                '<span class="card-icon">' + renderEmoji(card.icon) + '</span>' +
-                '<span class="card-name">' + card.name + '</span>' +
-                '<span class="card-value">' + (card.type==='attack'?'伤害':'防御') + ':' + card.value + '</span>' +
-                '</div>';
+            html += createEquipmentCard(card, { size: 'md', selectable: true, extraCls: 'selectable-card' });
         });
 
         html += '</div>';

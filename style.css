@@ -39,6 +39,7 @@ body {
     overflow: hidden;
     width: 100vw;
     height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
     user-select: none;
     -webkit-user-select: none;
 }
@@ -48,6 +49,8 @@ body {
 .screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     display: none; flex-direction: column; align-items: center; overflow-y: auto; overflow-x: hidden;
+    padding-bottom: 50px;
+    box-sizing: border-box;
 }
 .screen.active { display: flex; }
 .hidden { display: none !important; }
@@ -111,7 +114,7 @@ body {
 .start-sound-controls {
     position: absolute;
     right: 10px;
-    bottom: 20px;
+    bottom: 80px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -126,7 +129,7 @@ body {
 .char-sound-controls {
     position: absolute;
     right: 10px;
-    bottom: 20px;
+    bottom: 80px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -337,6 +340,26 @@ body {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 .panel-library-cards { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 0; }
+/* 面板库列表: 一行显示约4张，使用 !important 防止媒体查询覆盖 */
+.panel-library-cards .weapon-card { --card-scale: 0.80 !important; }
+.panel-library-cards .weapon-card .card-name { font-size: calc(var(--card-base-name) * var(--card-scale)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.panel-library-cards .weapon-card .card-value { font-size: calc(var(--card-base-value) * var(--card-scale)); }
+.panel-library-cards .weapon-card .card-price { display: none; }
+.panel-library-cards .weapon-card .card-type { font-size: calc(6px * var(--card-scale)); }
+
+/* 面板选择区域: 使用 size-sm */
+.panel-select-cards .weapon-card { --card-scale: 0.75; }
+.panel-select-cards .weapon-card .card-icon { font-size: calc(var(--card-base-icon) * var(--card-scale)); }
+.panel-select-cards .weapon-card .card-name { font-size: calc(var(--card-base-name) * var(--card-scale)); }
+.panel-select-cards .weapon-card .card-value { font-size: calc(var(--card-base-value) * var(--card-scale)); }
+.panel-select-cards .weapon-card .card-price { display: none; }
+
+/* 桌面展示: 使用 size-sm */
+.table-card { --card-scale: 0.68; padding: calc(3px * var(--card-scale)); font-size: calc(var(--card-base-font) * var(--card-scale)); }
+.table-card .card-icon { font-size: calc(var(--card-base-icon) * var(--card-scale)); }
+.table-card .card-name { font-size: calc(var(--card-base-name) * var(--card-scale)); }
+.table-card .card-value { font-size: calc(var(--card-base-value) * var(--card-scale)); }
+.table-card .card-price { display: none; }
 
 .panel-select-area {
     padding: 6px 4px; margin-bottom: 4px;
@@ -352,11 +375,6 @@ body {
 .panel-select-cards {
     display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;
 }
-.panel-select-cards .weapon-card { width: 60px; height: 88px; padding: 3px; }
-.panel-select-cards .weapon-card .card-icon { font-size: 18px; }
-.panel-select-cards .weapon-card .card-name { font-size: 9px; }
-.panel-select-cards .weapon-card .card-value { font-size: 10px; }
-.panel-select-cards .weapon-card .card-price { display: none; }
 
 .panel-ops {
     padding: 6px 8px; display: flex; flex-direction: column; gap: 4px;
@@ -528,6 +546,9 @@ body {
 .battle-section { width: 100%; max-width: 560px; text-align: center; animation: fadeInUp 0.4s ease; }
 .section-title { font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 22px; color: var(--gold-light); margin-bottom: 6px; }
 .drawn-cards { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; min-height: 60px; }
+.drawn-cards .weapon-card { overflow: hidden; }
+.drawn-cards .weapon-card .card-name { font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.drawn-cards .weapon-card .card-value { font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 .weapon-draw-btns {
     display: flex;
     justify-content: center;
@@ -637,7 +658,7 @@ body {
 .table-card .card-price { display: none; }
 
 .select-card-preview {
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    position: absolute; bottom: 95px; left: 50%; transform: translateX(-50%);
     z-index: 100; pointer-events: auto;
     background: linear-gradient(145deg, rgba(30,25,40,0.97), rgba(18,15,28,0.98));
     border: 1px solid rgba(212,168,67,0.35);
@@ -715,76 +736,170 @@ body {
 @keyframes pkParticleMove { 0% { transform: translate(0, 0) scale(1.5); opacity: 1; } 100% { opacity: 0; transform: scale(0.3); } }
 
 .switch-btn {
-    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 100;
+    position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); z-index: 100;
     background: linear-gradient(135deg, var(--blue), var(--blue-dark));
     color: #fff; box-shadow: 0 2px 8px rgba(41, 128, 185, 0.4);
 }
 
+/* ====== 装备卡牌统一组件 ======
+ * 结构: .weapon-card > .card-type + .card-icon + .card-name + .card-value + .card-price
+ * 尺寸通过 --card-scale 变量控制，所有内部元素自动成比例缩放
+ * 预设尺寸: xs(0.4) | sm(0.55) | md(1) | lg(1.15) | xl(1.35)
+ * 用法: <div class="weapon-card rarity-epic size-sm">...</div>
+ */
 .weapon-card {
-    width: 80px; height: 115px; border-radius: 8px; padding: 5px; cursor: pointer;
-    transition: all 0.2s ease; position: relative; display: flex; flex-direction: column;
-    align-items: center; justify-content: space-between; font-size: 10px; flex-shrink: 0;
+    /* 基础尺寸常量 */
+    --card-base-w: 80px;
+    --card-base-h: 115px;
+    --card-base-radius: 8px;
+    --card-base-padding: 5px;
+    --card-base-font: 10px;
+    --card-base-icon: 24px;
+    --card-base-name: 11px;
+    --card-base-type: 8px;
+    --card-base-value: 12px;
+    --card-base-price: 8px;
+
+    /* 缩放系数（默认 md = 1） */
+    --card-scale: 1;
+
+    /* 计算实际尺寸 */
+    width: calc(var(--card-base-w) * var(--card-scale));
+    height: calc(var(--card-base-h) * var(--card-scale));
+    border-radius: calc(var(--card-base-radius) * var(--card-scale));
+    padding: calc(var(--card-base-padding) * var(--card-scale));
+    font-size: calc(var(--card-base-font) * var(--card-scale));
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    overflow: hidden;
 }
 .weapon-card:hover { transform: translateY(-4px); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4); }
-.weapon-card.selected {
-    transform: translateY(-8px); box-shadow: 0 8px 24px rgba(212, 168, 67, 0.5);
-    outline: 2px solid var(--gold); outline-offset: 2px;
-}
+
+/* ---- 稀有度背景 ---- */
 .weapon-card.rarity-common { background: linear-gradient(135deg, #616161, #424242); border: 1px solid var(--rarity-common); }
 .weapon-card.rarity-elite { background: linear-gradient(135deg, #2e7d32, #1b5e20); border: 1px solid var(--rarity-elite); }
 .weapon-card.rarity-rare { background: linear-gradient(135deg, #1565c0, #0d47a1); border: 1px solid var(--rarity-rare); }
-.weapon-card.rarity-epic { background: linear-gradient(135deg, #7b1fa2, #4a148c); border: 1px solid var(--rarity-epic); }
+.weapon-card.rarity-epic { background: linear-gradient(135deg, #7b1fa2, #4a148c); border: 1px solid var(--rarity-epic); position: relative; overflow: hidden; }
 .weapon-card.rarity-legend {
     background: linear-gradient(135deg, #e65100, #bf360c); border: 1px solid var(--rarity-legend);
     box-shadow: 0 0 12px rgba(255, 152, 0, 0.3); position: relative; overflow: hidden;
 }
-.weapon-card.rarity-legend::before {
-    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-    background: linear-gradient(45deg, transparent 40%, rgba(255, 215, 0, 0.15) 50%, transparent 60%);
-    animation: shimmer 3s ease-in-out infinite;
-}
-.weapon-card.rarity-epic { position: relative; overflow: hidden; }
+
+/* 稀有度光效 */
+.weapon-card.rarity-legend::before,
 .weapon-card.rarity-epic::before {
     content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-    background: linear-gradient(45deg, transparent 45%, rgba(156, 39, 176, 0.1) 50%, transparent 55%);
-    animation: shimmer 4s ease-in-out infinite;
+    background: linear-gradient(45deg,
+        transparent 40%,
+        rgba(255, 215, 0, 0.15) 50%,
+        transparent 60%);
+    animation: shimmer 3s ease-in-out infinite;
+}
+.weapon-card.rarity-epic::before {
+    background: linear-gradient(45deg,
+        transparent 45%,
+        rgba(156, 39, 176, 0.1) 50%,
+        transparent 55%);
+    animation-duration: 4s;
 }
 @keyframes shimmer {
     0% { transform: translateX(-100%) translateY(-100%); }
     100% { transform: translateX(100%) translateY(100%); }
 }
-.weapon-card .card-icon { font-size: 24px; margin: 2px 0; }
-.card-icon > img { width: 1.6em !important; height: 1.6em !important; object-fit: contain; }
-.weapon-card .card-name { font-weight: 700; font-size: 11px; color: #fff; text-align: center; }
-.weapon-card .card-type { font-size: 8px; padding: 1px 3px; border-radius: 3px; color: #fff; }
+
+/* ---- 内部元素：全部跟随 card-scale 成比例缩放 ---- */
+.weapon-card .card-icon {
+    font-size: calc(var(--card-base-icon) * var(--card-scale));
+    margin: calc(2px * var(--card-scale)) 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(32px * var(--card-scale));
+    flex-shrink: 0;
+}
+.card-icon > img {
+    width: 1.6em !important;
+    height: 1.6em !important;
+    object-fit: contain;
+}
+.weapon-card .card-name {
+    font-weight: 700;
+    font-size: calc(var(--card-base-name) * var(--card-scale));
+    color: #fff;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    line-height: 1.2;
+    flex-shrink: 0;
+}
+.weapon-card .card-type {
+    font-size: calc(var(--card-base-type) * var(--card-scale));
+    padding: calc(1px * var(--card-scale)) calc(3px * var(--card-scale));
+    border-radius: calc(3px * var(--card-scale));
+    color: #fff;
+    flex-shrink: 0;
+}
 .weapon-card .card-type.attack { background: rgba(192, 57, 43, 0.8); }
 .weapon-card .card-type.defend { background: rgba(41, 128, 185, 0.8); }
-.weapon-card .card-value { font-size: 12px; font-weight: 700; color: var(--gold-light); }
-.weapon-card .card-price { font-size: 8px; color: var(--gold); }
-
-.weapon-card.mini {
-    width: 32px; height: 42px; padding: 2px; font-size: 7px; border-radius: 4px;
+.weapon-card .card-value {
+    font-size: calc(var(--card-base-value) * var(--card-scale));
+    font-weight: 700;
+    color: var(--gold-light);
+    flex-shrink: 0;
 }
-.weapon-card.mini .card-icon { font-size: 12px; margin: 0; }
-.weapon-card.mini .card-name, .weapon-card.mini .card-type, .weapon-card.mini .card-price { display: none; }
-.weapon-card.mini .card-value { font-size: 8px; }
+.weapon-card .card-price {
+    font-size: calc(var(--card-base-price) * var(--card-scale));
+    color: var(--gold);
+    flex-shrink: 0;
+}
+.weapon-card .card-skill-icon {
+    position: absolute;
+    top: calc(2px * var(--card-scale));
+    right: calc(2px * var(--card-scale));
+    font-size: calc(8px * var(--card-scale));
+    line-height: 1;
+    z-index: 2;
+}
 
+/* ---- 尺寸预设 ---- */
+.weapon-card.size-xs { --card-scale: 0.40; }   /* 32x46  - 迷你槽位/列表 */
+.weapon-card.size-sm { --card-scale: 0.55; }   /* 44x63  - 面板库 */
+.weapon-card.size-md { --card-scale: 1; }       /* 80x115 - 标准默认 */
+.weapon-card.size-lg { --card-scale: 1.15; }     /* 92x132 - 手牌/抽卡 */
+.weapon-card.size-xl { --card-scale: 1.35; }     /* 108x155- 商店/预览 */
+
+/* size-xs: 极简模式，隐藏 name/type/price */
+.weapon-card.size-xs .card-name,
+.weapon-card.size-xs .card-type,
+.weapon-card.size-xs .card-price { display: none; }
+
+/* ---- 交互状态 ---- */
 .weapon-card.selectable { transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.weapon-card.selectable:hover { transform: translateY(-8px) scale(1.05); }
-.weapon-card.selectable:active { transform: translateY(-2px) scale(0.98); }
+.weapon-card.selectable:hover { transform: translateY(calc(-8px * var(--card-scale))) scale(1.05); }
+.weapon-card.selectable:active { transform: translateY(calc(-2px * var(--card-scale))) scale(0.98); }
 .weapon-card.selected {
-    transform: translateY(-12px) scale(1.08);
+    transform: translateY(calc(-12px * var(--card-scale))) scale(1.08);
     box-shadow: 0 8px 30px rgba(212, 168, 67, 0.6);
-    outline: 2px solid var(--gold); outline-offset: 3px;
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
 }
 
+/* ---- 动画 ---- */
 .weapon-card.library-new { animation: cardAppear 0.5s ease; }
 @keyframes cardAppear {
     0% { transform: scale(0) rotate(180deg); opacity: 0; }
     60% { transform: scale(1.1) rotate(-10deg); opacity: 1; }
     100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
-
 .weapon-card.rarity-highlight {
     animation: rarityReveal 0.8s ease;
     transform: scale(1.15);
@@ -837,7 +952,7 @@ body {
 #screen-gameover .gameover-sound-controls {
     position: absolute;
     right: 10px;
-    bottom: 20px;
+    bottom: 80px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -851,7 +966,7 @@ body {
 #screen-vs .vs-sound-controls {
     position: absolute;
     right: 10px;
-    bottom: 20px;
+    bottom: 80px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -943,7 +1058,7 @@ body {
     border: 2px solid var(--gold); border-radius: 16px; padding: 24px;
     max-width: 560px !important; width: 92% !important; text-align: center; animation: fadeInUp 0.3s ease;
     position: relative; overflow-y: auto;
-    max-height: calc(100vh - 30px) !important;
+    max-height: calc(100vh - 80px) !important;
 }
 .modal-content::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
@@ -992,23 +1107,26 @@ body {
 }
 
 .buy-tab-content {
-    max-height: 350px; overflow-y: auto;
+    max-height: 420px; overflow-y: auto;
 }
 
 .shop-cards {
-    display: flex; flex-wrap: wrap; gap: 8px;
-    margin: 12px 0; justify-content: center;
+    display: flex; flex-wrap: wrap; gap: 12px;
+    margin: 16px 0; justify-content: center;
 }
 .shop-card-item {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
 }
-.shop-card {
-    width: 70px; height: 100px; padding: 4px; cursor: default;
+/* 商店卡牌: 使用 size-lg */
+.shop-card { --card-scale: 1.15; padding: calc(6px * var(--card-scale)); cursor: default; }
+.shop-card .card-icon { font-size: calc(var(--card-base-icon) * var(--card-scale)); }
+.shop-card .card-name { font-size: calc(var(--card-base-name) * var(--card-scale)); }
+.shop-card .card-value { font-size: calc(var(--card-base-value) * var(--card-scale)); }
+.shop-card .card-price {
+    font-size: calc(13px * var(--card-scale));
+    font-weight: 600; color: #ffd700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
-.shop-card .card-icon { font-size: 20px; }
-.shop-card .card-name { font-size: 9px; }
-.shop-card .card-value { font-size: 10px; }
-.shop-card .card-price { font-size: 8px; }
 
 .black-market-item .shop-card {
     box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
@@ -1108,7 +1226,9 @@ body {
     font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif; font-size: 20px; color: var(--gold-light);
     text-shadow: 0 0 10px rgba(212, 168, 67, 0.5);
 }
+/* 出牌展示: 使用大尺寸 + scale 放大 */
 .card-play-card {
+    --card-scale: 1;
     transform: scale(2.2); transform-origin: center;
     box-shadow: 0 0 40px rgba(212, 168, 67, 0.4), 0 0 80px rgba(0, 0, 0, 0.6);
 }
@@ -1275,8 +1395,9 @@ body {
     animation: cardPlayDescIn 0.4s ease 0.5s both;
 }
 
-.weapon-card.mini { position: relative; }
-.weapon-card.mini .card-skill-icon {
+/* size-xs 技能图标定位 */
+.weapon-card.size-xs { position: relative; }
+.weapon-card.size-xs .card-skill-icon {
     position: absolute; top: 1px; right: 1px;
     font-size: 7px; line-height: 1;
 }
@@ -1385,9 +1506,10 @@ body {
 /* ====== 修炼弹窗（武功学习） ====== */
 .cultivation-modal {
     max-width: 720px !important;
+    max-height: calc(100vh - 80px) !important;
 }
 .cultivation-martial-list {
-    max-height: 380px;
+    max-height: 280px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -1576,6 +1698,12 @@ body {
     border-radius: 8px;
     margin: 8px 0;
 }
+/* 选择材料槽位弹框优化：更大尺寸确保卡牌名字不被遮挡 */
+.modal-content:has(.card-select-for-synthesis) {
+    max-width: 640px !important;
+    width: 94% !important;
+    padding: 24px 20px !important;
+}
 .card-select-for-synthesis .selectable-card {
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
@@ -1602,18 +1730,33 @@ body {
 
 @media (max-width: 900px) {
     :root { --panel-width: 210px; }
-    .weapon-card.mini { width: 26px; height: 34px; }
-    .weapon-card.mini .card-icon { font-size: 10px; }
-    .weapon-card.mini .card-value { font-size: 7px; }
-    .weapon-card { width: 68px; height: 100px; padding: 3px; }
-    .weapon-card .card-icon { font-size: 20px; }
-    .weapon-card .card-name { font-size: 9px; }
-    .weapon-card .card-value { font-size: 10px; }
+    .weapon-card.size-xs { --card-scale: 0.32; }
+    .weapon-card { --card-scale: 0.85; }
+    .weapon-card .card-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+    .weapon-card .card-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
     .btn-op { font-size: 12px; padding: 6px 8px; }
     .wheel-container.char-wheel canvas { width: 380px; height: 380px; }
     .wheel-container canvas { width: 420px; height: 420px; }
     .wheel-container.small canvas { width: 320px; height: 320px; }
     .char-info-card { max-width: 220px; padding: 12px; }
+    /* 选择材料槽位弹框：卡牌加大避免名字被遮挡 */
+    .modal-content:has(.card-select-for-synthesis) {
+        max-width: 620px !important;
+        width: 94% !important;
+    }
+    .card-select-for-synthesis {
+        max-height: 400px !important;
+        gap: 12px !important;
+        padding: 14px !important;
+    }
+    .card-select-for-synthesis .selectable-card.weapon-card {
+        width: 76px !important;
+        height: 110px !important;
+        padding: 4px !important;
+    }
+    .card-select-for-synthesis .selectable-card.weapon-card .card-name {
+        font-size: 10px !important;
+    }
 }
 
 @media (max-width: 700px) {
@@ -1631,6 +1774,23 @@ body {
     .wheel-container canvas { width: 340px; height: 340px; }
     .wheel-container.small canvas { width: 280px; height: 280px; }
     .char-select-right { min-width: auto; width: 100%; }
+    /* 选择材料槽位弹框优化 */
+    .modal-content:has(.card-select-for-synthesis) {
+        max-width: 96% !important;
+    }
+    .card-select-for-synthesis {
+        max-height: 380px !important;
+        gap: 10px !important;
+        padding: 12px !important;
+    }
+    .card-select-for-synthesis .selectable-card.weapon-card {
+        width: 72px !important;
+        height: 105px !important;
+        padding: 3px !important;
+    }
+    .card-select-for-synthesis .selectable-card.weapon-card .card-name {
+        font-size: 9px !important;
+    }
 }
 
 @media (max-width: 560px) {
@@ -1639,15 +1799,35 @@ body {
     .player-char-name { font-size: 12px; }
     .player-name { font-size: 9px; }
     .ability-badge { font-size: 8px; }
-    .weapon-card.mini { width: 22px; height: 28px; }
-    .weapon-card.mini .card-icon { font-size: 8px; }
-    .weapon-card { width: 58px; height: 86px; }
+    .weapon-card.size-xs { --card-scale: 0.28; }
+    .weapon-card { --card-scale: 0.72; }
     .wheel-container.char-wheel canvas { width: 280px; height: 280px; }
     .wheel-container canvas { width: 280px; height: 280px; }
     .wheel-container.small canvas { width: 240px; height: 240px; }
     .char-info-card { max-width: 200px; padding: 10px; }
     .char-info-card .char-emoji { font-size: 32px; }
     .char-info-card .char-name { font-size: 20px; }
+    /* 选择材料槽位弹框小屏优化 */
+    .modal-content:has(.card-select-for-synthesis) {
+        max-width: 97% !important;
+        padding: 18px 14px !important;
+    }
+    .card-select-for-synthesis {
+        max-height: 350px !important;
+        gap: 8px !important;
+        padding: 10px !important;
+    }
+    .card-select-for-synthesis .selectable-card.weapon-card {
+        width: 68px !important;
+        height: 98px !important;
+        padding: 3px !important;
+    }
+    .card-select-for-synthesis .selectable-card.weapon-card .card-icon {
+        font-size: 18px !important;
+    }
+    .card-select-for-synthesis .selectable-card.weapon-card .card-name {
+        font-size: 9px !important;
+    }
 }
 
 @media (max-height: 700px) {
@@ -1773,19 +1953,15 @@ body {
     .winner-display .winner-char { font-size: 28px; }
     .winner-display .winner-player { font-size: 14px; }
     .game-stats { padding: 8px; max-height: 35vh; }
-    .weapon-card { width: 55px; height: 80px; padding: 2px; }
-    .weapon-card .card-icon { font-size: 16px; }
-    .weapon-card .card-name { font-size: 8px; }
-    .weapon-card .card-value { font-size: 9px; }
+    .weapon-card { --card-scale: 0.68; }
+    .weapon-card .card-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+    .weapon-card .card-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
     .drawn-cards { margin: 6px 0; min-height: 40px; gap: 4px; }
     .card-hand { margin: 4px 0; min-height: 80px; gap: 4px; }
     .table-cards-area { min-height: 36px; padding: 4px; margin-bottom: 4px; }
     .panel-select-area { padding: 4px 3px; margin-bottom: 2px; }
     .panel-select-title { font-size: 10px; margin-bottom: 2px; }
-    .panel-select-cards .weapon-card { width: 48px; height: 70px; padding: 2px; }
-    .panel-select-cards .weapon-card .card-icon { font-size: 14px; }
-    .panel-select-cards .weapon-card .card-name { font-size: 7px; }
-    .panel-select-cards .weapon-card .card-value { font-size: 8px; }
+    .panel-select-cards .weapon-card { --card-scale: 0.60; }
 }
 
 /* 手机横屏模式优化 */
@@ -1808,6 +1984,25 @@ body {
     .player-panel { overflow-y: auto; }
     .panel-library { max-height: 35vh; }
     .panel-ops { flex-shrink: 0; }
+    /* 选择材料槽位弹框横屏小屏优化 */
+    .modal-content:has(.card-select-for-synthesis) {
+        max-width: 95% !important;
+        padding: 14px 12px !important;
+        max-height: calc(100vh - 40px) !important;
+    }
+    .card-select-for-synthesis {
+        max-height: 280px !important;
+        gap: 6px !important;
+        padding: 8px !important;
+    }
+    .card-select-for-synthesis .selectable-card.weapon-card {
+        width: 62px !important;
+        height: 90px !important;
+        padding: 2px !important;
+    }
+    .card-select-for-synthesis .selectable-card.weapon-card .card-name {
+        font-size: 8px !important;
+    }
 }
 
 @media (max-height: 450px) {
@@ -1865,19 +2060,15 @@ body {
     .winner-display .winner-char { font-size: 24px; }
     .winner-display .winner-player { font-size: 12px; }
     .game-stats { padding: 6px; max-height: 30vh; }
-    .weapon-card { width: 50px; height: 72px; padding: 1px; }
-    .weapon-card .card-icon { font-size: 14px; }
-    .weapon-card .card-name { font-size: 7px; }
-    .weapon-card .card-value { font-size: 8px; }
+    .weapon-card { --card-scale: 0.62; }
+    .weapon-card .card-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+    .weapon-card .card-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
     .drawn-cards { margin: 4px 0; min-height: 35px; gap: 3px; }
     .card-hand { margin: 3px 0; min-height: 70px; gap: 3px; }
     .table-cards-area { min-height: 30px; padding: 3px; margin-bottom: 3px; }
     .panel-select-area { padding: 3px 2px; margin-bottom: 1px; }
     .panel-select-title { font-size: 9px; margin-bottom: 1px; }
-    .panel-select-cards .weapon-card { width: 44px; height: 64px; padding: 1px; }
-    .panel-select-cards .weapon-card .card-icon { font-size: 12px; }
-    .panel-select-cards .weapon-card .card-name { font-size: 6px; }
-    .panel-select-cards .weapon-card .card-value { font-size: 7px; }
+    .panel-select-cards .weapon-card { --card-scale: 0.55; }
 }
 
 /* ====== 联机对战大厅 ====== */
@@ -2179,7 +2370,8 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
-    overflow: hidden;
+    overflow-y: auto;
+    padding-bottom: 50px;
 }
 .char-card-stage {
     width: 100%;
@@ -2188,7 +2380,7 @@ body {
     flex-direction: column;
     position: relative;
     min-height: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 /* ====== 滚动展示区域 ====== */
@@ -2383,8 +2575,8 @@ body {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background:
-        linear-gradient(180deg, rgba(15,23,41,0.7) 0%, rgba(15,23,41,0.3) 35%, transparent 50%),
-        linear-gradient(180deg, transparent 55%, rgba(15,23,41,0.75) 85%, rgba(10,14,28,0.92) 100%);
+        linear-gradient(180deg, rgba(15,23,41,0.25) 0%, rgba(15,23,41,0.08) 35%, transparent 50%),
+        linear-gradient(180deg, transparent 60%, rgba(15,23,41,0.3) 85%, rgba(10,14,28,0.45) 100%);
     border-radius: 12px;
     z-index: 0;
 }
@@ -2837,4 +3029,104 @@ body {
     .char-card-front .card-hp-badge,
     .char-card-front .card-sig-art { font-size: 8px; display: none; }
     .char-grid { gap: 8px; padding: 8px; }
+}
+
+/* ====== 手机端修炼弹窗优化 ====== */
+@media (max-width: 768px) and (max-height: 700px) {
+    .cultivation-modal {
+        max-height: calc(100vh - 90px) !important;
+        padding: 16px !important;
+    }
+    .cultivation-martial-list {
+        max-height: 200px !important;
+        padding: 8px !important;
+        margin: 8px 0 !important;
+    }
+    .martial-item {
+        padding: 6px 8px !important;
+        font-size: 11px !important;
+        gap: 4px !important;
+    }
+    .martial-icon { font-size: 18px !important; }
+    .martial-name { font-size: 12px !important; }
+    .martial-type { font-size: 10px !important; padding: 1px 6px !important; }
+    .cultivation-card-slots { gap: 8px !important; margin: 8px 0 !important; }
+    .cultivation-card-slots .slot-content { min-height: 80px !important; padding: 4px !important; }
+    .selected-martial-display { padding: 8px !important; margin: 8px 0 !important; font-size: 12px !important; }
+    .cultivation-section-title { font-size: 13px !important; margin: 10px 0 6px !important; }
+}
+
+@media (max-width: 500px), (max-height: 550px) {
+    .cultivation-modal {
+        max-height: calc(100vh - 60px) !important;
+        padding: 12px !important;
+    }
+    .cultivation-martial-list {
+        max-height: 150px !important;
+        padding: 6px !important;
+        margin: 6px 0 !important;
+        gap: 4px !important;
+    }
+    .martial-item {
+        padding: 5px 6px !important;
+        font-size: 10px !important;
+        gap: 3px !important;
+        grid-template-columns: 28px auto 45px 60px !important;
+    }
+    .martial-icon { font-size: 16px !important; }
+    .martial-name { font-size: 11px !important; }
+    .martial-type { font-size: 9px !important; padding: 1px 4px !important; }
+    .martial-bonus, .martial-success-rate { font-size: 10px !important; }
+    .martial-desc, .martial-source { display: none !important; }
+    .cultivation-card-slots {
+        gap: 6px !important;
+        margin: 8px 0 !important;
+    }
+    .cultivation-card-slots .cultivation-slot { max-width: 100% !important; }
+    .cultivation-card-slots .slot-content { min-height: 70px !important; }
+    .selected-martial-display { padding: 6px !important; margin: 6px 0 !important; font-size: 11px !important; }
+    .cultivation-section-title { font-size: 12px !important; margin: 8px 0 4px !important; }
+}
+
+/* ====== 手机端全局底部安全区域修复 ====== */
+@media (max-width: 768px) {
+    /* footer 缩小且降低层级，避免遮挡交互元素 */
+    body footer {
+        padding: 4px 10px !important;
+        font-size: 9px !important;
+        z-index: 500 !important;
+        background: rgba(0,0,0,0.2) !important;
+    }
+
+    /* 所有 screen 增加底部安全距离（Chrome 底部工具栏 ~56px + footer ~40px） */
+    .screen {
+        padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* 角色选择页面额外保护 */
+    #screen-character {
+        padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    #screen-character .char-sound-controls {
+        bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* 音效按钮统一提升 */
+    .start-sound-controls {
+        bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    #screen-vs .vs-sound-controls {
+        bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    #screen-gameover .gameover-sound-controls {
+        bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* 翻面选卡按钮、switch-btn 等固定定位元素提升 */
+    .switch-btn {
+        bottom: calc(85px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .select-card-preview {
+        bottom: calc(95px + env(safe-area-inset-bottom, 0px)) !important;
+    }
 }
