@@ -403,10 +403,8 @@ body {
     font-size: 12px; color: var(--gold-light); text-align: center;
     margin-bottom: 2px; padding: 3px;
     background: rgba(212, 168, 67, 0.1); border-radius: 4px;
-    display: none;
+    display: block;
 }
-
-.active-panel .player-gold { display: block; }
 
 .ops-trade-btns {
     display: flex; gap: 4px;
@@ -914,6 +912,22 @@ body {
     outline-offset: 2px !important;
     z-index: 3 !important;
     position: relative;
+}
+
+/* 联机模式查看中 */
+.library-view-mode {
+    position: relative;
+    opacity: 1;
+}
+.library-view-mode::before {
+    content: '查看中';
+    position: absolute;
+    top: -16px;
+    left: 0;
+    font-size: 9px;
+    color: var(--text-dim);
+    opacity: 0.6;
+    pointer-events: none;
 }
 
 /* ---- 动画 ---- */
