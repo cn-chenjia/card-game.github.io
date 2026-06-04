@@ -3212,17 +3212,19 @@
             removeFromLibrary(game.phaseAttacker, card);
             updatePlayerInfo();
             addTableCard(card, game.phaseAttacker);
-            notifyPeer('card-selected', { uid: card.uid, player: pid });
             if (card.skill && card.skill.id === 'no_defend' && card.skill.timing === 'current' && !game.usedSkillsThisRound['no_defend']) {
                 game.noDefendFlag = true;
                 game.usedSkillsThisRound['no_defend'] = true;
             }
+            // 先通知对方，再执行本地动画
+            notifyPeer('card-selected', { uid: card.uid, player: pid });
             showCardPlayAnimation(card, pid, function () { showDefendCardSelect(); });
         } else if (game.phase === 'defend-select') {
             game.currentDefendCard = card;
             removeFromLibrary(game.phaseDefender, card);
             updatePlayerInfo();
             addTableCard(card, game.phaseDefender);
+            // 先通知对方，再执行本地动画
             notifyPeer('card-selected', { uid: card.uid, player: pid });
             showCardPlayAnimation(card, pid, function () { resolveSingleAttack(); });
         }
@@ -5206,6 +5208,7 @@
 
         var isDefendSelection = (selectorPid === game.phaseDefender);
         if (!isDefendSelection) {
+            // 对方是攻击方，出了攻击牌
             game.currentAttackCard = selCard;
             removeFromLibrary(game.phaseAttacker, selCard);
             updatePlayerInfo();
@@ -5215,9 +5218,12 @@
                 game.usedSkillsThisRound['no_defend'] = true;
             }
             showCardPlayAnimation(selCard, selectorPid, function () {
+                // 在联机模式下，当对方选择攻击卡牌后，需要确保本地也显示防御选择界面
+                console.log('[ Card ] 对方出了攻击牌，准备显示防御选择');
                 showDefendCardSelect();
             });
         } else {
+            // 对方是防御方，出了防御牌
             game.currentDefendCard = selCard;
             removeFromLibrary(game.phaseDefender, selCard);
             updatePlayerInfo();
