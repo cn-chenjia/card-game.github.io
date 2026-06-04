@@ -368,6 +368,55 @@
         </div>
     </div>
 
+    
+    <div id="combat-power-overlay" class="modal-overlay hidden">
+        <div class="modal-content combat-power-modal">
+            <button class="modal-close-btn" id="btn-close-combat-power">✕</button>
+            <h3>⚔️ 战力对比</h3>
+            <div class="combat-compare-container">
+                <div class="combat-side combat-side-a">
+                    <div class="combat-avatar-wrap">
+                        <img id="cp-avatar-a" src="" alt="" class="combat-avatar-img">
+                    </div>
+                    <div class="combat-name" id="cp-name-a">玩家A</div>
+                    <div class="combat-stats">
+                        <div class="cp-stat-row"><span class="cp-label">❤️ 血量</span><span class="cp-value cp-hp" id="cp-hp-a">0/0</span></div>
+                        <div class="cp-stat-row"><span class="cp-label">🗡️ 技能总攻击</span><span class="cp-value cp-atk-skill" id="cp-atk-skill-a">+0%</span></div>
+                        <div class="cp-stat-row"><span class="cp-label">🛡️ 技能总防御</span><span class="cp-value cp-def-skill" id="cp-def-skill-a">+0%</span></div>
+                        <div class="cp-divider"></div>
+                        <div class="cp-stat-row"><span class="cp-label">⚔️ 卡牌总攻击</span><span class="cp-value cp-card-atk" id="cp-card-atk-a">0</span></div>
+                        <div class="cp-stat-row"><span class="cp-label">🛡️ 卡牌总防御</span><span class="cp-value cp-card-def" id="cp-card-def-a">0</span></div>
+                        <div class="cp-divider"></div>
+                        <div class="cp-stat-row cp-total-row"><span class="cp-label">💥 总战斗力</span><span class="cp-value cp-total" id="cp-total-a">0</span></div>
+                    </div>
+                </div>
+                <div class="combat-vs-divider">
+                    <div class="combat-vs-text">VS</div>
+                </div>
+                <div class="combat-side combat-side-b">
+                    <div class="combat-avatar-wrap">
+                        <img id="cp-avatar-b" src="" alt="" class="combat-avatar-img">
+                    </div>
+                    <div class="combat-name" id="cp-name-b">玩家B</div>
+                    <div class="combat-stats">
+                        <div class="cp-stat-row"><span class="cp-label">❤️ 血量</span><span class="cp-value cp-hp" id="cp-hp-b">0/0</span></div>
+                        <div class="cp-stat-row"><span class="cp-label">🗡️ 技能总攻击</span><span class="cp-value cp-atk-skill" id="cp-atk-skill-b">+0%</span></div>
+                        <div class="cp-stat-row"><span class="cp-label">🛡️ 技能总防御</span><span class="cp-value cp-def-skill" id="cp-def-skill-b">+0%</span></div>
+                        <div class="cp-divider"></div>
+                        <div class="cp-stat-row"><span class="cp-label">⚔️ 卡牌总攻击</span><span class="cp-value cp-card-atk" id="cp-card-atk-b">0</span></div>
+                        <div class="cp-stat-row"><span class="cp-label">🛡️ 卡牌总防御</span><span class="cp-value cp-card-def" id="cp-card-def-b">0</span></div>
+                        <div class="cp-divider"></div>
+                        <div class="cp-stat-row cp-total-row"><span class="cp-label">💥 总战斗力</span><span class="cp-value cp-total" id="cp-total-b">0</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="combat-formula-hint">
+                <div class="formula-title">📐 战斗力计算公式</div>
+                <div class="formula-desc">总战斗力 = ⌊卡牌攻击×(1+技能攻%)⌋ + ⌊卡牌防御×(1+技能防%)⌋ + ⌊当前血量÷最大血量×50⌋</div>
+            </div>
+        </div>
+    </div>
+
     <script src="multiplayer.js"></script>
 
     <div id="synthesis-modal" class="modal-overlay hidden">

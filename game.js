@@ -28,12 +28,22 @@
         };
     }
 
-    function renderEmoji(val, isThumbnail) {
+    function renderEmoji(val, isThumbnail, useOriginalImg) {
         if (val && /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(val)) {
-            if (isThumbnail) {
-                return '<img src="' + val + '" alt="" class="thumbnail-img">';
+            var src = val;
+            // 默认使用 mini 目录下的缩略图，除非明确要求使用原图
+            if (!useOriginalImg) {
+                if (/resources\/equipments\//i.test(src)) {
+                    src = src.replace(/resources\/equipments\//i, 'resources/equipments/mini/');
+                } else if (/resources\/rules\//i.test(src)) {
+                    // 角色图片：rules/*.jpeg → rules/mini/*.png
+                    src = src.replace(/resources\/rules\//i, 'resources/rules/mini/').replace(/\.jpeg$/i, '.png');
+                }
             }
-            return '<img src="' + val + '" alt="" style="width:1.6em;height:1.6em;object-fit:contain;border-radius:inherit;">';
+            if (isThumbnail) {
+                return '<img src="' + src + '" alt="" class="thumbnail-img">';
+            }
+            return '<img src="' + src + '" alt="" style="width:1.6em;height:1.6em;object-fit:contain;border-radius:inherit;">';
         }
         return val;
     }
@@ -488,7 +498,7 @@
         $('card-preview').innerHTML =
             '<div class="weapon-card rarity-' + card.rarity + '" style="transform:scale(1.7);margin:20px auto;min-width:220px;min-height:340px;padding-bottom:15px;">' +
             '<span class="card-type ' + card.type + '" style="font-size:12px;padding:2px 6px;border-radius:4px;">' + typeLabel + '</span>' +
-            '<span class="card-icon" style="font-size:' + iconFontSize + ';margin:2px 0;display:block;">' + renderEmoji(card.icon).replace(/<img /, '<img style="width:2.2em!important;height:2.2em!important;object-fit:contain;" ') + '</span>' +
+            '<span class="card-icon" style="font-size:' + iconFontSize + ';margin:2px 0;display:block;">' + renderEmoji(card.icon, false, true).replace(/<img /, '<img style="width:2.2em!important;height:2.2em!important;object-fit:contain;" ') + '</span>' +
             '<span class="card-name" style="font-size:15px;font-weight:800;display:block;margin-top:6px;' + (card.rarity === 'legendary' ? 'color:#ffffff;text-shadow:0 1px 4px rgba(0,0,0,0.8);' : '') + '">' + card.name + '</span>' +
             '<span class="card-value" style="font-size:18px;font-weight:900;color:' + valueColor + ';text-shadow:0 0 8px ' + valueColor + '66;margin:2px 0;display:block;">⚔ ' + valueLabel + ' <strong>' + card.value + '</strong></span>' +
             '<span class="card-price" style="font-size:11px;font-weight:600;display:block;margin-top:4px;' + (card.rarity === 'legendary' ? 'color:#ffe082;text-shadow:0 1px 3px rgba(0,0,0,0.6);' : '') + '">💰' + card.price + ' · ' + rarityName + '</span></div>' +
@@ -518,7 +528,7 @@
             '<div class="scp-card">' +
                 '<div class="scp-icon-wrap weapon-card rarity-' + card.rarity + '">' +
                     '<span class="card-type ' + card.type + '">' + typeLabel + '</span>' +
-                    '<span class="card-icon" style="font-size:' + iconFontSize + ';">' + renderEmoji(card.icon).replace(/<img /, '<img style="width:1.6em!important;height:1.6em!important;object-fit:contain;" ') + '</span>' +
+                    '<span class="card-icon" style="font-size:' + iconFontSize + ';">' + renderEmoji(card.icon, false, true).replace(/<img /, '<img style="width:1.6em!important;height:1.6em!important;object-fit:contain;" ') + '</span>' +
                     '<span class="card-name" style="' + nameStyle + '">' + card.name + '</span>' +
                     '<span class="card-value" style="color:' + valueColor + ';text-shadow:0 0 6px ' + valueColor + '44;">⚔ ' + valueLabel + ' <strong>' + card.value + '</strong></span>' +
                 '</div>' +
@@ -779,6 +789,9 @@
         atkCards.forEach(function (c) { atkC.innerHTML += createEquipmentCard(c, { size: 'sm', isNew: newCardUids.indexOf(c.uid) >= 0 }); });
         defCards.forEach(function (c) { defC.innerHTML += createEquipmentCard(c, { size: 'sm', isNew: newCardUids.indexOf(c.uid) >= 0 }); });
 
+        // 如果选择模式处于激活状态，重新绑定选择事件并恢复选中状态
+        var wasInSelectMode = _librarySelectionMode.active && _librarySelectionMode.playerId === playerId;
+
         function setupHoverDelegate(container) {
             container.onmouseenter = function (e) {
                 var target = e.target.closest('.weapon-card');
@@ -794,6 +807,8 @@
                 }
             };
             container.onclick = function (e) {
+                // 选择模式下由选择事件处理器接管，不执行默认预览行为
+                if (_librarySelectionMode.active) return;
                 var target = e.target.closest('.weapon-card');
                 if (target) {
                     var card = findCardByUid(player, target.getAttribute('data-uid'));
@@ -805,6 +820,76 @@
 
         setupHoverDelegate(atkC);
         setupHoverDelegate(defC);
+
+        // 恢复选择模式的事件绑定和选中状态
+        if (wasInSelectMode) {
+            var expectedType = _librarySelectionMode.expectedType;
+            [atkC, defC].forEach(function (container) {
+                container.classList.add('library-select-mode');
+            });
+
+            function onLibClick(e) {
+                if (!_librarySelectionMode.active) return;
+                var target = e.target.closest('.weapon-card');
+                if (!target) return;
+                playSound('click');
+
+                var uid = target.getAttribute('data-uid');
+                var card = findCardByUid(getPlayer(playerId), uid);
+                if (!card) return;
+
+                [atkC, defC].forEach(function (container) {
+                    container.querySelectorAll('.weapon-card').forEach(function (c) { c.classList.remove('lib-selected'); });
+                });
+                target.classList.add('lib-selected');
+                game.selectedCardUid = uid;
+
+                var confirmBtn = opBtn(playerId, 'confirm-card');
+                if (confirmBtn) {
+                    if (card.type === expectedType) {
+                        confirmBtn.disabled = false;
+                        showSelectCardPreview(card);
+                    } else {
+                        confirmBtn.disabled = true;
+                        hideSelectCardPreview();
+                    }
+                }
+            }
+
+            function onLibDblClick(e) {
+                if (!_librarySelectionMode.active) return;
+                var target = e.target.closest('.weapon-card');
+                if (!target) return;
+
+                var card = findCardByUid(getPlayer(playerId), target.getAttribute('data-uid'));
+                if (!card || card.type !== expectedType) return;
+
+                [atkC, defC].forEach(function (container) {
+                    container.querySelectorAll('.weapon-card').forEach(function (c) { c.classList.remove('lib-selected'); });
+                });
+                target.classList.add('lib-selected');
+                game.selectedCardUid = card.uid;
+                handleConfirmCard();
+                e.stopPropagation();
+            }
+
+            atkC.addEventListener('click', onLibClick);
+            atkC.addEventListener('dblclick', onLibDblClick);
+            atkC._libSelectClick = onLibClick;
+            atkC._libSelectDblClick = onLibDblClick;
+            defC.addEventListener('click', onLibClick);
+            defC.addEventListener('dblclick', onLibDblClick);
+            defC._libSelectClick = onLibClick;
+            defC._libSelectDblClick = onLibDblClick;
+
+            // 恢复之前选中的卡牌高亮
+            if (game.selectedCardUid) {
+                [atkC, defC].forEach(function (container) {
+                    var el = container.querySelector('[data-uid="' + game.selectedCardUid + '"]');
+                    if (el) el.classList.add('lib-selected');
+                });
+            }
+        }
     }
 
     function setActivePlayer(pid) {
@@ -1660,6 +1745,10 @@
     }
 
     function checkBothSelected() {
+        if (game.phase !== 'character-select') {
+            console.log('[checkBothSelected] ⚠️ 当前阶段非角色选择(game.phase=' + game.phase + ')，忽略');
+            return;
+        }
         if (isOnlineMode && charSelectState.selectedA && charSelectState.selectedB) {
             charSelectState.phase = 'done';
             disableAllCards();
@@ -1772,6 +1861,10 @@
 
         if (vsAnimationShown) {
             console.warn('[ VS ] VS动画已经显示过，跳过重复调用');
+            return;
+        }
+        if (game.phase !== 'character-select') {
+            console.warn('[ VS ] ⚠️ 当前阶段非角色选择(game.phase=' + game.phase + ')，忽略VS动画调用');
             return;
         }
 
@@ -2633,6 +2726,7 @@
     function startAttackPhase(isCounter) {
         try {
             console.log('[ startAttackPhase ] isCounter:', isCounter, 'firstAttacker:', game.firstAttacker, 'secondAttacker:', game.secondAttacker);
+            disableLibrarySelection();
             game.phase = 'attack-select';
             game.isCounterPhase = !!isCounter;
             game.phaseAttacker = isCounter ? game.secondAttacker : game.firstAttacker;
@@ -2679,6 +2773,7 @@
 
         if (atkCards.length === 0) {
             game.phase = 'attack-select';
+            disableLibrarySelection();
             hideSelectAreas();
             hideAllOps();
             showOp(game.phaseAttacker, 'end-attack');
@@ -2695,20 +2790,21 @@
         setActivePlayer(game.phaseAttacker);
         updateAttackProgress();
         hideAllOps();
-        showSection('card-select-area');
 
         var phaseLabel = game.isCounterPhase ? '反击' : '攻击';
         var attackNum = game.currentAttackIndex + 1;
         var maxAtk = getMaxAttacks();
-        $('action-hint').textContent = phaseLabel + '阶段（已攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）';
+        $('action-hint').textContent = phaseLabel + '阶段（已攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次） - 请从卡牌库攻击区选择卡牌';
         showOp(game.phaseAttacker, 'confirm-card', { disabled: true, text: '⚔️ 攻击出牌' });
+        showOp(game.phaseAttacker, 'end-attack');
         showOp(game.phaseAttacker, 'sell');
         showOp(game.phaseAttacker, 'buy');
         showOp(game.phaseAttacker, 'synthesis');
         showOp(game.phaseAttacker, 'cultivation');
         setOpsStatus(game.phaseAttacker, phaseLabel + '阶段');
-        renderCardHand(game.phaseAttacker, 'attack');
-        announcePlayerTurn(game.phaseAttacker, '请选择第' + attackNum + '次攻击卡牌');
+        // 直接从卡牌库攻击区选择，不再使用可选卡牌区
+        enableLibrarySelection(game.phaseAttacker, 'attack');
+        announcePlayerTurn(game.phaseAttacker, '请从卡牌库攻击区选择第' + attackNum + '次攻击卡牌');
         showTradeOpsForNonActivePlayer(game.phaseDefender);
         clearCountdown();
         clearOpponentWaitCountdown();
@@ -2719,28 +2815,18 @@
                 if (cards.length > 0) {
                     var randomCard = cards[Math.floor(Math.random() * cards.length)];
                     game.selectedCardUid = randomCard.uid;
-                    
-                    // 模拟卡牌选择的完整流程
-                    var selectCards = $('panel-' + pPrefix(game.phaseAttacker) + '-select-cards');
-                    if (selectCards) {
-                        // 清除之前的选择
-                        selectCards.querySelectorAll('.weapon-card').forEach(function (c) { 
-                            c.classList.remove('selected'); 
-                        });
-                        
-                        // 找到对应的卡牌元素并选中
-                        var cardElement = selectCards.querySelector('[data-uid="' + randomCard.uid + '"]');
-                        if (cardElement) {
-                            cardElement.classList.add('selected');
-                        }
+
+                    // 在卡牌库攻击区中选中对应卡牌
+                    var atkLib = $('player-' + pPrefix(game.phaseAttacker) + '-attack-library');
+                    if (atkLib) {
+                        atkLib.querySelectorAll('.weapon-card').forEach(function (c) { c.classList.remove('selected'); });
+                        var cardElement = atkLib.querySelector('[data-uid="' + randomCard.uid + '"]');
+                        if (cardElement) cardElement.classList.add('selected');
                     }
-                    
+
                     // 启用确认按钮并点击
                     var confirmBtn = opBtn(game.phaseAttacker, 'confirm-card');
-                    if (confirmBtn) {
-                        confirmBtn.disabled = false;
-                        confirmBtn.click();
-                    }
+                    if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.click(); }
                 } else {
                     var endBtn = opBtn(game.phaseAttacker, 'end-attack');
                     if (endBtn && endBtn.style.display !== 'none') endBtn.click();
@@ -2788,10 +2874,10 @@
             game.phase = 'defend-select';
             game.currentDefendCard = null;
             game.selectedCardUid = null;
+            disableLibrarySelection();
             setActivePlayer(game.phaseDefender);
             updateAttackProgress();
             hideAllOps();
-            showSection('card-select-area');
             var maxAtk = getMaxAttacks();
             $('action-hint').textContent = '防御阶段（攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）- 您没有防御卡牌';
             showOp(game.phaseDefender, 'skip-defend');
@@ -2820,10 +2906,9 @@
         setActivePlayer(game.phaseDefender);
         updateAttackProgress();
         hideAllOps();
-        showSection('card-select-area');
 
         var maxAtk = getMaxAttacks();
-        $('action-hint').textContent = '防御阶段（攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）';
+        $('action-hint').textContent = '防御阶段（攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次） - 请从卡牌库防御区选择卡牌';
         showOp(game.phaseDefender, 'confirm-card', { disabled: true, text: '🛡️ 防御出牌' });
         showOp(game.phaseDefender, 'skip-defend');
         showOp(game.phaseDefender, 'sell');
@@ -2831,8 +2916,9 @@
         showOp(game.phaseDefender, 'synthesis');
         showOp(game.phaseDefender, 'cultivation');
         setOpsStatus(game.phaseDefender, '防御阶段');
-        renderCardHand(game.phaseDefender, 'defend');
-        announcePlayerTurn(game.phaseDefender, '请选择防御卡牌');
+        // 直接从卡牌库防御区选择，不再使用可选卡牌区
+        enableLibrarySelection(game.phaseDefender, 'defend');
+        announcePlayerTurn(game.phaseDefender, '请从卡牌库防御区选择防御卡牌');
         showTradeOpsForNonActivePlayer(game.phaseAttacker);
         clearCountdown();
         clearOpponentWaitCountdown();
@@ -2843,28 +2929,18 @@
                 if (cards.length > 0) {
                     var randomCard = cards[Math.floor(Math.random() * cards.length)];
                     game.selectedCardUid = randomCard.uid;
-                    
-                    // 模拟卡牌选择的完整流程
-                    var selectCards = $('panel-' + pPrefix(game.phaseDefender) + '-select-cards');
-                    if (selectCards) {
-                        // 清除之前的选择
-                        selectCards.querySelectorAll('.weapon-card').forEach(function (c) { 
-                            c.classList.remove('selected'); 
-                        });
-                        
-                        // 找到对应的卡牌元素并选中
-                        var cardElement = selectCards.querySelector('[data-uid="' + randomCard.uid + '"]');
-                        if (cardElement) {
-                            cardElement.classList.add('selected');
-                        }
+
+                    // 在卡牌库防御区中选中对应卡牌
+                    var defLib = $('player-' + pPrefix(game.phaseDefender) + '-defend-library');
+                    if (defLib) {
+                        defLib.querySelectorAll('.weapon-card').forEach(function (c) { c.classList.remove('selected'); });
+                        var cardElement = defLib.querySelector('[data-uid="' + randomCard.uid + '"]');
+                        if (cardElement) cardElement.classList.add('selected');
                     }
-                    
+
                     // 启用确认按钮并点击
                     var confirmBtn = opBtn(game.phaseDefender, 'confirm-card');
-                    if (confirmBtn) {
-                        confirmBtn.disabled = false;
-                        confirmBtn.click();
-                    }
+                    if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.click(); }
                 } else {
                     var skipBtn = opBtn(game.phaseDefender, 'skip-defend');
                     if (skipBtn && skipBtn.style.display !== 'none') skipBtn.click();
@@ -2873,6 +2949,133 @@
         } else if (isOnlineMode) {
             showOpponentWaitCountdown(60);
         }
+    }
+
+    // 卡牌库选择模式状态
+    var _librarySelectionMode = { active: false, playerId: null, expectedType: null };
+
+    /**
+     * 启用卡牌库选择模式 - 让卡牌库的攻击/防御区卡片直接可选
+     * @param {string} playerId - 玩家ID ('A' or 'B')
+     * @param {string} expectedType - 期望的卡牌类型 ('attack' or 'defend')
+     */
+    function enableLibrarySelection(playerId, expectedType) {
+        disableLibrarySelection();
+        _librarySelectionMode = { active: true, playerId: playerId, expectedType: expectedType };
+
+        var prefix = 'player-' + playerId.toLowerCase();
+        var atkLib = $(prefix + '-attack-library');
+        var defLib = $(prefix + '-defend-library');
+
+        // 清除之前的选择状态
+        [atkLib, defLib].forEach(function (container) {
+            if (container) container.querySelectorAll('.weapon-card').forEach(function (c) { c.classList.remove('lib-selected'); });
+        });
+        game.selectedCardUid = null;
+
+        function onLibraryCardClick(e) {
+            if (!_librarySelectionMode.active) return;
+            var target = e.target.closest('.weapon-card');
+            if (!target) return;
+            playSound('click');
+
+            var uid = target.getAttribute('data-uid');
+            var card = findCardByUid(getPlayer(playerId), uid);
+            if (!card) return;
+
+            // 清除所有选中状态
+            [atkLib, defLib].forEach(function (container) {
+                if (container) container.querySelectorAll('.weapon-card').forEach(function (c) { c.classList.remove('lib-selected'); });
+            });
+
+            // 选中当前卡牌
+            target.classList.add('lib-selected');
+            game.selectedCardUid = uid;
+
+            // 根据卡牌类型决定确认按钮状态
+            var confirmBtn = opBtn(playerId, 'confirm-card');
+            if (confirmBtn) {
+                if (card.type === expectedType) {
+                    confirmBtn.disabled = false;
+                    showSelectCardPreview(card);
+                } else {
+                    confirmBtn.disabled = true;
+                    hideSelectCardPreview();
+                }
+            }
+        }
+
+        function onLibraryCardDblClick(e) {
+            if (!_librarySelectionMode.active) return;
+            var target = e.target.closest('.weapon-card');
+            if (!target) return;
+
+            var card = findCardByUid(getPlayer(playerId), target.getAttribute('data-uid'));
+            if (!card) return;
+
+            // 只有类型匹配时才允许双击出牌
+            if (card.type !== expectedType) return;
+
+            // 选中并直接出牌
+            [atkLib, defLib].forEach(function (container) {
+                if (container) container.querySelectorAll('.weapon-card').forEach(function (c) { c.classList.remove('lib-selected'); });
+            });
+            target.classList.add('lib-selected');
+            game.selectedCardUid = card.uid;
+            handleConfirmCard();
+            e.stopPropagation();
+        }
+
+        if (atkLib) {
+            atkLib.addEventListener('click', onLibraryCardClick);
+            atkLib.addEventListener('dblclick', onLibraryCardDblClick);
+            atkLib._libSelectClick = onLibraryCardClick;
+            atkLib._libSelectDblClick = onLibraryCardDblClick;
+            // 添加选择模式样式标记
+            atkLib.classList.add('library-select-mode');
+        }
+        if (defLib) {
+            defLib.addEventListener('click', onLibraryCardClick);
+            defLib.addEventListener('dblclick', onLibraryCardDblClick);
+            defLib._libSelectClick = onLibraryCardClick;
+            defLib._libSelectDblClick = onLibraryCardDblClick;
+            defLib.classList.add('library-select-mode');
+        }
+
+        // 自动选中期望类型的第一张卡牌
+        var targetLib = expectedType === 'attack' ? atkLib : defLib;
+        if (targetLib) {
+            var cards = getPlayer(playerId).library.filter(function (c) { return c.type === expectedType; });
+            if (cards.length > 0) {
+                game.selectedCardUid = cards[0].uid;
+                var firstEl = targetLib.querySelector('[data-uid="' + cards[0].uid + '"]');
+                if (firstEl) firstEl.classList.add('lib-selected');
+                var confirmBtn = opBtn(playerId, 'confirm-card');
+                if (confirmBtn) { confirmBtn.disabled = false; showSelectCardPreview(cards[0]); }
+            }
+        }
+    }
+
+    /**
+     * 禁用卡牌库选择模式，恢复普通浏览模式
+     */
+    function disableLibrarySelection() {
+        if (!_librarySelectionMode.active) return;
+        _librarySelectionMode = { active: false, playerId: null, expectedType: null };
+
+        ['a', 'b'].forEach(function (p) {
+            var atkLib = $('player-' + p + '-attack-library');
+            var defLib = $('player-' + p + '-defend-library');
+
+            [atkLib, defLib].forEach(function (container) {
+                if (!container) return;
+                container.classList.remove('library-select-mode');
+                container.querySelectorAll('.weapon-card').forEach(function (c) { c.classList.remove('lib-selected'); });
+                if (container._libSelectClick) { container.removeEventListener('click', container._libSelectClick); delete container._libSelectClick; }
+                if (container._libSelectDblClick) { container.removeEventListener('dblclick', container._libSelectDblClick); delete container._libSelectDblClick; }
+            });
+        });
+        hideSelectCardPreview();
     }
 
     function renderCardHand(playerId, cardType) {
@@ -3202,9 +3405,16 @@
         var pid = game.phase === 'attack-select' ? game.phaseAttacker : game.phaseDefender;
         if (isOnlineMode && !canIOperate(pid)) return;
         var card = getSelectedCard(pid);
-        if (!card) return; playSound('click');
+        if (!card) return;
+
+        // 验证卡牌类型是否匹配当前阶段
+        if (game.phase === 'attack-select' && card.type !== 'attack') return;
+        if (game.phase === 'defend-select' && card.type !== 'defend') return;
+
+        playSound('click');
         clearCountdown();
         clearOpponentWaitCountdown();
+        disableLibrarySelection();
         hideSelectAreas();
 
         if (game.phase === 'attack-select') {
@@ -3235,6 +3445,7 @@
         if (isOnlineMode && !canIOperate(pid)) return;
         playSound('click');
         stopSpeech();
+        disableLibrarySelection();
         hideSelectAreas();
         game.currentDefendCard = null;
         notifyPeer('skip-defend', {});
@@ -3530,56 +3741,14 @@
             return;
         }
 
-        setActivePlayer(game.phaseAttacker);
-        updateAttackProgress();
-        hideAllOps();
-
-        var phaseLabel = game.isCounterPhase ? '反击' : '攻击';
-        $('action-hint').textContent = phaseLabel + '阶段（已攻击 ' + game.currentAttackIndex + '/' + maxAtk + ' 次）';
-
-        if (atkCards.length === 0) {
-            // 攻击次数还有但卡牌不足：显示"结束攻击"、"出售"、"购买"按钮，允许交易操作
-            game.phase = 'attack-select';
-            showOp(game.phaseAttacker, 'end-attack');
-            showOp(game.phaseAttacker, 'sell');
-            showOp(game.phaseAttacker, 'buy');
-            showOp(game.phaseAttacker, 'synthesis');
-            showOp(game.phaseAttacker, 'cultivation');
-            setOpsStatus(game.phaseAttacker, '没有攻击卡牌了，请选择操作');
-            announcePlayerTurn(game.phaseAttacker, '没有攻击卡牌了，请选择是否结束攻击');
-            showTradeOpsForNonActivePlayer(game.phaseDefender);
-            return;
-        }
-
-        showOp(game.phaseAttacker, 'continue-attack', { text: '⚔️ 继续攻击（' + (game.currentAttackIndex + 1) + '/' + maxAtk + '）<span id="ca-countdown">(10s)</span>', html: true });
-        showOp(game.phaseAttacker, 'end-attack');
-        showOp(game.phaseAttacker, 'sell');
-        showOp(game.phaseAttacker, 'buy');
-        showOp(game.phaseAttacker, 'synthesis');
-        showOp(game.phaseAttacker, 'cultivation');
-        setOpsStatus(game.phaseAttacker, phaseLabel + ' ' + game.currentAttackIndex + '/' + maxAtk + ' 次');
-
-        announcePlayerTurn(game.phaseAttacker, '已完成' + game.currentAttackIndex + '次攻击，是否继续');
-        if (!isOnlineMode || canIOperate(game.phaseAttacker)) {
-            var caCountdown = 10;
-            var caTimer = setInterval(function () {
-                caCountdown--;
-                var cdEl = document.getElementById('ca-countdown');
-                if (cdEl) cdEl.textContent = '(' + caCountdown + 's)';
-                if (caCountdown <= 0) {
-                    clearInterval(caTimer);
-                    var btn = opBtn(game.phaseAttacker, 'continue-attack');
-                    if (btn && btn.style.display !== 'none') btn.click();
-                }
-            }, 1000);
-        } else if (isOnlineMode) {
-            showOpponentWaitCountdown(10);
-        }
+        // 直接进入攻击出牌选择，同时显示结束攻击按钮
+        showAttackCardSelect();
     }
 
     function afterAttackPhaseEnds() {
         clearCountdown();
         clearOpponentWaitCountdown();
+        disableLibrarySelection();
         hideAllOps();
         var el = $('attack-progress');
         if (el) el.style.display = 'none';
@@ -3723,6 +3892,7 @@
         if (game.phase === 'attack-select') {
             var atkCards = getPlayer(game.phaseAttacker).library.filter(function (c) { return c.type === 'attack'; });
             if (atkCards.length === 0) {
+                disableLibrarySelection();
                 hideSelectAreas();
                 hideAllOps();
                 showOp(game.phaseAttacker, 'end-attack');
@@ -3733,7 +3903,7 @@
                 setOpsStatus(game.phaseAttacker, '没有攻击卡牌了，请选择操作');
                 return;
             }
-            renderCardHand(game.phaseAttacker, 'attack');
+            enableLibrarySelection(game.phaseAttacker, 'attack');
             showOp(game.phaseAttacker, 'confirm-card', { disabled: true, text: '⚔️ 攻击出牌' });
             showOp(game.phaseAttacker, 'sell');
             showOp(game.phaseAttacker, 'buy');
@@ -3742,6 +3912,7 @@
         } else if (game.phase === 'defend-select') {
             var defCards = getPlayer(game.phaseDefender).library.filter(function (c) { return c.type === 'defend'; });
             if (defCards.length === 0) {
+                disableLibrarySelection();
                 hideSelectAreas();
                 hideAllOps();
                 showOp(game.phaseDefender, 'skip-defend');
@@ -3752,7 +3923,7 @@
                 setOpsStatus(game.phaseDefender, '没有防御卡牌了');
                 return;
             }
-            renderCardHand(game.phaseDefender, 'defend');
+            enableLibrarySelection(game.phaseDefender, 'defend');
             showOp(game.phaseDefender, 'confirm-card', { disabled: true, text: '🛡️ 防御出牌' });
             showOp(game.phaseDefender, 'skip-defend');
             showOp(game.phaseDefender, 'sell');
@@ -4213,6 +4384,7 @@
         initCardSelect(); initContinueChoice();
         initGameOver(); initCardPreview(); initSelectCardPreview(); initSellBuy();
         initSynthesisCultivationButtons(); initMultiplayer();
+        initSynthesisCultivationButtons(); initMultiplayer(); initCombatPowerModal();
         showScreen('screen-start');
     }
 
@@ -4899,6 +5071,10 @@
     }
 
     function applyCharSpinResult(charId, phase) {
+        if (game.phase !== 'character-select') {
+            console.log('[applyCharSpinResult] ⚠️ 当前阶段非角色选择(game.phase=' + game.phase + ')，忽略延迟消息, phase:', phase);
+            return;
+        }
         var ch = CHARACTERS.find(function (c) { return c.id === charId; });
         if (!ch) return;
         if (phase === 'selected-A' && !charSelectState.selectedA) {
@@ -5141,12 +5317,6 @@
         renderLearnedMartialArts('B');
         refreshCurrentCardSelect();
 
-        if (game.phase === 'attack-select') {
-            renderCardHand(game.phaseAttacker, 'attack');
-        } else if (game.phase === 'defend-select') {
-            renderCardHand(game.phaseDefender, 'defend');
-        }
-
         speak(payload.success ? '对方重铸成功' : '对方重铸失败');
     }
 
@@ -5174,12 +5344,6 @@
         renderLearnedMartialArts('B');
         refreshCurrentCardSelect();
 
-        if (game.phase === 'attack-select') {
-            renderCardHand(game.phaseAttacker, 'attack');
-        } else if (game.phase === 'defend-select') {
-            renderCardHand(game.phaseDefender, 'defend');
-        }
-
         speak(payload.success ? '对方修炼成功，学会了' + payload.artName : '对方修炼失败');
     }
 
@@ -5202,6 +5366,7 @@
             return;
         }
         playSound('click');
+        disableLibrarySelection();
         hideSelectAreas();
 
         var isDefendSelection = (selectorPid === game.phaseDefender);
@@ -5230,6 +5395,7 @@
 
     function handleSkipDefendRemote() {
         stopSpeech();
+        disableLibrarySelection();
         game.currentDefendCard = null;
         resolveSingleAttack();
     }
@@ -5495,11 +5661,6 @@
                 removedCards: [{ uid: cardA.uid, id: cardA.id }, { uid: cardB.uid, id: cardB.id }]
             });
             refreshCurrentCardSelect();
-            if (game.phase === 'attack-select') {
-                renderCardHand(game.phaseAttacker, 'attack');
-            } else if (game.phase === 'defend-select') {
-                renderCardHand(game.phaseDefender, 'defend');
-            }
         }, 3000);
     }
 
@@ -5839,12 +6000,6 @@
             });
             refreshCurrentCardSelect();
 
-            if (game.phase === 'attack-select') {
-                renderCardHand(game.phaseAttacker, 'attack');
-            } else if (game.phase === 'defend-select') {
-                renderCardHand(game.phaseDefender, 'defend');
-            }
-
             game.cultivationState.isProcessing = false;
         }, 3000);
     }
@@ -5964,6 +6119,104 @@
             if (art && art.type === type) names.push(art.icon + art.name);
         });
         return names.length > 0 ? names.join('、') : null;
+    }
+
+     /* ====== 战力对比功能 ====== */
+    function calcPlayerCombatPower(pid) {
+        var player = getPlayer(pid);
+        if (!player || !player.char) return null;
+
+        var atkSkillBonus = getTotalAtkBonus(pid);
+        var defSkillBonus = getTotalDefBonus(pid);
+
+        var cardTotalAtk = 0;
+        var cardTotalDef = 0;
+        player.library.forEach(function(card) {
+            if (card.type === 'attack') cardTotalAtk += card.value;
+            else if (card.type === 'defend') cardTotalDef += card.value;
+        });
+
+        var effectiveAtk = Math.floor(cardTotalAtk * (1 + atkSkillBonus));
+        var effectiveDef = Math.floor(cardTotalDef * (1 + defSkillBonus));
+        var hpFactor = player.maxHp > 0 ? Math.floor((player.hp / player.maxHp) * 50) : 0;
+        var totalPower = effectiveAtk + effectiveDef + hpFactor;
+
+        return {
+            charName: player.char.name,
+            charEmoji: player.char.emoji,
+            hp: player.hp.toFixed(1),
+            maxHp: player.maxHp,
+            atkSkillBonus: atkSkillBonus,
+            defSkillBonus: defSkillBonus,
+            cardTotalAtk: cardTotalAtk,
+            cardTotalDef: cardTotalDef,
+            effectiveAtk: effectiveAtk,
+            effectiveDef: effectiveDef,
+            hpFactor: hpFactor,
+            totalPower: totalPower
+        };
+    }
+
+    function showCombatPowerModal() {
+        var a = game.playerA, b = game.playerB;
+        if (!a.char || !b.char) return;
+
+        var statsA = calcPlayerCombatPower('A');
+        var statsB = calcPlayerCombatPower('B');
+        if (!statsA || !statsB) return;
+
+        /* 玩家A */
+        $('cp-avatar-a').src = statsA.charEmoji;
+        $('cp-name-a').textContent = statsA.charName;
+        $('cp-hp-a').textContent = statsA.hp + '/' + statsA.maxHp;
+        $('cp-atk-skill-a').textContent = '+' + Math.round(statsA.atkSkillBonus * 100) + '%';
+        $('cp-def-skill-a').textContent = '+' + Math.round(statsA.defSkillBonus * 100) + '%';
+        $('cp-card-atk-a').textContent = String(statsA.cardTotalAtk);
+        $('cp-card-def-a').textContent = String(statsA.cardTotalDef);
+        $('cp-total-a').textContent = String(statsA.totalPower);
+
+        /* 玩家B */
+        $('cp-avatar-b').src = statsB.charEmoji;
+        $('cp-name-b').textContent = statsB.charName;
+        $('cp-hp-b').textContent = statsB.hp + '/' + statsB.maxHp;
+        $('cp-atk-skill-b').textContent = '+' + Math.round(statsB.atkSkillBonus * 100) + '%';
+        $('cp-def-skill-b').textContent = '+' + Math.round(statsB.defSkillBonus * 100) + '%';
+        $('cp-card-atk-b').textContent = String(statsB.cardTotalAtk);
+        $('cp-card-def-b').textContent = String(statsB.cardTotalDef);
+        $('cp-total-b').textContent = String(statsB.totalPower);
+
+        /* 高亮战斗力更高的一方 */
+        if (statsA.totalPower > statsB.totalPower) {
+            $('cp-total-a').style.color = '#4ade80';
+            $('cp-total-b').style.color = 'var(--gold-light)';
+        } else if (statsB.totalPower > statsA.totalPower) {
+            $('cp-total-b').style.color = '#4ade80';
+            $('cp-total-a').style.color = 'var(--gold-light)';
+        } else {
+            $('cp-total-a').style.color = 'var(--gold-light)';
+            $('cp-total-b').style.color = 'var(--gold-light)';
+        }
+
+        $('combat-power-overlay').classList.remove('hidden');
+    }
+
+    function hideCombatPowerModal() {
+        $('combat-power-overlay').classList.add('hidden');
+    }
+
+    function initCombatPowerModal() {
+        $('player-a-avatar').addEventListener('click', function(e) {
+            e.stopPropagation();
+            showCombatPowerModal();
+        });
+        $('player-b-avatar').addEventListener('click', function(e) {
+            e.stopPropagation();
+            showCombatPowerModal();
+        });
+        $('btn-close-combat-power').addEventListener('click', hideCombatPowerModal);
+        $('combat-power-overlay').addEventListener('click', function(e) {
+            if (e.target === this) hideCombatPowerModal();
+        });
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

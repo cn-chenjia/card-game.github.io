@@ -893,6 +893,29 @@ body {
     outline-offset: 3px;
 }
 
+/* ---- 卡牌库选择模式 ---- */
+.library-select-mode {
+    position: relative;
+}
+.library-select-mode .weapon-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.library-select-mode .weapon-card:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
+    z-index: 2;
+    position: relative;
+}
+.library-select-mode .weapon-card.lib-selected {
+    transform: translateY(calc(-8px * var(--card-scale))) scale(1.08) !important;
+    box-shadow: 0 6px 25px rgba(212, 168, 67, 0.7) !important;
+    outline: 2px solid var(--gold) !important;
+    outline-offset: 2px !important;
+    z-index: 3 !important;
+    position: relative;
+}
+
 /* ---- 动画 ---- */
 .weapon-card.library-new { animation: cardAppear 0.5s ease; }
 @keyframes cardAppear {
@@ -3086,6 +3109,176 @@ body {
     .cultivation-card-slots .slot-content { min-height: 70px !important; }
     .selected-martial-display { padding: 6px !important; margin: 6px 0 !important; font-size: 11px !important; }
     .cultivation-section-title { font-size: 12px !important; margin: 8px 0 4px !important; }
+}
+
+/* ====== 战力对比弹窗 ====== */
+.combat-power-modal {
+    max-width: 680px !important;
+    padding: 20px 24px !important;
+}
+.combat-compare-container {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 12px;
+    margin: 16px 0;
+}
+.combat-side {
+    flex: 1;
+    max-width: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(212, 168, 67, 0.2);
+}
+.combat-side-a {
+    border-color: rgba(231, 76, 60, 0.4);
+    background: linear-gradient(180deg, rgba(192, 57, 43, 0.08), rgba(0, 0, 0, 0.25));
+}
+.combat-side-b {
+    border-color: rgba(52, 152, 219, 0.4);
+    background: linear-gradient(180deg, rgba(41, 128, 185, 0.08), rgba(0, 0, 0, 0.25));
+}
+.combat-avatar-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--gold);
+    box-shadow: 0 0 16px rgba(212, 168, 67, 0.4);
+    flex-shrink: 0;
+}
+.combat-side-a .combat-avatar-wrap { border-color: var(--red-light); box-shadow: 0 0 16px rgba(231, 76, 60, 0.5); }
+.combat-side-b .combat-avatar-wrap { border-color: var(--blue-light); box-shadow: 0 0 16px rgba(52, 152, 219, 0.5); }
+.combat-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.combat-name {
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold-light);
+    text-align: center;
+}
+.combat-stats {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.cp-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+}
+.cp-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    white-space: nowrap;
+}
+.cp-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-light);
+}
+.cp-hp { color: #e74c3c; }
+.cp-atk-skill { color: #fca5a5; }
+.cp-def-skill { color: #93c5fd; }
+.cp-card-atk { color: #e74c3c; }
+.cp-card-def { color: #3498db; }
+.cp-total-row {
+    background: rgba(212, 168, 67, 0.15) !important;
+    border: 1px solid rgba(212, 168, 67, 0.3);
+    margin-top: 4px;
+}
+.cp-total {
+    font-size: 18px !important;
+    color: var(--gold-light) !important;
+    text-shadow: 0 0 8px rgba(212, 168, 67, 0.5);
+}
+.cp-divider {
+    height: 1px;
+    background: rgba(212, 168, 67, 0.2);
+    margin: 2px 0;
+}
+.combat-vs-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0 4px;
+}
+.combat-vs-text {
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--red-light);
+    text-shadow: 0 0 16px rgba(231, 76, 60, 0.6), 0 0 32px rgba(231, 76, 60, 0.3);
+    animation: vsTextPulse 1.5s ease-in-out infinite alternate;
+}
+.combat-formula-hint {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px dashed rgba(212, 168, 67, 0.3);
+    border-radius: 8px;
+    text-align: left;
+}
+.formula-title {
+    font-family: 'STXingkai', 'KaiTi', 'Microsoft YaHei', sans-serif;
+    font-size: 13px;
+    color: var(--gold-light);
+    margin-bottom: 4px;
+}
+.formula-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    word-break: break-all;
+}
+
+/* 头像可点击提示 */
+.player-avatar {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.player-avatar:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 14px rgba(212, 168, 67, 0.7) !important;
+    z-index: 10;
+    position: relative;
+}
+
+@media (max-width: 600px) {
+    .combat-power-modal {
+        max-width: 95% !important;
+        padding: 14px 12px !important;
+    }
+    .combat-compare-container {
+        gap: 8px;
+    }
+    .combat-side {
+        padding: 10px 8px;
+    }
+    .combat-avatar-wrap {
+        width: 56px;
+        height: 56px;
+    }
+    .combat-name { font-size: 15px; }
+    .cp-label { font-size: 11px; }
+    .cp-value { font-size: 12px; }
+    .cp-total { font-size: 15px !important; }
+    .combat-vs-text { font-size: 22px; }
+    .formula-desc { font-size: 10px; }
 }
 
 /* ====== 手机端全局底部安全区域修复 ====== */
