@@ -4379,6 +4379,7 @@
         initCardSelect(); initContinueChoice();
         initGameOver(); initCardPreview(); initSelectCardPreview(); initSellBuy();
         initSynthesisCultivationButtons(); initMultiplayer();
+        initCombatPowerCompare();
         showScreen('screen-start');
     }
 
@@ -5490,6 +5491,175 @@
                 console.warn('[WARN] 未找到按钮: btn-' + p + '-cultivation');
             }
         });
+    }
+
+    // ========== 战力对比系统 ==========
+
+    function initCombatPowerCompare() {
+        // 点击玩家头像显示战力对比
+        var avatarA = document.getElementById('player-a-avatar');
+        var avatarB = document.getElementById('player-b-avatar');
+        var closeBtn = document.getElementById('btn-close-combat-power');
+        var overlay = document.getElementById('combat-power-overlay');
+
+        if (avatarA) {
+            avatarA.addEventListener('click', function() {
+                console.log('[Combat Power] 点击了玩家A头像, phase:', game.phase);
+                // 只要双方都选择了角色就可以查看战力对比
+                if (game.playerA.char && game.playerB.char) {
+                    showCombatPowerCompare();
+                } else {
+                    console.log('[Combat Power] 条件不满足 - playerA.char:', !!game.playerA.char, 'playerB.char:', !!game.playerB.char);
+                }
+            });
+            avatarA.style.cursor = 'pointer';
+            avatarA.title = '点击查看战力对比';
+            console.log('[Combat Power] 已为玩家A头像添加点击事件');
+        } else {
+            console.warn('[Combat Power] 未找到 player-a-avatar 元素');
+        }
+
+        if (avatarB) {
+            avatarB.addEventListener('click', function() {
+                console.log('[Combat Power] 点击了玩家B头像, phase:', game.phase);
+                // 只要双方都选择了角色就可以查看战力对比
+                if (game.playerA.char && game.playerB.char) {
+                    showCombatPowerCompare();
+                } else {
+                    console.log('[Combat Power] 条件不满足 - playerA.char:', !!game.playerA.char, 'playerB.char:', !!game.playerB.char);
+                }
+            });
+            avatarB.style.cursor = 'pointer';
+            avatarB.title = '点击查看战力对比';
+            console.log('[Combat Power] 已为玩家B头像添加点击事件');
+        } else {
+            console.warn('[Combat Power] 未找到 player-b-avatar 元素');
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                hideCombatPowerCompare();
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    hideCombatPowerCompare();
+                }
+            });
+        }
+    }
+
+    function calculatePlayerCombatPower(pid) {
+        var player = getPlayer(pid);
+        if (!player || !player.char) return null;
+
+        var char = player.char;
+        var atkSkillBonus = char.atkBonus || 0;
+        var defSkillBonus = char.defBonus || 0;
+
+        // 计算卡牌总攻击和总防御
+        var cardAtkTotal = 0;
+        var cardDefTotal = 0;
+        if (player.library) {
+            player.library.forEach(function(card) {
+                if (card.type === 'attack') {
+                    cardAtkTotal += card.value || 0;
+                } else if (card.type === 'defend') {
+                    cardDefTotal += card.value || 0;
+                }
+            });
+        }
+
+        // 应用技能加成
+        var effectiveAtk = Math.floor(cardAtkTotal * (1 + atkSkillBonus));
+        var effectiveDef = Math.floor(cardDefTotal * (1 + defSkillBonus));
+
+        // 血量分数
+        var hpScore = Math.floor((player.hp / player.maxHp) * 50);
+
+        // 总战斗力
+        var totalPower = effectiveAtk + effectiveDef + hpScore;
+
+        return {
+            hp: player.hp,
+            maxHp: player.maxHp,
+            atkSkillBonus: atkSkillBonus,
+            defSkillBonus: defSkillBonus,
+            cardAtk: cardAtkTotal,
+            cardDef: cardDefTotal,
+            effectiveAtk: effectiveAtk,
+            effectiveDef: effectiveDef,
+            hpScore: hpScore,
+            totalPower: totalPower
+        };
+    }
+
+    function showCombatPowerCompare() {
+        var powerA = calculatePlayerCombatPower('A');
+        var powerB = calculatePlayerCombatPower('B');
+
+        if (!powerA || !powerB) {
+            console.log('[Combat Power] 无法计算战力数据');
+            return;
+        }
+
+        console.log('[Combat Power] 显示战力对比窗口');
+
+        // 填充玩家A数据
+        var cpAvatarA = document.getElementById('cp-avatar-a');
+        var cpNameA = document.getElementById('cp-name-a');
+        var cpHpA = document.getElementById('cp-hp-a');
+        var cpAtkSkillA = document.getElementById('cp-atk-skill-a');
+        var cpDefSkillA = document.getElementById('cp-def-skill-a');
+        var cpCardAtkA = document.getElementById('cp-card-atk-a');
+        var cpCardDefA = document.getElementById('cp-card-def-a');
+        var cpTotalA = document.getElementById('cp-total-a');
+
+        if (cpAvatarA) cpAvatarA.src = game.playerA.char.emoji;
+        if (cpNameA) cpNameA.textContent = game.playerA.char.name;
+        if (cpHpA) cpHpA.textContent = powerA.hp.toFixed(1) + '/' + powerA.maxHp;
+        if (cpAtkSkillA) cpAtkSkillA.textContent = '+' + Math.round(powerA.atkSkillBonus * 100) + '%';
+        if (cpDefSkillA) cpDefSkillA.textContent = '+' + Math.round(powerA.defSkillBonus * 100) + '%';
+        if (cpCardAtkA) cpCardAtkA.textContent = powerA.cardAtk;
+        if (cpCardDefA) cpCardDefA.textContent = powerA.cardDef;
+        if (cpTotalA) cpTotalA.textContent = powerA.totalPower;
+
+        // 填充玩家B数据
+        var cpAvatarB = document.getElementById('cp-avatar-b');
+        var cpNameB = document.getElementById('cp-name-b');
+        var cpHpB = document.getElementById('cp-hp-b');
+        var cpAtkSkillB = document.getElementById('cp-atk-skill-b');
+        var cpDefSkillB = document.getElementById('cp-def-skill-b');
+        var cpCardAtkB = document.getElementById('cp-card-atk-b');
+        var cpCardDefB = document.getElementById('cp-card-def-b');
+        var cpTotalB = document.getElementById('cp-total-b');
+
+        if (cpAvatarB) cpAvatarB.src = game.playerB.char.emoji;
+        if (cpNameB) cpNameB.textContent = game.playerB.char.name;
+        if (cpHpB) cpHpB.textContent = powerB.hp.toFixed(1) + '/' + powerB.maxHp;
+        if (cpAtkSkillB) cpAtkSkillB.textContent = '+' + Math.round(powerB.atkSkillBonus * 100) + '%';
+        if (cpDefSkillB) cpDefSkillB.textContent = '+' + Math.round(powerB.defSkillBonus * 100) + '%';
+        if (cpCardAtkB) cpCardAtkB.textContent = powerB.cardAtk;
+        if (cpCardDefB) cpCardDefB.textContent = powerB.cardDef;
+        if (cpTotalB) cpTotalB.textContent = powerB.totalPower;
+
+        // 显示弹窗
+        var overlay = document.getElementById('combat-power-overlay');
+        if (overlay) {
+            overlay.classList.remove('hidden');
+            console.log('[Combat Power] 弹窗已显示');
+        }
+        playSound('click');
+    }
+
+    function hideCombatPowerCompare() {
+        var overlay = document.getElementById('combat-power-overlay');
+        if (overlay) {
+            overlay.classList.add('hidden');
+            console.log('[Combat Power] 弹窗已隐藏');
+        }
     }
 
     // ========== 卡牌重铸系统 ==========
